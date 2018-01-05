@@ -3030,26 +3030,26 @@ bool weapon_is_disastrous(const item_def *wpn)
 void Disaster_Prism(actor* agent, coord_def where, int pow, god_type god)
 {
     ASSERT(agent);
-	int boompower;
-	item_def* wpn = agent->weapon();
+    int boompower;
+    item_def* wpn = agent->weapon();
 
     if (!weapon_is_disastrous(wpn))
     {
-            if (wpn)
-				boompower = pow/8;
-			
-/*The mechanics of the spell make unarmed very hard to balance against weapons. 
-I don't want to disallow unarmed and I don't want to try and count the effects 
-of slaying and particularly, brands, into the strength of weapons. So unarmed 
-gets no benefit from an equipped weapon, but gets extra spellpower.*/	
-            else
-				boompower = pow/4;
-    }
-	else
-		boompower = property(*you.weapon(), PWPN_DAMAGE) + pow/8;
+        if (wpn)
+            boompower = pow/8;
 
-	int hd = boompower;
-	
+/*The mechanics of the spell make unarmed very hard to balance against weapons.
+I don't want to disallow unarmed and I don't want to try and count the effects
+of slaying and particularly, brands, into the strength of weapons. So unarmed
+gets no benefit from an equipped weapon, but gets extra spellpower.*/
+            else
+                boompower = pow/4;
+    }
+    else
+        boompower = property(*you.weapon(), PWPN_DAMAGE) + pow/8;
+
+    int hd = boompower;
+
     mgen_data disaster(MONS_DISASTER_PRISM,
                  agent->is_player() ? BEH_FRIENDLY
                                     : SAME_ATTITUDE(agent->as_monster()),

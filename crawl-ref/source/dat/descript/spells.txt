@@ -137,7 +137,7 @@ Blade of Disaster spell
 
 Manifests the fury of battle into crystallized sparks with each swing of the
 caster's weapon. The sparks explode in a large radius shortly after the spell
-expires. The damage of the explosion is based on both spellpower and the 
+expires. The damage of the explosion is based on both spellpower and the
 caster's weapon.
 
 Unarmed fighters find it easier to channel the full power of the spell into their

@@ -1633,21 +1633,21 @@ void handle_monster_move(monster* mons)
         }
         return;
     }
-	
-	 if (mons->type == MONS_DISASTER_PRISM)
+
+    if (mons->type == MONS_DISASTER_PRISM)
     {
-		bool countdown = false;
-		if (!you.duration[DUR_BLADE_OF_DISASTER])
-			countdown = true;
-		if (countdown == true)	
+        bool countdown = false;
+        if (!you.duration[DUR_BLADE_OF_DISASTER])
+            countdown = true;
+        if (countdown == true)
         ++mons->prism_charge;
-		
+
         if (mons->prism_charge == 3)
             mons->suicide();
         else
         {
-            if (player_can_hear(mons->pos()) 
-			    && !you.duration[DUR_BLADE_OF_DISASTER])
+            if (player_can_hear(mons->pos())
+                && !you.duration[DUR_BLADE_OF_DISASTER])
             {
                 if (you.can_see(*mons))
                 {

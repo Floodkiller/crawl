@@ -367,8 +367,7 @@ spret_type cast_blade_of_disaster(int pow, bool fail)
 {
     fail_check();
 
-	mpr("You call disaster forth from your blade!");
-		you.set_duration(DUR_BLADE_OF_DISASTER, 5);
-		return SPRET_SUCCESS;
-	
+    mpr("You call disaster forth from your blade!");
+        you.set_duration(DUR_BLADE_OF_DISASTER, 5);
+        return SPRET_SUCCESS;
 }

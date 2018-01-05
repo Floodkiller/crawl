@@ -1371,11 +1371,11 @@ static bool _explode_monster(monster* mons, killer_type killer,
         _setup_prism_explosion(beam, *mons);
         sanct_msg = "By Zin's power, the prism's explosion is contained.";
     }
-		else if (type == MONS_DISASTER_PRISM)
+        else if (type == MONS_DISASTER_PRISM)
     {
         _setup_disaster_explosion(beam, *mons);
         sanct_msg = "By Zin's power, the prism's explosion is contained.";
-	}
+    }
     else if (type == MONS_BENNU)
     {
         _setup_bennu_explosion(beam, *mons);
@@ -2097,7 +2097,7 @@ item_def* monster_die(monster& mons, killer_type killer,
         || mons.type == MONS_BALL_LIGHTNING
         || mons.type == MONS_LURKING_HORROR
         || (mons.type == MONS_FULMINANT_PRISM && mons.prism_charge > 0)
-		|| (mons.type == MONS_DISASTER_PRISM && mons.prism_charge > 0)
+        || (mons.type == MONS_DISASTER_PRISM && mons.prism_charge > 0)
         || mons.type == MONS_BENNU
         || mons.has_ench(ENCH_INNER_FLAME))
     {
