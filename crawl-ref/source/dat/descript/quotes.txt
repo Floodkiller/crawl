@@ -3190,6 +3190,10 @@ wand of random effects
 
 <wand>
 %%%%
+wand of teleportation
+
+<wand>
+%%%%
 wandering mushroom
 
 “Telimena, wearied with the prolonged wrangling, wanted to go out into the

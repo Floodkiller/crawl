@@ -199,6 +199,13 @@ static const map<spell_type, mons_spell_logic> spell_to_logic = {
         _fire_simple_beam,
         _setup_minor_healing,
     } },
+	{ SPELL_HEAL_WOUNDS, { //wand healing, TODO: use on allies too
+        [](const monster &caster) {
+            return caster.hit_points <= caster.max_hit_points / 2;
+        },
+        _fire_simple_beam,
+        _selfench_beam_setup(BEAM_HEALING),
+    } },
     { SPELL_TELEPORT_SELF, {
         [](const monster &caster)
         {
@@ -208,6 +215,16 @@ static const map<spell_type, mons_spell_logic> spell_to_logic = {
         _fire_simple_beam,
         _selfench_beam_setup(BEAM_TELEPORT),
     } },
+	{ SPELL_TELEPORT, {	//wand teleport, always use on self (same as above)
+        [](const monster &caster)
+        {
+            // Monsters aren't smart enough to know when to cancel teleport.
+            return !caster.has_ench(ENCH_TP) && !caster.no_tele(true, false);
+        },
+        _fire_simple_beam,
+        _selfench_beam_setup(BEAM_TELEPORT),
+    } },
+
     { SPELL_SLUG_DART, _conjuration_logic(SPELL_SLUG_DART) },
     { SPELL_VAMPIRIC_DRAINING, {
         [](const monster &caster)

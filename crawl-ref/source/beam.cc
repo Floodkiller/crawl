@@ -2976,6 +2976,7 @@ bool bolt::harmless_to_player() const
     case BEAM_AGILITY:
     case BEAM_INVISIBILITY:
     case BEAM_RESISTANCE:
+	case BEAM_TELEPORT:		//from player sources, teleport assumed intended
         return true;
 
     case BEAM_HOLY:

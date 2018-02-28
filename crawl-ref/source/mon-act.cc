@@ -1179,6 +1179,31 @@ static bool _handle_wand(monster& mons)
         }
         return false;
 
+
+    case WAND_HEAL_WOUNDS:
+        if (mons.hit_points <= mons.max_hit_points / 2)
+        {
+            beem.target = mons.pos();
+            niceWand = true;
+            break;
+        }
+        return false;
+
+    case WAND_TELEPORTATION:
+        if (mons.hit_points <= mons.max_hit_points / 2
+            || mons.caught())
+        {
+            if (!mons.has_ench(ENCH_TP)
+                && !one_chance_in(20))
+            {
+                beem.target = mons.pos();
+                niceWand = true;
+                break;
+            }
+            // This break causes the wand to be tried on the player.
+            break;
+        }
+        return false;
     default:
         break;
     }

@@ -2935,7 +2935,7 @@ static const struct spell_desc spelldata[] =
     200,
     LOS_RADIUS, LOS_RADIUS,
     2, 0,
-    TILEG_GENERIC_MONSTER_SPELL,
+    TILEG_VIRULENCE,
 },
 
 #if TAG_MAJOR_VERSION == 34
@@ -3948,6 +3948,28 @@ static const struct spell_desc spelldata[] =
     -1, 1,
     4, 0,
     TILEG_PHASE_SHIFT,
+},
+
+{
+    SPELL_HEAL_WOUNDS, "Heal Wounds",
+    SPTYP_CHARMS,
+    SPFLAG_EMERGENCY | SPFLAG_DIR_OR_TARGET | SPFLAG_HELPFUL | SPFLAG_UTILITY,
+    6,
+    200,
+    LOS_RADIUS, LOS_RADIUS,
+    5, 0,
+    TILEG_MINOR_HEALING,
+},
+
+{
+    SPELL_TELEPORT, "Teleport",
+    SPTYP_TRANSLOCATION,
+    SPFLAG_ESCAPE | SPFLAG_EMERGENCY | SPFLAG_DIR_OR_TARGET | SPFLAG_UTILITY,
+    6,
+    200,
+    LOS_RADIUS, LOS_RADIUS,
+    5, 0,
+    TILEG_TELEPORT_OTHER,
 },
 
 {
