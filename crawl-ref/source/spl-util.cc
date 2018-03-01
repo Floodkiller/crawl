@@ -1361,6 +1361,7 @@ bool spell_no_hostile_in_range(spell_type spell)
     // These don't target monsters or can target features.
     case SPELL_APPORTATION:
     case SPELL_CONJURE_FLAME:
+    case SPELL_DIG:
     case SPELL_PASSWALL:
     case SPELL_GOLUBRIAS_PASSAGE:
     case SPELL_LRD:
