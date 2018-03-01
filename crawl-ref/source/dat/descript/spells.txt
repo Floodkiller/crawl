@@ -888,9 +888,8 @@ Conjures up a short-lived cloud of noxious fumes, which may cause confusion.
 %%%%
 Mesmerise spell
 
-Makes a targeted creature unwilling to move away from the caster. Extremely
-loud noises, such as those produced by lightning or scrolls of noise, will
-disrupt the effect, as will leaving the caster's line of sight.
+Makes a targeted creature unwilling to move away from the caster. Leaving the
+caster's line of sight will end the effect.
 %%%%
 Metabolic Englaciation spell
 
@@ -1214,8 +1213,7 @@ can only maintain one singularity at a time.
 Siren Song spell
 
 Sings a haunting song, making nearby victims unwilling to move away from the
-singer. Extremely loud noises, such as those produced by lightning or scrolls
-of noise, will disrupt the effect, as will leaving the caster's line of sight.
+singer. Leaving the caster's line of sight will end the effect.
 %%%%
 Sleep spell
 
