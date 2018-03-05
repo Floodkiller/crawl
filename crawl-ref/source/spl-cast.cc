@@ -1943,6 +1943,9 @@ static spret_type _do_cast(spell_type spell, int powc, const dist& spd,
 
     case SPELL_PHASE_SHIFT:
         return cast_phase_shift(powc, fail);
+        
+    case SPELL_TIME_STOP:
+        return cast_time_stop(powc, fail);
 
     default:
         if (spell_removed(spell))
