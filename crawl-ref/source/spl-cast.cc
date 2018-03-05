@@ -1846,6 +1846,9 @@ static spret_type _do_cast(spell_type spell, int powc, const dist& spd,
     case SPELL_REGENERATION:
         return cast_regen(powc, fail);
 
+    case SPELL_REPEL_MISSILES:
+        return missile_prot(powc, fail);
+
     case SPELL_DEFLECT_MISSILES:
         return deflection(powc, fail);
 
