@@ -5624,7 +5624,8 @@ int player::missile_deflection() const
     if (attribute[ATTR_DEFLECT_MISSILES])
         return 2;
 
-    if (get_mutation_level(MUT_DISTORTION_FIELD) == 3
+    if (attribute[ATTR_REPEL_MISSILES]
+        || get_mutation_level(MUT_DISTORTION_FIELD) == 3
         || you.wearing_ego(EQ_ALL_ARMOUR, SPARM_REPULSION)
         || scan_artefacts(ARTP_RMSL, true)
         || have_passive(passive_t::upgraded_storm_shield))
@@ -5646,6 +5647,15 @@ void player::ablate_deflection()
         if (one_chance_in(2 + power / 8))
         {
             attribute[ATTR_DEFLECT_MISSILES] = 0;
+            did_something = true;
+        }
+    }
+    else if (attribute[ATTR_REPEL_MISSILES])
+    {
+        const int power = calc_spell_power(SPELL_REPEL_MISSILES, true);
+        if (one_chance_in(2 + power / 8))
+        {
+            attribute[ATTR_REPEL_MISSILES] = 0;
             did_something = true;
         }
     }
