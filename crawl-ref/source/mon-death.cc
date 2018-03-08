@@ -2264,9 +2264,15 @@ item_def* monster_die(monster& mons, killer_type killer,
         && killer == KILL_YOU
         && gives_player_xp)
     {
+        const int power = calc_spell_power(SPELL_DEFLECT_MISSILES, true);
         const int sos_bonus = you.props[SONG_OF_SLAYING_KEY].get_int();
-        if (sos_bonus <= 8) // cap at +9 slay
-            you.props[SONG_OF_SLAYING_KEY] = sos_bonus + 1;
+        you.props[SONG_OF_SLAYING_KEY] = min(9, sos_bonus + 1 + div_rand_round(power, 200));
+
+        if (x_chance_in_y(power, 200))
+        {
+            mpr("You extend your song.");
+            you.increase_duration(DUR_SONG_OF_SLAYING, 5 + random2avg(5, 2));
+        }
     }
 
     switch (killer)
