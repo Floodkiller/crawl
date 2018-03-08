@@ -1943,6 +1943,9 @@ static spret_type _do_cast(spell_type spell, int powc, const dist& spd,
 
     case SPELL_PHASE_SHIFT:
         return cast_phase_shift(powc, fail);
+        
+    case SPELL_CONJURE_DISTORTION:
+        return conjure_distortion(&you, powc, fail);
 
     default:
         if (spell_removed(spell))
