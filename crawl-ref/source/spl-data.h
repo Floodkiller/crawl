@@ -3951,6 +3951,17 @@ static const struct spell_desc spelldata[] =
 },
 
 {
+    SPELL_HEAL_WOUNDS, "Heal Wounds",
+    SPTYP_CHARMS,
+    SPFLAG_RECOVERY | SPFLAG_EMERGENCY | SPFLAG_DIR_OR_TARGET | SPFLAG_HELPFUL | SPFLAG_UTILITY,
+    6,
+    200,
+    LOS_RADIUS, LOS_RADIUS,
+    5, 0,
+    TILEG_MINOR_HEALING,
+},
+
+{
     SPELL_NO_SPELL, "nonexistent spell",
     SPTYP_NONE,
     SPFLAG_TESTING,
