@@ -85,5 +85,6 @@ enum zap_type
     ZAP_FIRE_STORM,
     ZAP_MALMUTATE,
     ZAP_VILE_CLUTCH,
+    ZAP_ORBAGEDDON_EXPLOSION,
     NUM_ZAPS
 };
