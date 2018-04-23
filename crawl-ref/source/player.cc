@@ -760,6 +760,7 @@ bool player_has_feet(bool temp, bool include_mutations)
     if (you.species == SP_NAGA
         || you.species == SP_FELID
         || you.species == SP_OCTOPODE
+        || you.species == SP_HERMIT_CRAB
         || you.fishtail && temp)
     {
         return false;
@@ -5408,6 +5409,7 @@ static const string shout_verbs[] = {"shout", "yell", "scream"};
 static const string felid_shout_verbs[] = {"meow", "yowl", "caterwaul"};
 static const string frog_shout_verbs[] = {"ribbit", "croak", "bellow"};
 static const string dog_shout_verbs[] = {"bark", "howl", "screech"};
+static const string crab_shout_verbs[] = {"bubble", "bubble harder", "bubble hardest"};
 
 /**
  * What verb should be used to describe the player's shouting?
@@ -5422,6 +5424,8 @@ string player::shout_verb(bool directed) const
 
     const int screaminess = max(get_mutation_level(MUT_SCREAM) - 1, 0);
 
+    if (species == SP_HERMIT_CRAB)
+        return crab_shout_verbs[screaminess];
     if (species == SP_GNOLL)
         return dog_shout_verbs[screaminess];
     if (species == SP_BARACHI)
@@ -6746,6 +6750,21 @@ void player::slow_down(actor *foe, int str)
     ::slow_player(str);
 }
 
+int player::has_crab_claws(bool allow_tran) const
+{
+    if (allow_tran)
+    {
+        // these transformations bring claws with them
+        if (form == transformation::dragon)
+            return 3;
+
+        // blade hands override claws
+        if (form == transformation::blade_hands)
+            return 0;
+    }
+
+    return get_mutation_level(MUT_CRAB_CLAWS, allow_tran);
+}
 
 int player::has_claws(bool allow_tran) const
 {
@@ -6761,6 +6780,11 @@ int player::has_claws(bool allow_tran) const
     }
 
     return get_mutation_level(MUT_CLAWS, allow_tran);
+}
+
+bool player::has_usable_crab_claws(bool allow_tran) const
+{
+    return !slot_item(EQ_GLOVES) && has_crab_claws(allow_tran);
 }
 
 bool player::has_usable_claws(bool allow_tran) const
