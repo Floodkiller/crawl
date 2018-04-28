@@ -199,6 +199,8 @@ int player::damage_type(int)
         return DVORP_SLICING;
     else if (has_usable_claws())
         return DVORP_CLAWING;
+    else if (has_usable_pincers())
+        return DVORP_CLAWING;
     else if (has_usable_tentacles())
         return DVORP_TENTACLE;
 
@@ -487,6 +489,9 @@ static string _hand_name_singular()
     if (you.has_usable_claws())
         return "claw";
 
+    if (you.has_usable_pincers())
+        return "pincer";
+
     if (you.has_usable_tentacles())
         return "tentacle";
 
@@ -595,6 +600,8 @@ string player::arm_name(bool plural, bool *can_plural) const
         adj = "bandage-wrapped";
     else if (species == SP_OCTOPODE)
         str = "tentacle";
+    else if (species == SP_HERMIT_CRAB)
+        str = "pincer";
 
     if (form == transformation::lich)
         adj = "bony";
@@ -630,6 +637,8 @@ string player::unarmed_attack_name() const
     }
     else if (has_usable_tentacles(true))
         default_name = "Tentacles";
+    else if (has_usable_pincers(true))
+        default_name = "Pincers";
 
     return get_form()->get_uc_attack_name(default_name);
 }
