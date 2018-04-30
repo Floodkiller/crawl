@@ -1199,6 +1199,8 @@ static unique_ptr<targeter> _spell_targeter(spell_type spell, int pow,
         return make_unique<targeter_smite>(&you, range, 1, 1, false,
                                            [](const coord_def& p) -> bool {
                                               return you.pos() != p; });
+	case SPELL_DIG:
+		return make_unique<targeter_beam>(&you, range, ZAP_DIG, pow, 0, 0);
 
     default:
         break;
