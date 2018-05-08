@@ -132,6 +132,7 @@
 #include "spl-damage.h"
 #include "spl-goditem.h"
 #include "spl-other.h"
+#include "spl-selfench.h"
 #include "spl-summoning.h"
 #include "spl-transloc.h"
 #include "spl-util.h"
@@ -231,6 +232,8 @@ static void _god_greeting_message(bool game_start);
 static void _take_starting_note();
 static void _startup_hints_mode();
 static void _set_removed_types_as_identified();
+
+static bool check_time_stop();
 
 static void _startup_asserts()
 {
@@ -2192,6 +2195,8 @@ static void _update_still_winds()
 
 void world_reacts()
 {
+    if (check_time_stop()) return;
+    
     // All markers should be activated at this point.
     ASSERT(!env.markers.need_activate());
 
@@ -2315,6 +2320,38 @@ void world_reacts()
     // the loudest noise tracking for the next world_reacts cycle.
     you.los_noise_last_turn = you.los_noise_level;
     you.los_noise_level = 0;
+}
+
+bool check_time_stop()
+{
+    //need to do it this way, since delays don't set 'you.turn_is_over'
+    if (you.attribute[ATTR_TIME_STOP] == 0 || you.time_taken <= 0)
+       return false;
+    
+    bool totally_stopped = false;
+    
+    if (you.time_taken >= you.attribute[ATTR_TIME_STOP])
+    {
+        you.time_taken -= you.attribute[ATTR_TIME_STOP];
+        you.attribute[ATTR_TIME_STOP] = 0;
+    }
+    else
+    {
+        you.attribute[ATTR_TIME_STOP] -= you.time_taken;
+        you.turn_is_over = false;
+        you.time_taken = 0;
+        you.elapsed_time_at_last_input = you.elapsed_time;
+        totally_stopped = true;
+        update_turn_count();
+    }
+    you.redraw_status_lights = true;
+
+    if (you.attribute[ATTR_TIME_STOP] == 0)
+    {
+        end_time_stop(false);
+    }
+    
+    return totally_stopped;
 }
 
 static command_type _get_next_cmd()

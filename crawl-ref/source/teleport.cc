@@ -22,6 +22,7 @@
 #include "mon-place.h"
 #include "mon-tentacle.h"
 #include "random.h"
+#include "spl-selfench.h"
 #include "terrain.h"
 #include "view.h"
 
@@ -42,7 +43,7 @@ bool player::blink_to(const coord_def& dest, bool quiet)
 
     if (!quiet)
         canned_msg(MSG_YOU_BLINK);
-
+    
     stop_delay(true);
 
     const coord_def origin = pos();
@@ -51,6 +52,8 @@ bool player::blink_to(const coord_def& dest, bool quiet)
     if (!cell_is_solid(origin))
         place_cloud(CLOUD_TLOC_ENERGY, origin, 1 + random2(3), this);
 
+    end_time_stop(true);  
+        
     return true;
 }
 
