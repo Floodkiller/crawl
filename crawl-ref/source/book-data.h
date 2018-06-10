@@ -80,6 +80,7 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_SILENCE,
     SPELL_DEFLECT_MISSILES,
     SPELL_DISCORD,
+    SPELL_HASTE,
 },
 
 {   // Young Poisoner's Handbook
@@ -267,6 +268,7 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_AGONY,
     SPELL_INVISIBILITY,
     SPELL_SPELLFORGED_SERVITOR,
+    SPELL_HASTE,
 },
 #endif
 
