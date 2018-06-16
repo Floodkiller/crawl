@@ -630,6 +630,8 @@ tileidx_t tilep_species_to_base_tile(int sp, int level)
         return TILEP_BASE_VINE_STALKER;
     case SP_BARACHI:
         return TILEP_BASE_BARACHI;
+    case SP_HERMIT_CRAB:
+        return TILEP_BASE_HERMIT_CRAB;
     default:
         return TILEP_BASE_HUMAN;
     }
@@ -1046,6 +1048,16 @@ void tilep_calc_flags(const dolls_data &doll, int flag[])
     {
         flag[TILEP_PART_ARM] = TILEP_FLAG_HIDE;
     }
+    
+    else if (is_player_tile(doll.parts[TILEP_PART_BASE], TILEP_BASE_HERMIT_CRAB))
+    {
+        flag[TILEP_PART_BOOTS] = TILEP_FLAG_HIDE;
+        flag[TILEP_PART_LEG] = TILEP_FLAG_HIDE;
+        flag[TILEP_PART_ARM] = TILEP_FLAG_HIDE;
+        flag[TILEP_PART_HAIR]  = TILEP_FLAG_HIDE;
+        flag[TILEP_PART_BEARD] = TILEP_FLAG_HIDE;
+    }
+
     if (is_player_tile(doll.parts[TILEP_PART_HELM], TILEP_HELM_HORNS_CAT)
         && (!is_player_tile(doll.parts[TILEP_PART_BASE],
                             TILEP_BASE_FELID)

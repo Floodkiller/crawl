@@ -22,6 +22,16 @@ struct mutation_category_def
 static const mutation_def mut_data[] =
 {
 
+{ MUT_PINCERS, 0, 1, mutflag::good, false,
+  "pincers",
+
+  {"You have two beautiful pincers."},
+
+  {"Apotheosis of the flesh."},
+
+  {"The nadir of existence."},
+},
+
 { MUT_TOUGH_SKIN, 0, 3, mutflag::good, true,
   "tough skin",
 

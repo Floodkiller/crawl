@@ -1187,6 +1187,12 @@ bool physiology_mutation_conflict(mutation_type mutat)
         return true;
     }
 
+    // Hermit Crabs are unable to gain body slot mutations.
+    if (you.species == SP_HERMIT_CRAB && (mutat == MUT_FANGS || mutat == MUT_BEAK || mutat == MUT_ANTENNAE || mutat == MUT_HORNS || mutat == MUT_HOOVES || mutat == MUT_TALONS || mutat == MUT_CLAWS))
+    {
+        return true;
+    }
+    
     // Need tentacles to grow something on them.
     if (you.species != SP_OCTOPODE && mutat == MUT_TENTACLE_SPIKE)
         return true;
@@ -1591,6 +1597,8 @@ bool mutate(mutation_type which_mutation, const string &reason, bool failMsg,
                     hands = "front paws";
                 else if (you.species == SP_OCTOPODE)
                     hands = "tentacles";
+                else if (you.species == SP_HERMIT_CRAB)
+                    hands = "pincers";
                 else
                     break;
                 mprf(MSGCH_MUTATION, "%s",
