@@ -29,6 +29,7 @@
 #include "options.h"
 #include "orb.h"
 #include "output.h"
+#include "player.h"
 #include "prompt.h"
 #include "religion.h"
 #include "spl-book.h"
@@ -351,6 +352,17 @@ static void _remove_spell_attributes(spell_type spell)
         {
             const int orig_defl = you.missile_deflection();
             you.attribute[ATTR_DEFLECT_MISSILES] = 0;
+            mprf(MSGCH_DURATION, "You feel %s from missiles.",
+                                 you.missile_deflection() < orig_defl
+                                 ? "less protected"
+                                 : "your spell is no longer protecting you");
+        }
+        break;
+    case SPELL_REPEL_MISSILES:
+        if (you.attribute[ATTR_REPEL_MISSILES])
+        {
+            const int orig_defl = you.missile_deflection();
+            you.attribute[ATTR_REPEL_MISSILES] = 0;
             mprf(MSGCH_DURATION, "You feel %s from missiles.",
                                  you.missile_deflection() < orig_defl
                                  ? "less protected"
@@ -1139,6 +1151,17 @@ string spell_uselessness_reason(spell_type spell, bool temp, bool prevent,
         // mere corona is not enough, but divine light blocks it completely
         if (temp && (you.haloed() || !prevent && have_passive(passive_t::halo)))
             return "darkness is useless against divine light.";
+        break;
+
+    case SPELL_REPEL_MISSILES:
+        if (temp && (you.get_mutation_level(MUT_DISTORTION_FIELD) == 3
+                     || you.scan_artefacts(ARTP_RMSL, true)
+                     || you.wearing_ego(EQ_ALL_ARMOUR, SPARM_REPULSION)
+                     || you.attribute[ATTR_REPEL_MISSILES]
+                     || you.attribute[ATTR_DEFLECT_MISSILES]))
+        {
+            return "you're already repelling missiles.";
+        }
         break;
 
     case SPELL_DEFLECT_MISSILES:
