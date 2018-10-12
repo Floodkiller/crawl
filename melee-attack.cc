@@ -492,33 +492,6 @@ bool melee_attack::handle_phase_hit()
         if (!defender->alive())
             return true;
     }
-	if (attacker != defender && adjacent(defender->pos(), attack_position)
-        && attacker->alive() && defender->can_see(*attacker)
-        && !defender->cannot_act() && !defender->confused()
-        && (!defender->is_player() || (!you.duration[DUR_LIFESAVING]
-                                       && !attacker->as_monster()->neutral()))
-        && !mons_aligned(attacker, defender) // confused friendlies attacking
-        // Retaliation only works on the first attack in a round.
-        // FIXME: player's attack is -1, even for auxes
-        && effective_attack_number <= 0)
-    {
-        
-        if (defender->is_player())
-        {
-            const bool using_lbl = defender->weapon()
-                && item_attack_skill(*defender->weapon()) == SK_LONG_BLADES;
-            const bool using_fencers
-                = player_equip_unrand(UNRAND_FENCERS);
-            const int chance = using_lbl + using_fencers;
-
-            if (x_chance_in_y(chance, 3) && !is_riposte) // no ping-pong!
-                riposte();
-
-            // Retaliations can kill!
-            if (!attacker->alive())
-                return false;
-        }
-    }
     else if (defender->is_player())
     {
         // These effects (mutations right now) are only triggered when
