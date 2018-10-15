@@ -1052,7 +1052,8 @@ static string _handedness_string(const item_def &item)
     switch (you.hands_reqd(item))
     {
     case HANDS_ONE:
-        if (you.species == SP_FORMICID)
+        if (you.species == SP_FORMICID
+            || you.species == SP_ABOMINATION)
             description += "It is a weapon for one hand-pair.";
         else
             description += "It is a one handed weapon.";

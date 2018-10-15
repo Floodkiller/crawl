@@ -740,6 +740,13 @@ bool can_wear_armour(const item_def &item, bool verbose, bool ignore_temporary)
         return false;
     }
 
+    if (you.species == SP_ABOMINATION && slot == EQ_GLOVES)
+    {
+        if (verbose)
+            mprf("Your mass of tentacles won't fit in that!");
+        return false;
+    }
+
     if (species_is_draconian(you.species) && slot == EQ_BODY_ARMOUR)
     {
         if (verbose)
@@ -1227,7 +1234,8 @@ bool takeoff_armour(int item)
 static vector<equipment_type> _current_ring_types()
 {
     vector<equipment_type> ret;
-    if (you.species == SP_OCTOPODE)
+    if (you.species == SP_OCTOPODE
+        || you.species == SP_ABOMINATION)
     {
         for (int i = 0; i < 8; ++i)
         {
