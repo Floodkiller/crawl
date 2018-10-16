@@ -20,6 +20,26 @@
 static const map<species_type, species_def> species_data =
 {
 
+{ SP_ABOMINATION, {
+    "Ab",
+    "Abomination", nullptr, nullptr,
+    SPF_NONE,
+    1, 1, 1, 0,
+    MONS_ABOMINATION_SMALL,
+    HT_WATER, US_ALIVE, SIZE_MEDIUM,
+    10, 5, 4, // 19
+    { STAT_STR, STAT_DEX }, 5,
+    { { MUT_HEAT_VULNERABILITY, 2, 1 }, { MUT_REGENERATION, 1, 1 }, },
+    { "You have a mass of tentacles for a left arm.", "You have two strong right arms.", "Your body has no innate resistence to magic.", },
+    { "tentacle arms", "two strong arms", "no magic resistence", },
+    { JOB_FIGHTER, JOB_HUNTER,
+      JOB_BERSERKER, JOB_ABYSSAL_KNIGHT,
+      JOB_ARCANE_MARKSMAN,
+      JOB_NECROMANCER, JOB_AIR_ELEMENTALIST },
+    { SK_AXES, SK_LONG_BLADES, SK_STAVES,
+      SK_CROSSBOWS },
+} },
+
 { SP_BARACHI, {
     "Ba",
     "Barachi", "Barachian", "Frog",

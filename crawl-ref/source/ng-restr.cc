@@ -36,7 +36,8 @@ static bool _banned_combination(job_type job, species_type species)
             || job == JOB_ABYSSAL_KNIGHT
             || job == JOB_DEATH_KNIGHT
             || job == JOB_MONK
-            || job == JOB_PRIEST)
+            || job == JOB_PRIEST
+            || job == JOB_JELLIFIER)
         {
             return true;
         }
@@ -60,7 +61,8 @@ static bool _banned_combination(job_type job, species_type species)
         break;
     }
 
-    if (job == JOB_TRANSMUTER
+    if ((job == JOB_TRANSMUTER
+        || job == JOB_JELLIFIER)
         && (species_undead_type(species) == US_UNDEAD
            || species_undead_type(species) == US_HUNGRY_DEAD))
     {
@@ -134,7 +136,7 @@ char_choice_restriction weapon_restriction(weapon_type wpn,
     }
 
     if (wpn == WPN_QUARTERSTAFF && ng.job != JOB_GLADIATOR
-        && !(ng.job == JOB_FIGHTER && ng.species == SP_FORMICID))
+        && !(ng.job == JOB_FIGHTER && ng.species == SP_FORMICID || ng.species == SP_ABOMINATION))
     {
         return CC_BANNED;
     }

@@ -471,8 +471,8 @@ static int _acquirement_weapon_subtype(bool divine, int & /*quantity*/)
     // Let's guess the percentage of shield use the player did, this is
     // based on empirical data where pure-shield MDs get skills like 17 sh
     // 25 m&f and pure-shield Spriggans 7 sh 18 m&f. Pretend formicid
-    // shield skill is 0 so they always weight towards 2H.
-    const int shield_sk = you.species == SP_FORMICID
+    // and abomination shield skill is 0 so they always weight towards 2H.
+    const int shield_sk = (you.species == SP_FORMICID || you.species == SP_ABOMINATION)
         ? 0
         : _skill_rdiv(SK_SHIELDS) * species_apt_factor(SK_SHIELDS);
     const int want_shield = min(2 * shield_sk, best_sk) + 10;
@@ -579,7 +579,7 @@ static int _acquirement_jewellery_subtype(bool /*divine*/, int & /*quantity*/)
 
     // Rings are (number of usable rings) times as common as amulets.
     // XXX: unify this with the actual check for ring slots
-    const int ring_num = (you.species == SP_OCTOPODE ? 8 : 2)
+    const int ring_num = ((you.species == SP_OCTOPODE || you.species == SP_ABOMINATION) ? 8 : 2)
                        - (you.get_mutation_level(MUT_MISSING_HAND) ? 1 : 0);
 
     // Try ten times to give something the player hasn't seen.

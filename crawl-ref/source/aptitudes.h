@@ -1642,5 +1642,44 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_HERMIT_CRAB,           SK_POISON_MAGIC,    1),
     APT(SP_HERMIT_CRAB,           SK_INVOCATIONS,     -1),
     APT(SP_HERMIT_CRAB,           SK_EVOCATIONS,      -1),
+
+        // SP_ABOMINATION
+    APT(SP_ABOMINATION,           SK_FIGHTING,        0),
+    APT(SP_ABOMINATION,           SK_SHORT_BLADES,    -2),
+    APT(SP_ABOMINATION,           SK_LONG_BLADES,     -1),
+    APT(SP_ABOMINATION,           SK_AXES,            -1),
+    APT(SP_ABOMINATION,           SK_MACES_FLAILS,    -2),
+    APT(SP_ABOMINATION,           SK_POLEARMS,        -2),
+    APT(SP_ABOMINATION,           SK_STAVES,          -1),
+    APT(SP_ABOMINATION,           SK_SLINGS,          -2),
+    APT(SP_ABOMINATION,           SK_BOWS,            -2),
+    APT(SP_ABOMINATION,           SK_CROSSBOWS,       -1),
+    APT(SP_ABOMINATION,           SK_THROWING,        -2),
+    APT(SP_ABOMINATION,           SK_ARMOUR,          -1),
+    APT(SP_ABOMINATION,           SK_DODGING,         -2),
+    APT(SP_ABOMINATION,           SK_STEALTH,         -5),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_ABOMINATION,           SK_STABBING,      UNUSABLE_SKILL),
+#endif
+    APT(SP_ABOMINATION,           SK_SHIELDS,         -1),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_ABOMINATION,           SK_TRAPS,         UNUSABLE_SKILL),
+#endif
+    APT(SP_ABOMINATION,           SK_UNARMED_COMBAT,  -2),
+    APT(SP_ABOMINATION,           SK_SPELLCASTING,    -1),
+    APT(SP_ABOMINATION,           SK_CONJURATIONS,    -2),
+    APT(SP_ABOMINATION,           SK_HEXES,           -2),
+    APT(SP_ABOMINATION,           SK_CHARMS,          -2),
+    APT(SP_ABOMINATION,           SK_SUMMONINGS,      -2),
+    APT(SP_ABOMINATION,           SK_NECROMANCY,      0),
+    APT(SP_ABOMINATION,           SK_TRANSLOCATIONS,  0),
+    APT(SP_ABOMINATION,           SK_TRANSMUTATIONS,  -1),
+    APT(SP_ABOMINATION,           SK_FIRE_MAGIC,      -3),
+    APT(SP_ABOMINATION,           SK_ICE_MAGIC,       -2),
+    APT(SP_ABOMINATION,           SK_AIR_MAGIC,       0),
+    APT(SP_ABOMINATION,           SK_EARTH_MAGIC,     -2),
+    APT(SP_ABOMINATION,           SK_POISON_MAGIC,    -2),
+    APT(SP_ABOMINATION,           SK_INVOCATIONS,     -2),
+    APT(SP_ABOMINATION,           SK_EVOCATIONS,      -2),
 };
 COMPILE_CHECK(ARRAYSZ(species_skill_aptitudes) == NUM_SPECIES * NUM_SKILLS);
