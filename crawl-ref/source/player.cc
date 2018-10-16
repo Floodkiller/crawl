@@ -719,7 +719,7 @@ maybe_bool you_can_wear(equipment_type eq, bool temp)
     case EQ_RING_FIVE:
     case EQ_RING_SIX:
     case EQ_RING_SEVEN:
-        return (you.species == SP_OCTOPODE || you.species != SP_ABOMINATION) ? MB_TRUE : MB_FALSE;
+        return (you.species == SP_OCTOPODE || you.species == SP_ABOMINATION) ? MB_TRUE : MB_FALSE;
 
     case EQ_WEAPON:
     case EQ_STAFF:
