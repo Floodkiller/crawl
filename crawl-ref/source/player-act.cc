@@ -341,7 +341,8 @@ item_def *player::weapon(int /* which_attack */) const
 // Give hands required to wield weapon.
 hands_reqd_type player::hands_reqd(const item_def &item, bool base) const
 {
-    if (species == SP_FORMICID)
+    if (species == SP_FORMICID
+        || species == SP_ABOMINATION)
         return HANDS_ONE;
     else
         return actor::hands_reqd(item, base);

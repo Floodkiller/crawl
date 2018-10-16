@@ -492,7 +492,7 @@ void change_species_to(species_type sp)
 
     update_vision_range(); // for Ba, and for DS with Nightstalker
 
-    if ((old_sp == SP_OCTOPODE) != (sp == SP_OCTOPODE))
+    if ((old_sp == SP_OCTOPODE || old_sp == SP_ABOMINATION) != (sp == SP_OCTOPODE || sp == SP_ABOMINATION))
     {
         _swap_equip(EQ_LEFT_RING, EQ_RING_ONE);
         _swap_equip(EQ_RIGHT_RING, EQ_RING_TWO);
