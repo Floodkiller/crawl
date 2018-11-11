@@ -660,7 +660,7 @@ static const missile_def Missile_prop[] =
     { MI_SLING_BULLET,  "sling bullet",  4, 8,  5,  false },
     { MI_JAVELIN,       "javelin",      10, 20, 8,  true  },
     { MI_THROWING_NET,  "throwing net",  0, 0,  30, true  },
-    { MI_PIE,           "pie",           0, 20, 6,  true  },
+	{ MI_PIE,			"pie",			0, 20, 6, 	true  },
     { MI_TOMAHAWK,      "tomahawk",      6, 20, 5,  true  },
 };
 
@@ -2003,10 +2003,13 @@ bool item_skills(const item_def &item, set<skill_type> &skills)
     }
 
     // Shields and abilities on armours allow training as long as your species
-    // can wear them.
+    // can wear them. Carcinia get an exception.
     if (item.base_type == OBJ_ARMOUR && can_wear_armour(item, false, true))
     {
         if (is_shield(item))
+            skills.insert(SK_SHIELDS);
+        
+        if (you.get_mutation_level(MUT_MASSIVE_PINCER))
             skills.insert(SK_SHIELDS);
 
         if (gives_ability(item))

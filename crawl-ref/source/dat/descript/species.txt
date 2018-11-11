@@ -160,3 +160,38 @@ Vine Stalker
 Frail symbionts, Vine Stalkers cannot regain health from devices or potions.
 Their magical reserves absorb damage, and they pack a magic-restoring bite.
 %%%%
+Mire Hag
+
+Twisted by old curses bubbling into the surface world, Hags have
+sharp curved nails and an affinity for distasteful magics.
+%%%%
+Yeti
+
+Yetis possess a primal connection to storm and snow, but they
+are surprisingly comfortable with the weapons of civilization.
+%%%%
+Carcine
+
+Unintended issue of a mad wizard's crimes against man and god,
+Carcinia bear a sturdy claw large enough to be used as a shield.
+%%%%
+Dwarrow
+
+Short, sturdy mountain dwarfs, Dwarrows are fond of axes, hammers,
+and artifice. Legendarily dense when it comes to non-earth magic.
+%%%%
+Dvergr
+
+Dvergar are obsidian-skinned dwarfs from deep below the earth.
+These fey dwarves use magic devices with an unparalleled knack.
+%%%%
+Madhkur
+
+Dwarffolk were fashioned from worms gnawing the depths. Their
+conscious dead, the Madhkur, fear regressing back to that state.
+%%%%
+Grey Elf
+
+The Grey Elves have an affinity for their natural surroundings
+that their more noble brethren lack, practically and magically.
+%%%%

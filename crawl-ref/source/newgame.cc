@@ -179,31 +179,35 @@ static const species_type species_order[] =
 {
     // comparatively human-like looks
     SP_HUMAN,          SP_HIGH_ELF,
-    SP_DEEP_ELF,       SP_DEEP_DWARF,
-    SP_HILL_ORC,       SP_SLUDGE_ELF,
-    SP_PROMETHEAN,     SP_LAVA_ORC,
+    SP_DEEP_ELF,       SP_GREY_ELF,
+    SP_SLUDGE_ELF,     SP_DEEP_DWARF,
+    SP_HILL_ORC,       SP_MIRE_HAG,
+    SP_PROMETHEAN,     SP_DWARROW,
     // small species
     SP_HALFLING,       SP_KOBOLD,
-    SP_SPRIGGAN,       SP_FAERIE_DRAGON,
+    SP_SPRIGGAN,       SP_DVERGR,
     // large species
     SP_OGRE,           SP_TROLL,
+    SP_YETI,
     // significantly different body type from human ("monstrous")
     SP_NAGA,           SP_CENTAUR,
     SP_MERFOLK,        SP_MINOTAUR,
     SP_TENGU,          SP_BASE_DRACONIAN,
     SP_GARGOYLE,       SP_FORMICID,
     SP_BARACHI,        SP_GNOLL,
-    SP_HERMIT_CRAB,
+    SP_HERMIT_CRAB,    SP_CARCINE,
+    SP_DJINNI,
     // mostly human shape but made of a strange substance
     SP_VINE_STALKER,
     // celestial species
-    SP_DEMONSPAWN,    SP_DJINNI,
+    SP_DEMONSPAWN,
     // undead species
     SP_MUMMY,          SP_GHOUL,
-    SP_VAMPIRE,
+    SP_VAMPIRE,        SP_MADHKUR,
     // not humanoid at all
     SP_FELID,          SP_OCTOPODE,
 };
+
 COMPILE_CHECK(ARRAYSZ(species_order) <= NUM_SPECIES);
 
 bool is_starting_species(species_type species)
@@ -958,26 +962,30 @@ static species_group species_groups[] =
             SP_TROLL,
             SP_GHOUL,
             SP_HERMIT_CRAB,
+            SP_CARCINE,
             SP_FAERIE_DRAGON,
+            SP_DWARROW,
         }
     },
     {
+        
         "Intermediate",
         coord_def(25, 0),
         20,
         {
             SP_HUMAN,
             SP_KOBOLD,
-            SP_DEMONSPAWN,
-            SP_SLUDGE_ELF,
             SP_SPRIGGAN,
-            SP_TENGU,
+            SP_DEMONSPAWN,
+            SP_MIRE_HAG,
             SP_HIGH_ELF,
             SP_DEEP_ELF,
-            SP_OGRE,
-            SP_DEEP_DWARF,
+            SP_GREY_ELF,
+            SP_DVERGR,
+            SP_MADHKUR,
             SP_GNOLL,
-            SP_LAVA_ORC,
+            SP_YETI,
+            SP_DEEP_DWARF,
         }
     },
     {
@@ -985,6 +993,9 @@ static species_group species_groups[] =
         coord_def(50, 0),
         20,
         {
+            SP_SLUDGE_ELF,
+            SP_TENGU,
+            SP_OGRE,
             SP_VINE_STALKER,
             SP_VAMPIRE,
             SP_PROMETHEAN,

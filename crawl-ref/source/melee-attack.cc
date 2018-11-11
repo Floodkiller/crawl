@@ -1078,43 +1078,43 @@ public:
 
 class AuxPunch: public AuxAttackType
 {
-public:
+    public:
     AuxPunch()
     : AuxAttackType(5, "punch") { };
-
+    
     int get_damage() const override
     {
         const int base_dam = damage + you.skill_rdiv(SK_UNARMED_COMBAT, 1, 2);
-
+        
         if (you.form == transformation::blade_hands)
-            return base_dam + 6;
-
+        return base_dam + 6;
+        
+        if (you.get_mutation_level(MUT_MASSIVE_PINCER))
+        return base_dam + you.get_mutation_level(MUT_MASSIVE_PINCER) * 3;
+        
         if (you.has_usable_claws())
-            return base_dam + roll_dice(you.has_claws(), 3);
-
-        if (you.has_usable_pincers())
-            return base_dam + roll_dice(you.has_pincers(), 4);
-
+        return base_dam + roll_dice(you.has_claws(), 3);
+        
         return base_dam;
     }
-
+    
     string get_name() const override
     {
         if (you.form == transformation::blade_hands)
-            return "slash";
-
+        return "slash";
+        
+        if (you.get_mutation_level(MUT_MASSIVE_PINCER))
+        return "crush";
+        
         if (you.has_usable_claws())
-            return "claw";
-
-        if (you.has_usable_pincers())
-            return "claw";
-
+        return "claw";
+        
         if (you.has_usable_tentacles())
-            return "tentacle-slap";
-
+        return "tentacle-slap";
+        
         return name;
     }
-
+    
 };
 
 class AuxBite: public AuxAttackType

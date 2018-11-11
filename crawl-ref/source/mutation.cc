@@ -143,6 +143,7 @@ static const int conflict[][3] =
     { MUT_BERSERK,             MUT_CLARITY,                 1},
     { MUT_FAST,                MUT_SLOW,                    1},
     { MUT_FANGS,               MUT_BEAK,                   -1},
+    { MUT_MASSIVE_PINCER,      MUT_MISSING_HAND,           -1}, // new carcine content
     { MUT_ANTENNAE,            MUT_HORNS,                  -1}, // currently overridden by physiology_mutation_conflict
     { MUT_HOOVES,              MUT_TALONS,                 -1}, // currently overridden by physiology_mutation_conflict
     { MUT_TRANSLUCENT_SKIN,    MUT_CAMOUFLAGE,             -1},
@@ -1288,7 +1289,7 @@ static int _body_covered()
 
 bool physiology_mutation_conflict(mutation_type mutat)
 {
-    // If demonspawn, and mutat is a scale, see if they were going
+    // If Demonspawn, and mutation is a scale, see if they were going
     // to get it sometime in the future anyway; otherwise, conflict.
     if (you.species == SP_DEMONSPAWN && _is_covering(mutat)
         && find(_all_scales, _all_scales+ARRAYSZ(_all_scales), mutat) !=
@@ -1298,6 +1299,11 @@ bool physiology_mutation_conflict(mutation_type mutat)
                        [=](const player::demon_trait &t) {
                            return t.mutation == mutat;});
     }
+    
+    // If a Carcine loses their offhand arm they cant regrow the pincer.
+
+    if (you.get_mutation_level(MUT_MISSING_HAND) && mutat == MUT_MASSIVE_PINCER)
+        return true;
 
     // Strict 3-scale limit.
     if (_is_covering(mutat) && _body_covered() >= 3)

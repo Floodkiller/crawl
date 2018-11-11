@@ -134,17 +134,26 @@ item_def* newgame_make_item(object_class_type base,
 
     // If the character is restricted in wearing the requested armour,
     // hand out a replacement instead.
+    
     if (item.base_type == OBJ_ARMOUR
         && !can_wear_armour(item, false, false))
     {
         if (item.sub_type == ARM_HELMET || item.sub_type == ARM_HAT)
-            item.sub_type = ARM_HAT;
+        item.sub_type = ARM_HAT;
         else if (item.sub_type == ARM_BUCKLER)
-            item.sub_type = ARM_SHIELD;
+        item.sub_type = ARM_SHIELD;
         else if (is_shield(item))
-            item.sub_type = ARM_BUCKLER;
+        item.sub_type = ARM_BUCKLER;
         else
-            item.sub_type = ARM_ROBE;
+        item.sub_type = ARM_ROBE;
+    }
+    
+    // Carcinia are prevented from starting with an extra shield.
+    if (you.species == SP_CARCINE
+    && (item.sub_type == ARM_SHIELD || item.sub_type == ARM_BUCKLER))
+    {
+        item = item_def();
+        return nullptr;
     }
 
     // Make sure we didn't get a stack of shields or such nonsense.
@@ -242,21 +251,21 @@ static skill_type _setup_archaeologist_crate(item_def& crate)
 {
     item_def unrand;
     int type;
-    const vector<int> unrands = archaeologist_unrands();
-    
+	const vector<int> unrands = archaeologist_unrands();
+	
     do {
         unrand = item_def();
         type = unrands[random2(unrands.size())];
         if (!make_item_unrandart(unrand, type))
             continue;
     } 
-    while ((!you.could_wield(unrand) && !can_wear_armour(unrand, false, true)));
-    
+	while ((!you.could_wield(unrand) && !can_wear_armour(unrand, false, true)));
+	
     dprf("Initializing archaeologist crate with %s", 
-         unrand.name(DESC_A).c_str());
-        
+		unrand.name(DESC_A).c_str());
+		
     crate.props[ARCHAEOLOGIST_CRATE_ITEM] = type;
-    
+	
     // Handle items unlocked through interesting skills.
     // Jewellery only happens on felids.
     switch (type)
@@ -318,14 +327,14 @@ static void _setup_archaeologist()
     skill_type manual_skill = SK_NONE;
     for (uint8_t i = 0; i < ENDOFPACK; i++)
         if (you.inv[i].defined() 
-            && you.inv[i].is_type(OBJ_MISCELLANY, MISC_ANCIENT_CRATE))
-        
+			&& you.inv[i].is_type(OBJ_MISCELLANY, MISC_ANCIENT_CRATE))
+		
             manual_skill = _setup_archaeologist_crate(you.inv[i]);
-            
+			
     for (uint8_t i = 0; i < ENDOFPACK; i++)
         if (you.inv[i].defined() 
-            && you.inv[i].is_type(OBJ_MISCELLANY, MISC_DUSTY_TOME))
-        
+			&& you.inv[i].is_type(OBJ_MISCELLANY, MISC_DUSTY_TOME))
+		
             you.inv[i].props[ARCHAEOLOGIST_TOME_SKILL] = manual_skill;
 }
 
@@ -389,17 +398,17 @@ static void _give_items_skills(const newgame_def& ng)
         you.religion = GOD_ZIN;
         you.piety = 45;
         break;
-    
-    case JOB_HEALER:
-        you.religion = GOD_ELYVILON;
-        you.piety = 55;
+	
+	case JOB_HEALER:
+		you.religion = GOD_ELYVILON;
+		you.piety = 55;
         break;
 
-    case JOB_JESTER:
-        you.religion = GOD_NEMELEX_XOBEH;
-        you.piety = 25;
-        you.penance[GOD_XOM] = 50;
-        break;
+	case JOB_JESTER:
+		you.religion = GOD_NEMELEX_XOBEH;
+		you.piety = 25;
+		you.penance[GOD_XOM] = 50;
+		break;
 
     case JOB_WANDERER:
         create_wanderer();
@@ -443,11 +452,11 @@ static void _give_items_skills(const newgame_def& ng)
         if (!you_worship(GOD_XOM))
             you.piety_max[you.religion] = you.piety;
     }
-    
+	
     if (you.char_class == JOB_ARCHAEOLOGIST)
-    {
+	{
         _setup_archaeologist();
-    }
+	}
 }
 
 static void _give_starting_food()

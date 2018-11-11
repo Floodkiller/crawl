@@ -785,6 +785,145 @@ static const map<species_type, species_def> species_data =
       JOB_FIRE_ELEMENTALIST, JOB_ARTIFICER },
     { SK_LONG_BLADES, SK_MACES_FLAILS, SK_POLEARMS, SK_STAVES, SK_CROSSBOWS },
 } },
+    
+{ SP_MIRE_HAG, {
+    "MH",
+    "Mire Hag", "Haggish", "Hag",
+    SPF_NONE,
+    0, -1, 1, 4,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_ALIVE, SIZE_MEDIUM,
+    8, 10, 8, // 26
+    { STAT_STR, STAT_INT, STAT_DEX }, 4,
+    { { MUT_CLAWS, 1, 1 }, { MUT_DEFORMED, 1, 1 },
+      { MUT_POISON_RESISTANCE, 1, 1 }, },
+    {},
+    {},
+    { JOB_ASSASSIN, JOB_ARTIFICER, JOB_MONK, JOB_TRANSMUTER,
+      JOB_WIZARD, JOB_CONJURER, JOB_NECROMANCER, JOB_SUMMONER,
+      JOB_ENCHANTER, JOB_EARTH_ELEMENTALIST, JOB_VENOM_MAGE },
+    { SK_SHORT_BLADES, SK_UNARMED_COMBAT, SK_STAVES, SK_SLINGS,
+      SK_BOWS, SK_CROSSBOWS },
+} },
+
+{ SP_YETI, {
+    "YE",
+    "Yeti", "Yetine", "Yetine",
+    SPF_NONE,
+    0, 2, -1, 4,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_ALIVE, SIZE_LARGE,
+    10, 9, 7, // 26
+    { STAT_STR, STAT_INT }, 4,
+    { { MUT_SHAGGY_FUR, 3, 1 }, { MUT_WILD_MAGIC, 1, 1 }, },
+    {},
+    {},
+    { JOB_FIGHTER, JOB_GLADIATOR, JOB_HUNTER, JOB_ARTIFICER,
+      JOB_BERSERKER, JOB_SKALD, JOB_WARPER, JOB_ARCANE_MARKSMAN,
+      JOB_CONJURER, JOB_ICE_ELEMENTALIST, JOB_AIR_ELEMENTALIST, },
+    { SK_LONG_BLADES, SK_AXES, SK_POLEARMS, SK_STAVES, SK_BOWS,
+      SK_CROSSBOWS, SK_THROWING },
+} },
+
+{ SP_CARCINE, {
+    "CA",
+    "Carcine", "Carcinic", "Carcinic",
+    SPF_NO_HAIR,
+    0, 1, -1, 3,
+    MONS_HUMAN,    // placeholder
+    HT_WATER, US_ALIVE, SIZE_MEDIUM,
+    10, 7, 8, // 25
+    { STAT_STR, STAT_DEX }, 3,
+    { { MUT_TOUGH_SKIN, 1, 1 }, { MUT_TOUGH_SKIN, 1, 7 },
+      { MUT_TOUGH_SKIN, 1, 14 }, { MUT_MASSIVE_PINCER, 1, 1 },
+      { MUT_MASSIVE_PINCER, 1, 7 }, { MUT_MASSIVE_PINCER, 1, 14 },
+      { MUT_ANTENNAE, 2, 1 }, },
+    {},
+    {},
+    { JOB_FIGHTER, JOB_GLADIATOR, JOB_MONK, JOB_ARTIFICER,
+      JOB_BERSERKER, JOB_ABYSSAL_KNIGHT, JOB_SKALD, JOB_WIZARD,
+      JOB_CONJURER, JOB_ICE_ELEMENTALIST, JOB_AIR_ELEMENTALIST },
+    { SK_LONG_BLADES, SK_AXES, SK_MACES_FLAILS, SK_POLEARMS,
+      SK_UNARMED_COMBAT, SK_SLINGS, SK_THROWING },
+} },
+
+{ SP_DWARROW, {
+    "DW",
+    "Dwarrow", "Dwarfish", "Dwarf",
+    SPF_NONE,
+    0, 2, -1, 4,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_ALIVE, SIZE_MEDIUM,
+    10, 8, 6, // 24
+    { STAT_STR }, 4,
+    { { MUT_MAGIC_RESISTANCE, 1, 1 }, { MUT_PASSIVE_MAPPING, 1, 7 },
+      { MUT_PASSIVE_MAPPING, 1, 14 }, { MUT_PASSIVE_MAPPING, 1, 21 }, },
+    {},
+    {},
+    { JOB_FIGHTER, JOB_HUNTER, JOB_MONK, JOB_ARTIFICER,
+      JOB_BERSERKER, JOB_ABYSSAL_KNIGHT, JOB_PRIEST,
+      JOB_FIRE_ELEMENTALIST, JOB_EARTH_ELEMENTALIST, },
+    { SK_LONG_BLADES, SK_AXES, SK_MACES_FLAILS, SK_SLINGS,
+      SK_CROSSBOWS },
+} },
+
+{ SP_DVERGR, {
+    "DV",
+    "Dvergr", "Dwarfish", "Dwarf",
+    SPF_NONE,
+    0, 0, 0, 5,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_ALIVE, SIZE_SMALL,
+    8, 9, 9, // 26
+    { STAT_STR, STAT_INT, STAT_DEX }, 3,
+    { { MUT_MP_WANDS, 2, 1 }, { MUT_PASSIVE_MAPPING, 1, 1 },
+      { MUT_PASSIVE_MAPPING, 1, 9 }, { MUT_PASSIVE_MAPPING, 1, 18 }, },
+    {},
+    {},
+    { JOB_FIGHTER, JOB_GLADIATOR, JOB_HUNTER, JOB_ASSASSIN,
+      JOB_ARTIFICER, JOB_SKALD, JOB_WARPER, JOB_ARCANE_MARKSMAN,
+      JOB_CONJURER, JOB_FIRE_ELEMENTALIST, JOB_EARTH_ELEMENTALIST, },
+    { SK_SHORT_BLADES, SK_LONG_BLADES, SK_AXES, SK_CROSSBOWS,
+      SK_THROWING },
+} },
+
+{ SP_MADHKUR, {
+    "MA",
+    "Madkhur", "Dwarfish", "Dwarf",
+    SPF_NONE,
+    0, 0, 0, 4,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_UNDEAD, SIZE_MEDIUM,
+    10, 7, 9, // 26
+    { STAT_STR, STAT_INT }, 4,
+    { { MUT_DETERIORATION, 1, 1 }, { MUT_NO_REGENERATION, 1, 1 },
+      { MUT_PASSIVE_MAPPING, 1, 1 }, { MUT_PASSIVE_MAPPING, 1, 9 },
+      { MUT_PASSIVE_MAPPING, 1, 18 }, },
+    { "Your petrified flesh is resistant to damage.",
+      "You can heal by cannibalizing your own essence." },
+    { "damage resistance", "heal wounds" },
+    { JOB_FIGHTER, JOB_HUNTER, JOB_BERSERKER, JOB_NECROMANCER,
+      JOB_EARTH_ELEMENTALIST },
+    { SK_MACES_FLAILS, SK_AXES, SK_LONG_BLADES, SK_CROSSBOWS, SK_SLINGS },
+} },
+
+{ SP_GREY_ELF, {
+    "GE",
+    "Grey Elf", "Elven", "Elf",
+    SPF_ELVEN,
+    0, -1, 1, 4,
+    MONS_ELF,
+    HT_LAND, US_ALIVE, SIZE_MEDIUM,
+    8, 9, 10, // 27
+    { STAT_INT, STAT_DEX }, 4,
+    {},
+    {},
+    {},
+    { JOB_WIZARD, JOB_CONJURER, JOB_SUMMONER, JOB_NECROMANCER,
+      JOB_FIRE_ELEMENTALIST, JOB_ICE_ELEMENTALIST, JOB_AIR_ELEMENTALIST,
+      JOB_EARTH_ELEMENTALIST, JOB_VENOM_MAGE },
+    { SK_SHORT_BLADES, SK_STAVES, SK_BOWS },
+} },
 
 // Ideally this wouldn't be necessary...
 { SP_UNKNOWN, { // Line 1: enum

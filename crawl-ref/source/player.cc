@@ -2405,6 +2405,18 @@ int player_shield_class()
     }
 
     // mutations
+    
+    if (you.get_mutation_level(MUT_MASSIVE_PINCER))
+    {
+        shield += (you.get_mutation_level(MUT_MASSIVE_PINCER) * 4) * 50;
+        shield += (you.get_mutation_level(MUT_MASSIVE_PINCER) * 4) *
+            (you.skill(SK_SHIELDS, 5) / 2);
+        shield += you.skill(SK_SHIELDS, 38) + min(you.skill(SK_SHIELDS, 38), 3 * 38);
+        
+        int stat = (you.dex() * 19 + you.strength() * 19) *            ((you.get_mutation_level(MUT_MASSIVE_PINCER) * 4) + 13) / 26;
+        shield += stat;
+    }
+    
     // +4, +6, +8 (displayed values)
     shield += (you.get_mutation_level(MUT_LARGE_BONE_PLATES) > 0
                ? you.get_mutation_level(MUT_LARGE_BONE_PLATES) * 400 + 400
@@ -3112,8 +3124,8 @@ void level_change(bool skip_attribute_increase)
 
         learned_something_new(HINT_NEW_LEVEL);
     }
-    
-    if (you.char_class == JOB_ARCHAEOLOGIST && you.experience_level >= 3)
+	
+	if (you.char_class == JOB_ARCHAEOLOGIST && you.experience_level >= 3)
     {
         int tome_index = -1;
         for (int i = 0; i < ENDOFPACK; i++)
@@ -3123,8 +3135,8 @@ void level_change(bool skip_attribute_increase)
             archaeologist_read_tome(you.inv[tome_index]);
         else if(!you.props.exists(ARCHAEOLOGIST_TRIGGER_TOME_ON_PICKUP))
             mprf("You suddenly remember the dusty tome you brought into the dungeon! "
-                 "You feel able to decipher it now. "
-                 "If only you could remember where you put it..."); 
+				 "You feel able to decipher it now. "
+				 "If only you could remember where you put it..."); 
         you.props[ARCHAEOLOGIST_TRIGGER_TOME_ON_PICKUP] = true;
     }
 
@@ -4265,9 +4277,9 @@ bool player_regenerates_hp()
 
 bool player_regenerates_mp()
 {
-    // Don't let DD use guardian spirit for free HP, since their
+    // Don't let DD (or MA) use guardian spirit for free HP, since their
     // damage shaving is enough. (due, dpeg)
-    if (you.spirit_shield() && you.species == SP_DEEP_DWARF)
+    if (you.spirit_shield() && you.species == SP_DEEP_DWARF || you.species == SP_MADHKUR)
         return false;
     // Pakellas blocks MP regeneration.
     if (have_passive(passive_t::no_mp_regen) || player_under_penance(GOD_PAKELLAS))
@@ -4513,7 +4525,7 @@ int get_player_poisoning()
     {
         // Approximate the effect of damage shaving by giving the first
         // 25 points of poison damage for 'free'
-        if (you.species == SP_DEEP_DWARF)
+        if (you.species == SP_DEEP_DWARF || you.species == SP_MADHKUR)
             return max(0, (you.duration[DUR_POISONING] / 1000) - 25);
         else
             return you.duration[DUR_POISONING] / 1000;
@@ -4589,7 +4601,7 @@ void handle_player_poison(int delay)
     // of poison. Stronger poison will do the same damage as for non-DD
     // until it goes below the threshold, which is a bit weird, but
     // so is damage shaving.
-    if (you.species == SP_DEEP_DWARF && you.duration[DUR_POISONING] - decrease < 25000)
+    if ((you.species == SP_DEEP_DWARF|| you.species == SP_MADHKUR) && you.duration[DUR_POISONING] - decrease < 25000)
     {
         dmg = (you.duration[DUR_POISONING] / 1000)
             - (25000 / 1000);
@@ -5713,6 +5725,7 @@ static const string felid_shout_verbs[] = {"meow", "yowl", "caterwaul"};
 static const string frog_shout_verbs[] = {"ribbit", "croak", "bellow"};
 static const string dog_shout_verbs[] = {"bark", "howl", "screech"};
 static const string crab_shout_verbs[] = {"bubble", "gurgle", "foam"};
+static const string hag_shout_verbs[] = {"titter", "cackle", "screech"};
 
 /**
  * What verb should be used to describe the player's shouting?
@@ -5729,6 +5742,10 @@ string player::shout_verb(bool directed) const
 
     if (species == SP_HERMIT_CRAB)
         return crab_shout_verbs[screaminess];
+    if (species == SP_CARCINE)
+        return crab_shout_verbs[screaminess];
+    if (species == SP_MIRE_HAG)
+        return hag_shout_verbs[screaminess];
     if (species == SP_GNOLL)
         return dog_shout_verbs[screaminess];
     if (species == SP_BARACHI)

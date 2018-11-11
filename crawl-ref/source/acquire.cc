@@ -181,6 +181,13 @@ static armour_type _acquirement_armour_for_slot(equipment_type slot_type,
                 return random_choose(ARM_HELMET, ARM_HAT);
             return ARM_HAT;
         case EQ_SHIELD:
+            switch (you.species)
+            {
+                case SP_CARCINE:
+                    return random_choose(ARM_CLOAK, ARM_SCARF, ARM_BOOTS, ARM_HAT);
+                default:
+                    return ARM_SHIELD;
+            }
             return _acquirement_shield_type();
         case EQ_BODY_ARMOUR:
             return _acquirement_body_armour(divine);
@@ -556,7 +563,7 @@ static int _acquirement_missile_subtype(bool /*divine*/, int & /*quantity*/)
 
             missile_weights.emplace_back(MI_TOMAHAWK, 50);
             missile_weights.emplace_back(MI_NEEDLE, 75);
-            missile_weights.emplace_back(MI_PIE, 25);
+			missile_weights.emplace_back(MI_PIE, 25);
 
             if (you.body_size() >= SIZE_MEDIUM)
                 missile_weights.emplace_back(MI_JAVELIN, 100);

@@ -13,7 +13,7 @@ enum mutation_type
     MUT_STINGER,
     MUT_TALONS,         // feet
     MUT_TENTACLE_SPIKE, // Octopode only.
-    MUT_PINCERS,     // Hermit Crab only.
+    MUT_PINCERS,        // Hermit Crab only.
 
     // scales
     MUT_DISTORTION_FIELD,
@@ -226,6 +226,7 @@ enum mutation_type
     MUT_BATTLESPHERE,
     MUT_SONG_OF_SLAYING,
     MUT_DEFLECT_MISSILES,
+    MUT_MASSIVE_PINCER, // Carcine only.
     NUM_MUTATIONS,
     CATEGORY_MUTATIONS,
     RANDOM_MUTATION = CATEGORY_MUTATIONS,
