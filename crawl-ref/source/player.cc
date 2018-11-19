@@ -1087,7 +1087,7 @@ static int _player_bonus_regen()
 
     // Trog's Hand is handled separately so that it will bypass slow
     // regeneration, and it overrides the spell.
-    if (you.duration[DUR_REGENERATION]
+    if (you.permabuffs[MUT_REGEN_SPELL]
         && !you.duration[DUR_TROGS_HAND])
     {
         rr += 100;
@@ -1268,7 +1268,7 @@ int player_hunger_rate(bool temp)
         hunger += 3;            // in addition to the +3 for fast metabolism
 
     if (temp
-        && (you.duration[DUR_REGENERATION]
+        && (you.permabuffs[MUT_REGEN_SPELL]
             || you.duration[DUR_TROGS_HAND])
         && you.hp < you.hp_max)
     {
@@ -5713,6 +5713,7 @@ static const string felid_shout_verbs[] = {"meow", "yowl", "caterwaul"};
 static const string frog_shout_verbs[] = {"ribbit", "croak", "bellow"};
 static const string dog_shout_verbs[] = {"bark", "howl", "screech"};
 static const string crab_shout_verbs[] = {"bubble", "gurgle", "foam"};
+static const string hag_shout_verbs[] = {"titter", "cackle", "screech"};
 
 /**
  * What verb should be used to describe the player's shouting?
@@ -5729,6 +5730,8 @@ string player::shout_verb(bool directed) const
 
     if (species == SP_HERMIT_CRAB)
         return crab_shout_verbs[screaminess];
+    if (species == SP_MIRE_HAG)
+        return hag_shout_verbs[screaminess];
     if (species == SP_GNOLL)
         return dog_shout_verbs[screaminess];
     if (species == SP_BARACHI)
