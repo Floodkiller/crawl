@@ -277,7 +277,7 @@ bool fill_status_info(int status, status_info& inf)
         break;
 
     case STATUS_REGENERATION:
-        // DUR_REGENERATION + some vampire and non-healing stuff
+        // DUR_TROGS_HAND + some vampire and non-healing stuff
         _describe_regen(inf);
         break;
 
@@ -325,7 +325,7 @@ bool fill_status_info(int status, status_info& inf)
         inf.long_text = you.hands_act("are", "glowing red.");
         break;
     }
-
+#if TAG_MAJOR_VERSION == 34
     case DUR_FIRE_SHIELD:
     {
         // Might be better to handle this with an extra virtual status.
@@ -338,7 +338,7 @@ bool fill_status_info(int status, status_info& inf)
         inf.long_text += "You are immune to clouds of flame.";
         break;
     }
-
+#endif
     case DUR_POISONING:
         _describe_poison(inf);
         break;
@@ -706,14 +706,14 @@ bool fill_status_info(int status, status_info& inf)
             inf.light_colour = DARKGREY;
         break;
     }
-
+#if TAG_MAJOR_VERSION == 34
     case DUR_INFUSION:
     {
         if (!enough_mp(1, true, false))
             inf.light_colour = DARKGREY;
         break;
     }
-
+#endif
     case STATUS_ORB:
     {
         if (player_has_orb())
@@ -850,8 +850,7 @@ static void _describe_glow(status_info& inf)
 
 static void _describe_regen(status_info& inf)
 {
-    const bool regen = (you.duration[DUR_REGENERATION] > 0
-                        || you.duration[DUR_TROGS_HAND] > 0);
+    const bool regen = you.duration[DUR_TROGS_HAND] > 0;
     const bool no_heal = !player_regenerates_hp();
     // Does vampire hunger level affect regeneration rate significantly?
     const bool vampmod = !no_heal && !regen && you.species == SP_VAMPIRE
@@ -859,14 +858,9 @@ static void _describe_regen(status_info& inf)
 
     if (regen)
     {
-        if (you.duration[DUR_REGENERATION] > you.duration[DUR_TROGS_HAND])
-            inf.light_colour = _dur_colour(BLUE, dur_expiring(DUR_REGENERATION));
-        else
-            inf.light_colour = _dur_colour(BLUE, dur_expiring(DUR_TROGS_HAND));
-        inf.light_text   = "Regen";
-        if (you.duration[DUR_TROGS_HAND])
-            inf.light_text += " MR++";
-        else if (no_heal)
+        inf.light_colour = _dur_colour(BLUE, dur_expiring(DUR_TROGS_HAND));
+        inf.light_text += " MR++";
+        if (no_heal)
             inf.light_colour = DARKGREY;
     }
 
@@ -884,7 +878,6 @@ static void _describe_regen(status_info& inf)
             inf.short_text = "regenerating";
             inf.long_text  = "You are regenerating.";
         }
-        _mark_expiring(inf, dur_expiring(DUR_REGENERATION));
     }
     else if (vampmod)
     {

@@ -208,10 +208,22 @@ spret_type deflection(int pow, bool fail)
 spret_type cast_regen(int pow, bool fail)
 {
     fail_check();
-    you.increase_duration(DUR_REGENERATION, 5 + roll_dice(2, pow / 3 + 1), 100,
-                          "Your skin crawls.");
-
-    return SPRET_SUCCESS;
+    if(!you.permabuffs[MUT_REGEN_SPELL])
+    {
+        if(spell_add_permabuff(SPELL_REGENERATION, 3))
+        {
+            mpr("You are now regenerating.");
+            return SPRET_SUCCESS;
+        }
+        else
+            return SPRET_ABORT;
+    }
+    else
+    {
+        spell_remove_permabuff(SPELL_REGENERATION, 3);
+        mpr("You are no longer regenerating.");
+        return SPRET_SUCCESS;
+    }
 }
 
 spret_type cast_revivification(int pow, bool fail)
@@ -289,15 +301,20 @@ int cast_selective_amnesia(const string &pre_msg)
 spret_type cast_infusion(int pow, bool fail)
 {
     fail_check();
-    if (!you.duration[DUR_INFUSION])
-        mpr("You begin infusing your attacks with magical energy.");
+    if (!you.permabuffs[MUT_INFUSION])
+    {
+        if(spell_add_permabuff(SPELL_INFUSION, 1))
+        {
+            return SPRET_SUCCESS;
+        }
+        else
+            return SPRET_ABORT;
+    }
     else
-        mpr("You extend your infusion's duration.");
-
-    you.increase_duration(DUR_INFUSION,  8 + roll_dice(2, pow), 100);
-    you.props["infusion_power"] = pow;
-
-    return SPRET_SUCCESS;
+    {
+        spell_remove_permabuff(SPELL_INFUSION, 1);
+        return SPRET_SUCCESS;
+    }
 }
 
 spret_type cast_song_of_slaying(int pow, bool fail)
@@ -589,7 +606,7 @@ void spell_drop_permabuffs()
         untransform(true);
     }
     // Unreserve all MP/EP
-    unreserve_mp(you.mp_max_adj_temp);
+    unreserve_mp(-you.mp_max_adj_temp);
     // Remove all permabuffs from player's permabuffs here
     for (int i=0; i < NUM_MUTATIONS; i++)
     {

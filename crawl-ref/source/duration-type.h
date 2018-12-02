@@ -21,7 +21,9 @@ enum duration_type
 #endif
     DUR_CORONA,
     DUR_DEATHS_DOOR,
+#if TAG_MAJOR_VERSION
     DUR_FIRE_SHIELD,
+#endif
 
 #if TAG_MAJOR_VERSION == 34
     DUR_BUILDING_RAGE,
@@ -38,7 +40,9 @@ enum duration_type
     DUR_DIVINE_VIGOUR,          // duration of Ely's Divine Vigour
     DUR_DIVINE_STAMINA,         // duration of Zin's Divine Stamina
     DUR_DIVINE_SHIELD,          // duration of TSO's Divine Shield
+#if TAG_MAJOR_VERSION == 34
     DUR_REGENERATION,
+#endif
     DUR_SWIFTNESS,
 #if TAG_MAJOR_VERSION == 34
     DUR_CONTROLLED_FLIGHT,
@@ -129,8 +133,8 @@ enum duration_type
     DUR_ANTIMAGIC,
 #if TAG_MAJOR_VERSION == 34
     DUR_SPIRIT_HOWL,
-#endif
     DUR_INFUSION,
+#endif
     DUR_SONG_OF_SLAYING,
 #if TAG_MAJOR_VERSION == 34
     DUR_SONG_OF_SHIELDING,

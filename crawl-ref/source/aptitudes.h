@@ -1916,6 +1916,5 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_GREY_ELF,        SK_POISON_MAGIC,    2),
     APT(SP_GREY_ELF,        SK_INVOCATIONS,     2),
     APT(SP_GREY_ELF,        SK_EVOCATIONS,      0),
-    
 };
 COMPILE_CHECK(ARRAYSZ(species_skill_aptitudes) == NUM_SPECIES * NUM_SKILLS);

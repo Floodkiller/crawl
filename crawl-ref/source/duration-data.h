@@ -204,12 +204,14 @@ static const duration_def duration_data[] =
       "exhausted", "",
       "You are exhausted.", D_NO_FLAGS,
       {{ "You feel less exhausted." }}},
+#if TAG_MAJOR_VERSION == 34
     { DUR_FIRE_SHIELD,
       BLUE, "RoF",
       "immune to fire clouds", "fire shield",
       "", D_DISPELLABLE | D_EXPIRES,
       {{ "Your ring of flames gutters out." },
        { "Your ring of flames is guttering out.", 2}}, 5},
+#endif
     { DUR_ICY_ARMOUR,
       0, "",
       "icy armour", "",
@@ -388,12 +390,14 @@ static const duration_def duration_data[] =
       "marked", "sentinel's mark",
       "A sentinel's mark is revealing your location to enemies.", D_DISPELLABLE | D_EXPIRES,
       {{ "The sentinel's mark upon you fades away." }}},
+#if TAG_MAJOR_VERSION == 34
     { DUR_INFUSION,
       BLUE, "Infus",
       "infused", "",
       "Your attacks are magically infused.", D_DISPELLABLE | D_EXPIRES,
       {{ "You are no longer magically infusing your attacks." },
         { "Your magical infusion is running out." }}, 6},
+#endif
     { DUR_SONG_OF_SLAYING,
       BLUE, "Slay",
       "singing", "song of slaying",
@@ -605,9 +609,11 @@ static const duration_def duration_data[] =
     { DUR_FLIGHT, 0, "", "", "flight", "", D_DISPELLABLE /*but special-cased*/, {}, 10},
     { DUR_POISONING, 0, "", "", "poisoning", "", D_NO_FLAGS},
     { DUR_PIETY_POOL, 0, "", "", "piety pool", "", D_NO_FLAGS},
+#if TAG_MAJOR_VERSION == 34
     { DUR_REGENERATION, 0, "", "", "regeneration", "", D_DISPELLABLE,
       {{ "Your skin stops crawling." },
           { "Your skin is crawling a little less now.", 1}}, 6},
+#endif
     { DUR_TRANSFORMATION, 0, "", "", "transformation", "", D_DISPELLABLE /*but special-cased*/, {}, 10},
     { DUR_EXCRUCIATING_WOUNDS, 0, "", "", "excruciating wounds", "", D_DISPELLABLE,
       {{ "", _end_weapon_brand }}},
