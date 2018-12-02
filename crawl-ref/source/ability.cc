@@ -327,6 +327,9 @@ static const ability_def Ability_List[] =
     { ABIL_SHAFT_SELF, "Shaft Self", 0, 0, 250, 0, {}, abflag::delay },
 
     { ABIL_HOP, "Hop", 0, 0, 0, 0, {}, abflag::none },
+	
+	{ ABIL_DEGENERATIVE_HEALING, "Degenerative Healing",
+      0, 0, 0, 0, {fail_basis::xl, 45, 2}, abflag::none },
 
     // EVOKE abilities use Evocations and come from items.
     // Teleportation and Blink can also come from mutations
