@@ -212,6 +212,7 @@ spret_type cast_regen(int pow, bool fail)
     {
         if(spell_add_permabuff(SPELL_REGENERATION, 3))
         {
+            mpr("You are now regenerating.");
             return SPRET_SUCCESS;
         }
         else
@@ -220,6 +221,7 @@ spret_type cast_regen(int pow, bool fail)
     else
     {
         spell_remove_permabuff(SPELL_REGENERATION, 3);
+        mpr("You are no longer regenerating.");
         return SPRET_SUCCESS;
     }
 }

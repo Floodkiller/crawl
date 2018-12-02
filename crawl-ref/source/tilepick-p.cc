@@ -642,6 +642,9 @@ tileidx_t tilep_species_to_base_tile(int sp, int level)
         return TILEP_BASE_GNOLL;
     case SP_FAERIE_DRAGON:
         return TILEP_BASE_FAERIE_DRAGON;
+    case SP_MIRE_HAG:
+//      return TILEP_BASE_MIRE_HAG;	#commented out for now
+        return TILEP_BASE_HUMAN;
     default:
         return TILEP_BASE_HUMAN;
     }
