@@ -181,6 +181,13 @@ static armour_type _acquirement_armour_for_slot(equipment_type slot_type,
                 return random_choose(ARM_HELMET, ARM_HAT);
             return ARM_HAT;
         case EQ_SHIELD:
+            switch (you.species)
+            {
+                case SP_CARCINE:
+                    return random_choose(ARM_CLOAK, ARM_SCARF, ARM_BOOTS, ARM_HAT);
+                default:
+                    return ARM_SHIELD;
+            }
             return _acquirement_shield_type();
         case EQ_BODY_ARMOUR:
             return _acquirement_body_armour(divine);

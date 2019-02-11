@@ -2405,6 +2405,19 @@ int player_shield_class()
     }
 
     // mutations
+ 
+    if (you.get_mutation_level(MUT_MASSIVE_PINCER))
+    {
+        shield += (you.get_mutation_level(MUT_MASSIVE_PINCER) * 4) * 50;
+        shield += (you.get_mutation_level(MUT_MASSIVE_PINCER) * 4) *
+            (you.skill(SK_SHIELDS, 5) / 2);
+        shield += you.skill(SK_SHIELDS, 38) + min(you.skill(SK_SHIELDS, 38), 3 * 38);
+
+        int stat = (you.dex() * 19 + you.strength() * 19) *
+            ((you.get_mutation_level(MUT_MASSIVE_PINCER) * 4) + 13) / 26;
+        shield += stat;
+    }
+ 
     // +4, +6, +8 (displayed values)
     shield += (you.get_mutation_level(MUT_LARGE_BONE_PLATES) > 0
                ? you.get_mutation_level(MUT_LARGE_BONE_PLATES) * 400 + 400
@@ -5729,6 +5742,8 @@ string player::shout_verb(bool directed) const
     const int screaminess = max(get_mutation_level(MUT_SCREAM) - 1, 0);
 
     if (species == SP_HERMIT_CRAB)
+        return crab_shout_verbs[screaminess];
+    if (species == SP_CARCINE)
         return crab_shout_verbs[screaminess];
     if (species == SP_GNOLL)
         return dog_shout_verbs[screaminess];

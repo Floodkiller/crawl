@@ -36,6 +36,28 @@ static const map<species_type, species_def> species_data =
     { SK_MACES_FLAILS, SK_AXES, SK_POLEARMS, SK_LONG_BLADES, SK_STAVES,
       SK_BOWS, SK_CROSSBOWS, SK_SLINGS },
 } },
+    
+{ SP_CARCINE, {
+    "CA",
+    "Carcine", "Carcinic", "Carcinic",
+    SPF_NO_HAIR,
+    0, 1, -1, 3,
+    MONS_HUMAN,    // placeholder
+    HT_WATER, US_ALIVE, SIZE_MEDIUM,
+    10, 7, 8, // 25
+    { STAT_STR, STAT_DEX }, 3,
+    { { MUT_TOUGH_SKIN, 1, 1 }, { MUT_TOUGH_SKIN, 1, 7 },
+      { MUT_TOUGH_SKIN, 1, 14 }, { MUT_MASSIVE_PINCER, 1, 1 },
+      { MUT_MASSIVE_PINCER, 1, 7 }, { MUT_MASSIVE_PINCER, 1, 14 },
+      { MUT_ANTENNAE, 2, 1 }, },
+    {},
+    {},
+    { JOB_FIGHTER, JOB_GLADIATOR, JOB_MONK, JOB_ARTIFICER,
+      JOB_BERSERKER, JOB_ABYSSAL_KNIGHT, JOB_SKALD, JOB_WIZARD,
+      JOB_CONJURER, JOB_ICE_ELEMENTALIST, JOB_AIR_ELEMENTALIST },
+    { SK_LONG_BLADES, SK_AXES, SK_MACES_FLAILS, SK_POLEARMS,
+      SK_UNARMED_COMBAT, SK_SLINGS, SK_THROWING },
+} },
 
 { SP_FAERIE_DRAGON, {
     "FD",

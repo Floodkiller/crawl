@@ -216,6 +216,7 @@ enum mutation_type
     MUT_MAGIC_ATTUNEMENT,
     MUT_SHIMMERING_SCALES,
     MUT_FAERIE_DRAGON_FLIGHT,
+    MUT_MASSIVE_PINCER, // Carcine only.
     MUT_TRANSFORMATION,     //Permabuffs start here
     MUT_RING_OF_FLAMES,
     MUT_REGEN_SPELL,
