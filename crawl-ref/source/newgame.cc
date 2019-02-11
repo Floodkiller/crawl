@@ -186,6 +186,7 @@ static const species_type species_order[] =
     // small species
     SP_HALFLING,       SP_KOBOLD,
     SP_SPRIGGAN,       SP_FAERIE_DRAGON,
+    SP_DVERGR,
     // large species
     SP_OGRE,           SP_TROLL,
     SP_YETI,
@@ -981,6 +982,7 @@ static species_group species_groups[] =
             SP_OGRE,
             SP_YETI,
             SP_DEEP_DWARF,
+            SP_DVERGR,
             SP_GNOLL,
             SP_LAVA_ORC,
         }

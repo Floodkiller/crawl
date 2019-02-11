@@ -131,7 +131,27 @@ static const map<species_type, species_def> species_data =
     { SK_LONG_BLADES, SK_AXES, SK_MACES_FLAILS, SK_SLINGS,
       SK_CROSSBOWS },
 } },
-
+    
+{ SP_DVERGR, {
+    "DV",
+    "Dvergr", "Dwarfish", "Dwarf",
+    SPF_NONE,
+    0, 0, 0, 5,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_ALIVE, SIZE_SMALL,
+    8, 9, 9, // 26
+    { STAT_STR, STAT_INT, STAT_DEX }, 3,
+    { { MUT_MP_WANDS, 2, 1 }, { MUT_PASSIVE_MAPPING, 1, 1 },
+      { MUT_PASSIVE_MAPPING, 1, 9 }, { MUT_PASSIVE_MAPPING, 1, 18 }, },
+    {},
+    {},
+    { JOB_FIGHTER, JOB_GLADIATOR, JOB_HUNTER, JOB_ASSASSIN,
+      JOB_ARTIFICER, JOB_SKALD, JOB_WARPER, JOB_ARCANE_MARKSMAN,
+      JOB_CONJURER, JOB_FIRE_ELEMENTALIST, JOB_EARTH_ELEMENTALIST, },
+    { SK_SHORT_BLADES, SK_LONG_BLADES, SK_AXES, SK_CROSSBOWS,
+      SK_THROWING },
+} },
+    
 { SP_DEEP_ELF, {
     "DE",
     "Deep Elf", "Elven", "Elf",

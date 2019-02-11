@@ -19,6 +19,11 @@ Dwarrow
 Short, sturdy mountain dwarfs, Dwarrows are fond of axes, hammers,
 and artifice. Legendarily dense when it comes to non-earth magic.
 %%%%
+Dvergr
+
+Dvergar are obsidian-skinned dwarfs from deep below the earth.
+These fey dwarves use magic devices with an unparalleled knack.
+%%%%
 Deep Elf
 
 Deep Elves have a strong affinity for all kinds of magic, but are very fragile.
