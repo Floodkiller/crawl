@@ -182,7 +182,8 @@ static const species_type species_order[] =
     SP_DEEP_ELF,       SP_DEEP_DWARF,
     SP_HILL_ORC,       SP_SLUDGE_ELF,
     SP_PROMETHEAN,     SP_LAVA_ORC,
-    SP_DWARROW,        SP_GREY_ELF,
+    SP_DWARROW,        SP_MADHKUR,
+	SP_GREY_ELF,
     // small species
     SP_HALFLING,       SP_KOBOLD,
     SP_SPRIGGAN,       SP_FAERIE_DRAGON,
@@ -201,10 +202,14 @@ static const species_type species_order[] =
     // mostly human shape but made of a strange substance
     SP_VINE_STALKER,
     // celestial species
-    SP_DEMONSPAWN,    SP_DJINNI,
+    SP_DEMONSPAWN,     SP_DJINNI,
     // undead species
     SP_MUMMY,          SP_GHOUL,
+<<<<<<< HEAD
     SP_VAMPIRE,        SP_SKELETON,
+=======
+    SP_VAMPIRE,        SP_MADHKUR,
+>>>>>>> f1d200ea88... madhkur
     // not humanoid at all
     SP_FELID,          SP_OCTOPODE,
 };
@@ -985,6 +990,11 @@ static species_group species_groups[] =
             SP_OGRE,
             SP_YETI,
             SP_DEEP_DWARF,
+<<<<<<< HEAD
+			SP_MADHKUR,
+=======
+            SP_MADHKUR,
+>>>>>>> f1d200ea88... madhkur
             SP_DVERGR,
             SP_GNOLL,
             SP_LAVA_ORC,
