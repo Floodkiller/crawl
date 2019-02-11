@@ -770,6 +770,26 @@ static const map<species_type, species_def> species_data =
       JOB_EARTH_ELEMENTALIST, JOB_ICE_ELEMENTALIST },
     { SK_UNARMED_COMBAT, SK_STAVES },
 } },
+    
+{ SP_MIRE_HAG, {
+    "MH",
+    "Mire Hag", "Haggish", "Hag",
+    SPF_NONE,
+    0, -1, 1, 4,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_ALIVE, SIZE_MEDIUM,
+    8, 10, 8, // 26
+    { STAT_STR, STAT_INT, STAT_DEX }, 4,
+    { { MUT_CLAWS, 1, 1 }, { MUT_DEFORMED, 1, 1 },
+      { MUT_POISON_RESISTANCE, 1, 1 }, },
+    {},
+    {},
+    { JOB_ASSASSIN, JOB_ARTIFICER, JOB_MONK, JOB_TRANSMUTER,
+      JOB_WIZARD, JOB_CONJURER, JOB_NECROMANCER, JOB_SUMMONER,
+      JOB_ENCHANTER, JOB_EARTH_ELEMENTALIST, JOB_VENOM_MAGE },
+    { SK_SHORT_BLADES, SK_UNARMED_COMBAT, SK_STAVES, SK_SLINGS,
+      SK_BOWS, SK_CROSSBOWS },
+} },
 
 { SP_LAVA_ORC, {
     "LO",
