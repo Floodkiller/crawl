@@ -1334,6 +1334,45 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_DEEP_DWARF,      SK_POISON_MAGIC,   -2),
     APT(SP_DEEP_DWARF,      SK_INVOCATIONS,     3),
     APT(SP_DEEP_DWARF,      SK_EVOCATIONS,      3),
+  
+    // SP_DWARROW
+    APT(SP_DWARROW,        SK_FIGHTING,         2),
+    APT(SP_DWARROW,        SK_SHORT_BLADES,     1),
+    APT(SP_DWARROW,        SK_LONG_BLADES,      1),
+    APT(SP_DWARROW,        SK_AXES,             2),
+    APT(SP_DWARROW,        SK_MACES_FLAILS,     1),
+    APT(SP_DWARROW,        SK_POLEARMS,        -1),
+    APT(SP_DWARROW,        SK_STAVES,          -1),
+    APT(SP_DWARROW,        SK_SLINGS,          -1),
+    APT(SP_DWARROW,        SK_BOWS,            -2),
+    APT(SP_DWARROW,        SK_CROSSBOWS,        2),
+    APT(SP_DWARROW,        SK_THROWING,        -1),
+    APT(SP_DWARROW,        SK_ARMOUR,           3),
+    APT(SP_DWARROW,        SK_DODGING,         -1),
+    APT(SP_DWARROW,        SK_STEALTH,         -3),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_DWARROW,        SK_STABBING,      UNUSABLE_SKILL),
+#endif
+    APT(SP_DWARROW,        SK_SHIELDS,          2),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_DWARROW,        SK_TRAPS,         UNUSABLE_SKILL),
+#endif
+    APT(SP_DWARROW,        SK_UNARMED_COMBAT,   0),
+    APT(SP_DWARROW,        SK_SPELLCASTING,    -3),
+    APT(SP_DWARROW,        SK_CONJURATIONS,     0),
+    APT(SP_DWARROW,        SK_HEXES,           -3),
+    APT(SP_DWARROW,        SK_CHARMS,          -3),
+    APT(SP_DWARROW,        SK_SUMMONINGS,      -2),
+    APT(SP_DWARROW,        SK_NECROMANCY,      -4),
+    APT(SP_DWARROW,        SK_TRANSLOCATIONS,  -2),
+    APT(SP_DWARROW,        SK_TRANSMUTATIONS,   0),
+    APT(SP_DWARROW,        SK_FIRE_MAGIC,       0),
+    APT(SP_DWARROW,        SK_ICE_MAGIC,       -3),
+    APT(SP_DWARROW,        SK_AIR_MAGIC,       -3),
+    APT(SP_DWARROW,        SK_EARTH_MAGIC,      1),
+    APT(SP_DWARROW,        SK_POISON_MAGIC,    -3),
+    APT(SP_DWARROW,        SK_INVOCATIONS,      2),
+    APT(SP_DWARROW,        SK_EVOCATIONS,       1),
 
     // SP_FAERIE_DRAGON
     APT(SP_FAERIE_DRAGON,   SK_FIGHTING,       -1),
