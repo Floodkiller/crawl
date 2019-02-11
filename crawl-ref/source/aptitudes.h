@@ -1837,5 +1837,44 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_HERMIT_CRAB,           SK_POISON_MAGIC,    1),
     APT(SP_HERMIT_CRAB,           SK_INVOCATIONS,     -1),
     APT(SP_HERMIT_CRAB,           SK_EVOCATIONS,      -1),
+  
+    // SP_CARCINE
+    APT(SP_CARCINE,        SK_FIGHTING,         2),
+    APT(SP_CARCINE,        SK_SHORT_BLADES,     0),
+    APT(SP_CARCINE,        SK_LONG_BLADES,      1),
+    APT(SP_CARCINE,        SK_AXES,             2),
+    APT(SP_CARCINE,        SK_MACES_FLAILS,     1),
+    APT(SP_CARCINE,        SK_POLEARMS,         1),
+    APT(SP_CARCINE,        SK_STAVES,        UNUSABLE_SKILL),
+    APT(SP_CARCINE,        SK_SLINGS,          -1),
+    APT(SP_CARCINE,        SK_BOWS,          UNUSABLE_SKILL),
+    APT(SP_CARCINE,        SK_CROSSBOWS,        0),
+    APT(SP_CARCINE,        SK_THROWING,        -1),
+    APT(SP_CARCINE,        SK_ARMOUR,           0),
+    APT(SP_CARCINE,        SK_DODGING,          1),
+    APT(SP_CARCINE,        SK_STEALTH,          0),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_CARCINE,        SK_STABBING,      UNUSABLE_SKILL),
+#endif
+    APT(SP_CARCINE,        SK_SHIELDS,          0),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_CARCINE,        SK_TRAPS,         UNUSABLE_SKILL),
+#endif
+    APT(SP_CARCINE,        SK_UNARMED_COMBAT,   1),
+    APT(SP_CARCINE,        SK_SPELLCASTING,    -1),
+    APT(SP_CARCINE,        SK_CONJURATIONS,    -1),
+    APT(SP_CARCINE,        SK_HEXES,           -2),
+    APT(SP_CARCINE,        SK_CHARMS,          -1),
+    APT(SP_CARCINE,        SK_SUMMONINGS,      -2),
+    APT(SP_CARCINE,        SK_NECROMANCY,      -2),
+    APT(SP_CARCINE,        SK_TRANSLOCATIONS,  -2),
+    APT(SP_CARCINE,        SK_TRANSMUTATIONS,  -4),
+    APT(SP_CARCINE,        SK_FIRE_MAGIC,      -3),
+    APT(SP_CARCINE,        SK_ICE_MAGIC,       -1),
+    APT(SP_CARCINE,        SK_AIR_MAGIC,       -1),
+    APT(SP_CARCINE,        SK_EARTH_MAGIC,     -1),
+    APT(SP_CARCINE,        SK_POISON_MAGIC,    -1),
+    APT(SP_CARCINE,        SK_INVOCATIONS,      1),
+    APT(SP_CARCINE,        SK_EVOCATIONS,       1),
 };
 COMPILE_CHECK(ARRAYSZ(species_skill_aptitudes) == NUM_SPECIES * NUM_SKILLS);

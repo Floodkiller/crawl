@@ -197,6 +197,7 @@ static const species_type species_order[] =
     SP_GARGOYLE,       SP_FORMICID,
     SP_BARACHI,        SP_GNOLL,
     SP_HERMIT_CRAB,    SP_MIRE_HAG,
+    SP_CARCINE,
     // mostly human shape but made of a strange substance
     SP_VINE_STALKER,
     // celestial species
@@ -962,6 +963,7 @@ static species_group species_groups[] =
             SP_TROLL,
             SP_GHOUL,
             SP_HERMIT_CRAB,
+            SP_CARCINE,
             SP_FAERIE_DRAGON,
         }
     },
