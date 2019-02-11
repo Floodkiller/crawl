@@ -174,6 +174,26 @@ static const map<species_type, species_def> species_data =
       SK_THROWING },
 } },
     
+{ SP_MADHKUR, {
+    "MA",
+    "Madkhur", "Dwarfish", "Dwarf",
+    SPF_NONE,
+    0, 0, 0, 4,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_UNDEAD, SIZE_MEDIUM,
+    11, 9, 10, // 30
+    { STAT_STR, STAT_INT }, 4,
+    { { MUT_DETERIORATION, 1, 1 }, { MUT_NO_REGENERATION, 1, 1 },
+      { MUT_PASSIVE_MAPPING, 1, 1 }, { MUT_PASSIVE_MAPPING, 1, 9 },
+      { MUT_PASSIVE_MAPPING, 1, 18 }, },
+    { "Your petrified flesh is resistant to damage.",
+      "You can heal by cannibalizing your own essence." },
+    { "damage resistance", "heal wounds" },
+    { JOB_FIGHTER, JOB_HUNTER, JOB_BERSERKER, JOB_NECROMANCER,
+      JOB_EARTH_ELEMENTALIST },
+    { SK_MACES_FLAILS, SK_AXES, SK_LONG_BLADES, SK_CROSSBOWS, SK_SLINGS },
+} },
+    
 { SP_DEEP_ELF, {
     "DE",
     "Deep Elf", "Elven", "Elf",

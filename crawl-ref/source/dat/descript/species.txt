@@ -29,6 +29,11 @@ Dvergr
 Dvergar are obsidian-skinned dwarfs from deep below the earth.
 These fey dwarves use magic devices with an unparalleled knack.
 %%%%
+Madhkur
+
+Dwarffolk were fashioned from worms gnawing the depths. Their
+conscious dead, the Madhkur, fear regressing back to that state.
+%%%%
 Deep Elf
 
 Deep Elves have a strong affinity for all kinds of magic, but are very fragile.

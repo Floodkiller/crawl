@@ -746,6 +746,7 @@ bool can_shave_damage()
 {
     return (you.species == SP_DEEP_DWARF)
             || you.attribute[ATTR_REAPING];
+    return (you.species == SP_DEEP_DWARF || you.species == SP_MADHKUR);
 }
 
 int do_shave_damage(int dam)
