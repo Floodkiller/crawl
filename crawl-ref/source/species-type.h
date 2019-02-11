@@ -48,7 +48,11 @@ enum species_type
     SP_GNOLL,
     SP_HERMIT_CRAB,
     SP_FAERIE_DRAGON,
+<<<<<<< HEAD
     SP_SKELETON,
+=======
+>>>>>>> 3947002677... mire hag
+    SP_MIRE_HAG,
     NUM_SPECIES,
 
     SP_UNKNOWN  = 100,
