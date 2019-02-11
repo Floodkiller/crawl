@@ -140,6 +140,11 @@ Sludge Elf
 A depraved type of elf, who prefers cunning to fair fighting, and dark magic to
 other wizardry.
 %%%%
+Mire Hag
+
+Twisted by old curses bubbling into the surface world, Hags have
+sharp curved nails and an affinity for distasteful magics.
+%%%%
 Spriggan
 
 Very small, very frail and very fast, Spriggans make highly competent stabbers
