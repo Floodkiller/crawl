@@ -5,6 +5,7 @@ enum species_type
     SP_HUMAN,
     SP_HIGH_ELF,
     SP_DEEP_ELF,
+    SP_GREY_ELF,
     SP_SLUDGE_ELF,
     SP_HALFLING,
     SP_HILL_ORC,

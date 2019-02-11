@@ -77,6 +77,11 @@ Gnoll
 Gnolls are canine-like humanoids. They have incredible proficiency and
 excellent physical attributes, but must learn all skills at once.
 %%%%
+Grey Elf
+
+The Grey Elves have an affinity for their natural surroundings
+that their more noble brethren lack, practically and magically.
+%%%%
 Halfling
 
 Small but hardy, Halflings excel with slings. They have an increased resistance
