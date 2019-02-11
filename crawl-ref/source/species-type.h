@@ -51,6 +51,7 @@ enum species_type
     SP_BARACHI,
     SP_GNOLL,
     SP_HERMIT_CRAB,
+    SP_CARCINE,
     SP_FAERIE_DRAGON,
 <<<<<<< HEAD
     SP_SKELETON,

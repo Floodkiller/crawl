@@ -344,7 +344,14 @@ bool can_wield(const item_def *weapon, bool say_reason,
         SAY(mpr("You can't wield that without your missing limb."));
         return false;
     }
-
+	
+    if (you.get_mutation_level(MUT_MASSIVE_PINCER)
+            && you.hands_reqd(*weapon) == HANDS_TWO)
+    {
+            SAY(mpr("You've only got one hand, you can't wield that."));
+            return false;
+    }
+	
     for (int i = EQ_MIN_ARMOUR; i <= EQ_MAX_WORN; i++)
     {
         if (you.equip[i] != -1 && &you.inv[you.equip[i]] == weapon)
@@ -776,6 +783,14 @@ bool can_wear_armour(const item_def &item, bool verbose, bool ignore_temporary)
         }
         return false;
     }
+
+    if (you.get_mutation_level(MUT_MASSIVE_PINCER) && is_shield(item))
+    {
+        if (verbose)
+            mpr("You'd need a second hand for that!");
+        return false;
+    }
+
 
     if (!ignore_temporary && you.weapon()
         && is_shield(item)
@@ -1245,7 +1260,8 @@ static vector<equipment_type> _current_ring_types()
     }
     else
     {
-        if (you.get_mutation_level(MUT_MISSING_HAND) == 0)
+        if (you.get_mutation_level(MUT_MISSING_HAND) == 0 &&
+            you.get_mutation_level(MUT_MASSIVE_PINCER) == 0)
             ret.push_back(EQ_LEFT_RING);
         ret.push_back(EQ_RIGHT_RING);
     }

@@ -31,6 +31,20 @@ static const mutation_def mut_data[] =
 
   {"Your hands dissolve to normality, the nadir of existence."},
 },
+    
+{ MUT_MASSIVE_PINCER, 0, 3, mutflag::good, true,
+  "massive pincer",
+
+  {"You have a large armoured pincer in place of your offhand arm.",
+  "You have a huge armoured pincer in place of your offhand arm.",
+  "You have an enormous armoured pincer in place of your offhand arm."},
+
+  {"Your offhand arm turns into a massive armoured pincer.",
+  "Your pincer grows larger.",
+  "Your pincer grows even larger."},
+
+  {"", "", ""},
+},    
 
 { MUT_TOUGH_SKIN, 0, 3, mutflag::good, true,
   "tough skin",
