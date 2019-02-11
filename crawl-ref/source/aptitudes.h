@@ -127,6 +127,45 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_DEEP_ELF,        SK_POISON_MAGIC,    1),
     APT(SP_DEEP_ELF,        SK_INVOCATIONS,     1),
     APT(SP_DEEP_ELF,        SK_EVOCATIONS,      1),
+  
+    // SP_GREY_ELF
+    APT(SP_GREY_ELF,        SK_FIGHTING,       -1),
+    APT(SP_GREY_ELF,        SK_SHORT_BLADES,    2),
+    APT(SP_GREY_ELF,        SK_LONG_BLADES,     1),
+    APT(SP_GREY_ELF,        SK_AXES,            0),
+    APT(SP_GREY_ELF,        SK_MACES_FLAILS,   -2),
+    APT(SP_GREY_ELF,        SK_POLEARMS,        0),
+    APT(SP_GREY_ELF,        SK_STAVES,          1),
+    APT(SP_GREY_ELF,        SK_SLINGS,          1),
+    APT(SP_GREY_ELF,        SK_BOWS,            2),
+    APT(SP_GREY_ELF,        SK_CROSSBOWS,      -1),
+    APT(SP_GREY_ELF,        SK_THROWING,        1),
+    APT(SP_GREY_ELF,        SK_ARMOUR,          0),
+    APT(SP_GREY_ELF,        SK_DODGING,         3),
+    APT(SP_GREY_ELF,        SK_STEALTH,         4),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_GREY_ELF,        SK_STABBING,      UNUSABLE_SKILL),
+#endif
+    APT(SP_GREY_ELF,        SK_SHIELDS,        -1),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_GREY_ELF,        SK_TRAPS,         UNUSABLE_SKILL),
+#endif
+    APT(SP_GREY_ELF,        SK_UNARMED_COMBAT,  1),
+    APT(SP_GREY_ELF,        SK_SPELLCASTING,    1),
+    APT(SP_GREY_ELF,        SK_CONJURATIONS,   -2),
+    APT(SP_GREY_ELF,        SK_HEXES,           0),
+    APT(SP_GREY_ELF,        SK_CHARMS,          1),
+    APT(SP_GREY_ELF,        SK_SUMMONINGS,      0),
+    APT(SP_GREY_ELF,        SK_NECROMANCY,      0),
+    APT(SP_GREY_ELF,        SK_TRANSLOCATIONS,  0),
+    APT(SP_GREY_ELF,        SK_TRANSMUTATIONS,  1),
+    APT(SP_GREY_ELF,        SK_FIRE_MAGIC,      2),
+    APT(SP_GREY_ELF,        SK_ICE_MAGIC,       2),
+    APT(SP_GREY_ELF,        SK_AIR_MAGIC,       2),
+    APT(SP_GREY_ELF,        SK_EARTH_MAGIC,     2),
+    APT(SP_GREY_ELF,        SK_POISON_MAGIC,    2),
+    APT(SP_GREY_ELF,        SK_INVOCATIONS,     2),
+    APT(SP_GREY_ELF,        SK_EVOCATIONS,      0),
 
     // SP_SLUDGE_ELF
     APT(SP_SLUDGE_ELF,      SK_FIGHTING,        1),
