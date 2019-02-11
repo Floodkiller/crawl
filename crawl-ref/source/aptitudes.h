@@ -474,6 +474,45 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_TROLL,           SK_POISON_MAGIC,   -3),
     APT(SP_TROLL,           SK_INVOCATIONS,    -1),
     APT(SP_TROLL,           SK_EVOCATIONS,     -3),
+  
+    // SP_YETI
+    APT(SP_YETI,        SK_FIGHTING,            1),
+    APT(SP_YETI,        SK_SHORT_BLADES,       -1),
+    APT(SP_YETI,        SK_LONG_BLADES,         0),
+    APT(SP_YETI,        SK_AXES,               -1),
+    APT(SP_YETI,        SK_MACES_FLAILS,       -2),
+    APT(SP_YETI,        SK_POLEARMS,           -1),
+    APT(SP_YETI,        SK_STAVES,              0),
+    APT(SP_YETI,        SK_SLINGS,             -1),
+    APT(SP_YETI,        SK_BOWS,                0),
+    APT(SP_YETI,        SK_CROSSBOWS,           0),
+    APT(SP_YETI,        SK_THROWING,           -1),
+    APT(SP_YETI,        SK_ARMOUR,             -1),
+    APT(SP_YETI,        SK_DODGING,            -1),
+    APT(SP_YETI,        SK_STEALTH,             2),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_YETI,        SK_STABBING,      UNUSABLE_SKILL),
+#endif
+    APT(SP_YETI,        SK_SHIELDS,             0),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_YETI,        SK_TRAPS,         UNUSABLE_SKILL),
+#endif
+    APT(SP_YETI,        SK_UNARMED_COMBAT,      0),
+    APT(SP_YETI,        SK_SPELLCASTING,       -1),
+    APT(SP_YETI,        SK_CONJURATIONS,        0),
+    APT(SP_YETI,        SK_HEXES,               0),
+    APT(SP_YETI,        SK_CHARMS,              0),
+    APT(SP_YETI,        SK_SUMMONINGS,         -3),
+    APT(SP_YETI,        SK_NECROMANCY,         -2),
+    APT(SP_YETI,        SK_TRANSLOCATIONS,      1),
+    APT(SP_YETI,        SK_TRANSMUTATIONS,     -2),
+    APT(SP_YETI,        SK_FIRE_MAGIC,         -2),
+    APT(SP_YETI,        SK_ICE_MAGIC,           1),
+    APT(SP_YETI,        SK_AIR_MAGIC,           1),
+    APT(SP_YETI,        SK_EARTH_MAGIC,         0),
+    APT(SP_YETI,        SK_POISON_MAGIC,       -1),
+    APT(SP_YETI,        SK_INVOCATIONS,         1),
+    APT(SP_YETI,        SK_EVOCATIONS,          0),
 
     // SP_RED_DRACONIAN
     APT(SP_RED_DRACONIAN,   SK_FIGHTING,        1),

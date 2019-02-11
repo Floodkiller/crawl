@@ -768,6 +768,25 @@ static const map<species_type, species_def> species_data =
     { SK_SHORT_BLADES, SK_UNARMED_COMBAT, SK_STAVES, SK_SLINGS,
       SK_BOWS, SK_CROSSBOWS },
 } },
+    
+{ SP_YETI, {
+    "YE",
+    "Yeti", "Yetine", "Yetine",
+    SPF_NONE,
+    0, 2, -1, 4,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_ALIVE, SIZE_LARGE,
+    10, 9, 7, // 26
+    { STAT_STR, STAT_INT }, 4,
+    { { MUT_SHAGGY_FUR, 3, 1 }, { MUT_WILD_MAGIC, 1, 1 }, },
+    {},
+    {},
+    { JOB_FIGHTER, JOB_GLADIATOR, JOB_HUNTER, JOB_ARTIFICER,
+      JOB_BERSERKER, JOB_SKALD, JOB_WARPER, JOB_ARCANE_MARKSMAN,
+      JOB_CONJURER, JOB_ICE_ELEMENTALIST, JOB_AIR_ELEMENTALIST, },
+    { SK_LONG_BLADES, SK_AXES, SK_POLEARMS, SK_STAVES, SK_BOWS,
+      SK_CROSSBOWS, SK_THROWING },
+} },
 
 { SP_LAVA_ORC, {
     "LO",
