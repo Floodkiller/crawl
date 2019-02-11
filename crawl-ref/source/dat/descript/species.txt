@@ -155,6 +155,11 @@ Troll
 Trolls are monstrous creatures with powerful claws, always hungering for raw
 meat. They regenerate health rapidly.
 %%%%
+Yeti
+
+Yetis possess a primal connection to storm and snow, but they
+are surprisingly comfortable with the weapons of civilization.
+%%%%
 Vampire
 
 Shifting between the states of life and undeath, Vampires are accomplished
