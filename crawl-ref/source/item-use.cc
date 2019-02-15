@@ -1737,7 +1737,6 @@ static bool _can_puton_jewellery(int item_slot)
         // If we got this far, there are no available slots.
         if (melded == (int)slots.size())
             mpr("You can't wear that in your present form.");
-            mpr((int)slots.size);
         else
             mprf("You're already wearing %s cursed ring%s!%s",
                  number_in_words(cursed).c_str(),
