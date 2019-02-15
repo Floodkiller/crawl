@@ -579,7 +579,7 @@ static int _acquirement_jewellery_subtype(bool /*divine*/, int & /*quantity*/)
 
     // Rings are (number of usable rings) times as common as amulets.
     // XXX: unify this with the actual check for ring slots
-    const int ring_num = ((you.species == SP_OCTOPODE || you.species == SP_ABOMINATION) ? 8 : 2)
+    const int ring_num = (you.species == SP_OCTOPODE ? 8 : 2)
                        - (you.get_mutation_level(MUT_MISSING_HAND) ? 1 : 0);
 
     // Try ten times to give something the player hasn't seen.

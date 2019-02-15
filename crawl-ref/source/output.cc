@@ -600,7 +600,7 @@ static void _print_stats_equip(int x, int y)
 {
     CGOTOXY(x, y, GOTO_STAT);
     textcolour(HUD_CAPTION_COLOUR);
-    cprintf((you.species == SP_OCTOPODE || you.species == SP_ABOMINATION) ? "Eq: " : "Equip: ");
+    cprintf((you.species == SP_OCTOPODE) ? "Eq: " : "Equip: ");
     textcolour(LIGHTGREY);
     for (equipment_type eqslot : e_order)
     {
@@ -2031,8 +2031,7 @@ static void _print_overview_screen_equip(column_composer& cols,
             continue;
         }
 
-        if ((you.species != SP_OCTOPODE
-            || you.species != SP_ABOMINATION)
+        if (you.species != SP_OCTOPODE
             && eqslot >= EQ_RING_ONE && eqslot <= EQ_RING_EIGHT)
         {
             continue;
@@ -2706,15 +2705,6 @@ string mutation_overview()
         mutations.push_back(_annotate_form_based(
             make_stringf("constrict %d", you.has_tentacles(false)),
             !form_keeps_mutations()));
-    }
-
-    if (you.species == SP_ABOMINATION)
-    {
-        mutations.push_back(_annotate_form_based("amphibious",
-                                                 !form_likes_water()));
-        mutations.push_back(_annotate_form_based(
-            make_stringf("%d rings", you.has_tentacles(false)),
-            !get_form()->slot_available(EQ_RING_EIGHT)));
     }
 
     if (you.can_water_walk())

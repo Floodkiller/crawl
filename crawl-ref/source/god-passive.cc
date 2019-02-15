@@ -572,21 +572,21 @@ void ash_check_bondage(bool msg)
         else if (i <= EQ_MAX_ARMOUR)
             s = ET_ARMOUR;
         // Missing hands mean fewer rings
-        else if ((you.species != SP_OCTOPODE || you.species != SP_ABOMINATION) && i == EQ_LEFT_RING
+        else if (you.species != SP_OCTOPODE && i == EQ_LEFT_RING
                  && you.get_mutation_level(MUT_MISSING_HAND))
         {
             continue;
         }
-        // Octopodes and abominations don't count these slots:
-        else if ((you.species == SP_OCTOPODE || you.species == SP_ABOMINATION )
+        // Octopodes don't count these slots:
+        else if (you.species == SP_OCTOPODE
                  && ((i == EQ_LEFT_RING || i == EQ_RIGHT_RING)
                      || (i == EQ_RING_EIGHT
                          && you.get_mutation_level(MUT_MISSING_HAND))))
         {
             continue;
         }
-        // *Only* octopodes and abominations count these slots:
-        else if ((you.species != SP_OCTOPODE || you.species != SP_ABOMINATION )
+        // *Only* octopodes count these slots:
+        else if (you.species != SP_OCTOPODE
                  && i >= EQ_RING_ONE && i <= EQ_RING_EIGHT)
         {
             continue;
