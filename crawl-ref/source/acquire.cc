@@ -471,8 +471,8 @@ static int _acquirement_weapon_subtype(bool divine, int & /*quantity*/)
     // Let's guess the percentage of shield use the player did, this is
     // based on empirical data where pure-shield MDs get skills like 17 sh
     // 25 m&f and pure-shield Spriggans 7 sh 18 m&f. Pretend formicid
-    // shield skill is 0 so they always weight towards 2H.
-    const int shield_sk = you.species == SP_FORMICID
+    // and abomination shield skill is 0 so they always weight towards 2H.
+    const int shield_sk = (you.species == SP_FORMICID || you.species == SP_ABOMINATION)
         ? 0
         : _skill_rdiv(SK_SHIELDS) * species_apt_factor(SK_SHIELDS);
     const int want_shield = min(2 * shield_sk, best_sk) + 10;
