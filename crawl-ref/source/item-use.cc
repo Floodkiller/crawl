@@ -1018,7 +1018,7 @@ bool can_wear_armour(const item_def &item, bool verbose, bool ignore_temporary)
     if (!ignore_temporary && !get_form()->can_wear_item(item))
     {
         if (verbose)
-            mpr("You can't wear that in your present form.");
+            mpr("You can't wear that in your present form1.");
         return false;
     }
 
@@ -1559,7 +1559,7 @@ static bool _swap_rings(int ring_slot)
     {
         // Shouldn't happen, because hogs and bats can't put on jewellery at
         // all and thus won't get this far.
-        mpr("You can't wear that in your present form.");
+        mpr("You can't wear that in your present form2.");
         return false;
     }
     else if (available == 0)
@@ -1695,7 +1695,7 @@ static bool _can_puton_jewellery(int item_slot)
     if (is_amulet && !you_can_wear(EQ_AMULET, true)
         || !is_amulet && !you_can_wear(EQ_RINGS, true))
     {
-        mpr("You can't wear that in your present form.");
+        mpr("You can't wear that in your present form3.");
         return false;
     }
 
@@ -1720,10 +1720,8 @@ static bool _can_puton_jewellery(int item_slot)
         int cursed = 0;
         for (auto eq : slots)
         {
-            mpr("AN FOR INTERATION.");
             if (!you_can_wear(eq, true) || you.melded[eq])
             {
-                mpr("MELDED ITERATION.");
                 melded++;
                 continue;
             }
@@ -1736,8 +1734,7 @@ static bool _can_puton_jewellery(int item_slot)
         }
         // If we got this far, there are no available slots.
         if (melded == (int)slots.size())
-            mpr("You can't wear that in your present form.");
-            mpr((int)slots.size);
+            mpr("You can't wear that in your present form4.");
         else
             mprf("You're already wearing %s cursed ring%s!%s",
                  number_in_words(cursed).c_str(),
