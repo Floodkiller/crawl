@@ -1722,6 +1722,10 @@ static bool _can_puton_jewellery(int item_slot)
         {
             if (!you_can_wear(eq, true) || you.melded[eq])
             {
+                if(!you_can_wear(eq, true))
+                    mpr("You can't wear!");
+                else
+                    mpr("MELDED ITERATION.");
                 melded++;
                 continue;
             }
