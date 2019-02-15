@@ -30,7 +30,7 @@ static const map<species_type, species_def> species_data =
     10, 5, 4, // 19
     { STAT_STR, STAT_DEX }, 5,
     { { MUT_HEAT_VULNERABILITY, 2, 1 }, { MUT_REGENERATION, 1, 1 }, },
-    { "You have a mass of tentacles for a left arm.", "You have two strong right arms.", "You have gills and webbed feet.", "Your body has no innate resistence to magic.", },
+    { "You have a mass of tentacles for a left arm.", "You have two strong right arms.", "Your body has no innate resistence to magic.", },
     { "tentacle arms", "oversized arm", "gills and webbed feet", "no magic resistence", },
     { JOB_FIGHTER, JOB_GLADIATOR, JOB_HUNTER,
       JOB_BERSERKER, JOB_ABYSSAL_KNIGHT, JOB_CHAOS_KNIGHT, JOB_DEATH_KNIGHT,
