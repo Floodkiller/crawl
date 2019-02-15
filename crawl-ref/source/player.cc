@@ -706,7 +706,7 @@ maybe_bool you_can_wear(equipment_type eq, bool temp)
             return MB_FALSE;
         // intentional fallthrough
     case EQ_RIGHT_RING:
-        return you.species != SP_OCTOPODE ? MB_TRUE : MB_FALSE;
+        return (you.species != SP_OCTOPODE || you.species != SP_ABOMINATION) ? MB_TRUE : MB_FALSE;
 
     case EQ_RING_EIGHT:
         if (you.get_mutation_level(MUT_MISSING_HAND))
@@ -719,7 +719,7 @@ maybe_bool you_can_wear(equipment_type eq, bool temp)
     case EQ_RING_FIVE:
     case EQ_RING_SIX:
     case EQ_RING_SEVEN:
-        return you.species == SP_OCTOPODE ? MB_TRUE : MB_FALSE;
+        return (you.species == SP_OCTOPODE || you.species != SP_ABOMINATION) ? MB_TRUE : MB_FALSE;
 
     case EQ_WEAPON:
     case EQ_STAFF:
@@ -7155,9 +7155,9 @@ int player::has_tentacles(bool allow_tran) const
             return 0;
     }
 
-    if (species == SP_OCTOPODE && get_mutation_level(MUT_MISSING_HAND))
+    if ((species == SP_OCTOPODE || species == SP_ABOMINATION) && get_mutation_level(MUT_MISSING_HAND))
         return 7;
-    else if (species == SP_OCTOPODE)
+    else if ((species == SP_OCTOPODE || species == SP_ABOMINATION))
         return 8;
 
     return 0;
