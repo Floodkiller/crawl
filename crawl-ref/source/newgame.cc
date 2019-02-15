@@ -193,7 +193,7 @@ static const species_type species_order[] =
     SP_TENGU,          SP_BASE_DRACONIAN,
     SP_GARGOYLE,       SP_FORMICID,
     SP_BARACHI,        SP_GNOLL,
-    SP_HERMIT_CRAB,    SP_ABOMINATION,
+    SP_HERMIT_CRAB,
     // mostly human shape but made of a strange substance
     SP_VINE_STALKER,
     // celestial species
@@ -995,7 +995,6 @@ static species_group species_groups[] =
             SP_BARACHI,
             SP_MUMMY,
             SP_DJINNI,
-            SP_ABOMINATION,
         }
     },
 };

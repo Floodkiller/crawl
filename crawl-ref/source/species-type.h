@@ -48,7 +48,6 @@ enum species_type
     SP_GNOLL,
     SP_HERMIT_CRAB,
     SP_FAERIE_DRAGON,
-    SP_ABOMINATION,
     NUM_SPECIES,
 
     SP_UNKNOWN  = 100,
