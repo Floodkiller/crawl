@@ -1211,7 +1211,7 @@ MP:      6
 INT:     6
 BRAND:   SPWPN_VAMPIRISM
 
-ENUM:    GYREa
+ENUM:    GYRE
 NAME:    pair of quick blades "Gyre" and "Gimble"
 OBJ:     OBJ_WEAPONS/WPN_QUICK_BLADE
 TYPE:    pair of quick blades
