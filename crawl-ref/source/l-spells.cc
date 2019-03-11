@@ -97,6 +97,71 @@ LUAFN(l_spells_min_range)
     PLUARET(number, spell_range(spell, 0));
 }
 
+/*** If this spell is aimed at (x,y), what path will it actually take?
+ * @tparam string spell name
+ * @tparam int x coordinate to aim at, in player coordinates
+ * @tparam int y coordinate to aim at, in player coordinates
+ * @tparam int x coordinate of spell source, in player coordinates (default=0)
+ * @tparam int y coordinate of spell source, in player coordinates (default=0)
+ * @treturn table|nil a table of {x,y} of the path the spell will take, in player coordinates.
+     Nil is returned if the spell does not follow a path (eg., smite-targeted spells)
+     or if the spell has zero range.
+ * @function path
+ */
+LUAFN(l_spells_path)
+{
+    spell_type spell = spell_by_name(luaL_checkstring(ls, 1), false);
+    zap_type zap = spell_to_zap(spell);
+    int power = calc_spell_power(spell, true);
+    int range = spell_range(spell, power);
+    // return nil for non-zap or zero-range spells
+    if (range <= 0 || zap >= NUM_ZAPS)
+    {
+        lua_pushnil(ls);
+        return 1;
+    }
+    coord_def a;
+    a.x = luaL_safe_checkint(ls, 2);
+    a.y = luaL_safe_checkint(ls, 3);
+    coord_def aim = player2grid(a);
+
+    coord_def s;
+    s.x = lua_isnumber(ls, 4) ? lua_tonumber(ls, 4) : 0;
+    s.y = lua_isnumber(ls, 5) ? lua_tonumber(ls, 5) : 0;
+    coord_def src = player2grid(s);
+
+    bolt beam;
+    beam.set_agent(&you);
+    beam.source = src;
+    beam.attitude = ATT_FRIENDLY;
+    zappy(zap, power, false, beam);
+    beam.is_tracer = true;
+    beam.is_targeting = true;
+    beam.range = range;
+    beam.target = aim;
+    beam.dont_stop_player = true;
+    beam.friend_info.dont_stop = true;
+    beam.foe_info.dont_stop = true;
+    beam.ex_size = 0;
+    beam.aimed_at_spot = true;
+    beam.path_taken.clear();
+    beam.fire();
+
+    lua_createtable(ls, beam.path_taken.size(), 0);
+    int index = 0;
+    for (auto g : beam.path_taken)
+    {
+        coord_def p = grid2player(g);
+        lua_createtable(ls, 2, 0);
+        lua_pushnumber(ls, p.x);
+        lua_rawseti(ls, -2, 1);
+        lua_pushnumber(ls, p.y);
+        lua_rawseti(ls, -2, 2);
+        lua_rawseti(ls, -2, ++index);
+    }
+    return 1;
+}
+
 /*** The failure rate of the spell as a number in [0,100].
  * @tparam string name
  * @treturn int
