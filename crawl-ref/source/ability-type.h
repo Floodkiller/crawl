@@ -47,8 +47,6 @@ enum ability_type
 #endif
     // Deep Dwarves
     ABIL_HEAL_WOUNDS,
-	// Madhkur
-	ABIL_DEGENERATIVE_HEALING,
     // Formicids
     ABIL_DIG,
     ABIL_SHAFT_SELF,

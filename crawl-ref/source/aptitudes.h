@@ -1882,6 +1882,7 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_HERMIT_CRAB,           SK_POISON_MAGIC,    1),
     APT(SP_HERMIT_CRAB,           SK_INVOCATIONS,     -1),
     APT(SP_HERMIT_CRAB,           SK_EVOCATIONS,      -1),
+<<<<<<< HEAD
 
     // SP_SKELETON
     APT(SP_SKELETON,           SK_FIGHTING,       -2),
