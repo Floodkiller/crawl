@@ -744,8 +744,14 @@ void reset_damage_counters()
 
 bool can_shave_damage()
 {
+<<<<<<< HEAD
     return (you.species == SP_DEEP_DWARF)
             || you.attribute[ATTR_REAPING];
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> f1d200ea88... madhkur
+>>>>>>> parent of e358659463... removing heads
     return (you.species == SP_DEEP_DWARF || you.species == SP_MADHKUR);
 }
 
