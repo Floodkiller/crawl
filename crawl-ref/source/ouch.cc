@@ -744,13 +744,9 @@ void reset_damage_counters()
 
 bool can_shave_damage()
 {
-<<<<<<< HEAD
     return (you.species == SP_DEEP_DWARF)
 	        || (you.species == SP_MADHKUR)
             || you.attribute[ATTR_REAPING];
-=======
->>>>>>> f1d200ea88... madhkur
-    return (you.species == SP_DEEP_DWARF || you.species == SP_MADHKUR);
 }
 
 int do_shave_damage(int dam)
