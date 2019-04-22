@@ -745,8 +745,8 @@ void reset_damage_counters()
 bool can_shave_damage()
 {
     return (you.species == SP_DEEP_DWARF)
-	        || (you.species == SP_MADHKUR)
             || you.attribute[ATTR_REAPING];
+    return (you.species == SP_DEEP_DWARF || you.species == SP_MADHKUR);
 }
 
 int do_shave_damage(int dam)
@@ -754,7 +754,7 @@ int do_shave_damage(int dam)
     if (!can_shave_damage())
         return dam;
 
-    // Deep Dwarves/Madhkur and reaping skeletons get to shave any hp loss.
+    // Deep Dwarves and reaping skeletons get to shave any hp loss.
     int shave = 1 + random2(2 + random2(1 + you.experience_level / 3));
     dprf("HP shaved: %d.", shave);
     dam -= shave;

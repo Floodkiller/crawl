@@ -41,7 +41,7 @@ enum species_type
     SP_DEEP_DWARF,
     SP_DWARROW,
     SP_DVERGR,
-	SP_MADHKUR,
+    SP_MADHKUR,
     SP_FELID,
     SP_OCTOPODE,
     SP_DJINNI,
