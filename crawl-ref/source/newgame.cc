@@ -182,8 +182,7 @@ static const species_type species_order[] =
     SP_DEEP_ELF,       SP_DEEP_DWARF,
     SP_HILL_ORC,       SP_SLUDGE_ELF,
     SP_PROMETHEAN,     SP_LAVA_ORC,
-    SP_DWARROW,        SP_MADHKUR,
-	SP_GREY_ELF,
+    SP_DWARROW,        SP_GREY_ELF,
     // small species
     SP_HALFLING,       SP_KOBOLD,
     SP_SPRIGGAN,       SP_FAERIE_DRAGON,
@@ -206,6 +205,7 @@ static const species_type species_order[] =
     // undead species
     SP_MUMMY,          SP_GHOUL,
     SP_VAMPIRE,        SP_SKELETON,
+	SP_MADHKUR,
     // not humanoid at all
     SP_FELID,          SP_OCTOPODE,
 };
