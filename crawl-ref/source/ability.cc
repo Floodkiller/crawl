@@ -773,12 +773,17 @@ const string make_cost_description(ability_type ability)
         if (ability == ABIL_HEAL_WOUNDS)
             ret += ", Permanent MP";
 <<<<<<< HEAD
+<<<<<<< HEAD
         
         if (ability == ABIL_DEGENERATIVE_HEALING)
 =======
 			
 		 if (ability == ABIL_DEGENERATIVE_HEALING)
 >>>>>>> 0e9f4ea767...  Please enter the commit message for your changes. Lines starting
+=======
+			
+		 if (ability == ABIL_DEGENERATIVE_HEALING)
+>>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
             ret += ", Statrot";
 
         if (abil.hp_cost)
@@ -970,12 +975,17 @@ static const string _detailed_cost_description(ability_type ability)
                "when used.";
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
     
     if (abil.ability == ABIL_DEGENERATIVE_HEALING)
 =======
 	
 	if (abil.ability == ABIL_DEGENERATIVE_HEALING)
 >>>>>>> 0e9f4ea767...  Please enter the commit message for your changes. Lines starting
+=======
+	
+	if (abil.ability == ABIL_DEGENERATIVE_HEALING)
+>>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
     {
         ret << "\nIt often degenerates your body when used.";
     }
@@ -1614,12 +1624,17 @@ static bool _check_ability_possible(const ability_def& abil, bool quiet = false)
         }
         return true;
 <<<<<<< HEAD
+<<<<<<< HEAD
             
     case ABIL_DEGENERATIVE_HEALING:
 =======
 		
 	 case ABIL_DEGENERATIVE_HEALING:
 >>>>>>> 0e9f4ea767...  Please enter the commit message for your changes. Lines starting
+=======
+		
+	 case ABIL_DEGENERATIVE_HEALING:
+>>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
         if (you.hp == you.hp_max)
         {
             if (!quiet)
@@ -1865,12 +1880,17 @@ static spret_type _do_ability(const ability_def& abil, bool fail)
         potionlike_effect(POT_HEAL_WOUNDS, 40);
         break;
 <<<<<<< HEAD
+<<<<<<< HEAD
             
     case ABIL_DEGENERATIVE_HEALING:
 =======
 		
 	case ABIL_DEGENERATIVE_HEALING:
 >>>>>>> 0e9f4ea767...  Please enter the commit message for your changes. Lines starting
+=======
+		
+	case ABIL_DEGENERATIVE_HEALING:
+>>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
         fail_check();
         if (one_chance_in(3))
         {
@@ -3423,10 +3443,18 @@ vector<talent> your_talents(bool check_confused, bool include_unusable)
         _add_talent(talents, ABIL_RECHARGING, check_confused);
         _add_talent(talents, ABIL_HEAL_WOUNDS, check_confused);
     }
+<<<<<<< HEAD
     
     if (you.species == SP_MADHKUR)
         _add_talent(talents, ABIL_DEGENERATIVE_HEALING, check_confused);
 <<<<<<< HEAD
+=======
+	
+	if (you.species == SP_MADHKUR)
+    {
+        _add_talent(talents, ABIL_DEGENERATIVE_HEALING, check_confused);
+    }
+>>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
 
     if (you.species == SP_SKELETON)
         _add_talent(talents, ABIL_REAP, check_confused);

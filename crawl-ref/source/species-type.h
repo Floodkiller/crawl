@@ -41,7 +41,11 @@ enum species_type
     SP_DEEP_DWARF,
     SP_DWARROW,
     SP_DVERGR,
+<<<<<<< HEAD
     SP_MADHKUR,
+=======
+	SP_MADHKUR,
+>>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
     SP_FELID,
     SP_OCTOPODE,
     SP_DJINNI,
@@ -56,8 +60,11 @@ enum species_type
     SP_FAERIE_DRAGON,
 <<<<<<< HEAD
     SP_SKELETON,
+<<<<<<< HEAD
 =======
 >>>>>>> 3947002677... mire hag
+=======
+>>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
     SP_MIRE_HAG,
     NUM_SPECIES,
 

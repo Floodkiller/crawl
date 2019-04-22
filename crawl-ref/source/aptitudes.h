@@ -1451,6 +1451,7 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_DVERGR,        SK_POISON_MAGIC,     -2),
     APT(SP_DVERGR,        SK_INVOCATIONS,      -1),
     APT(SP_DVERGR,        SK_EVOCATIONS,        2),
+<<<<<<< HEAD
   
     // SP_MADHKUR
     APT(SP_MADHKUR,        SK_FIGHTING,         1),
@@ -1490,6 +1491,49 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_MADHKUR,        SK_POISON_MAGIC,    -1),
     APT(SP_MADHKUR,        SK_INVOCATIONS,      3),
     APT(SP_MADHKUR,        SK_EVOCATIONS,       2),
+=======
+	
+    // SP_MADHKUR
+    APT(SP_MADHKUR,        SK_FIGHTING,          1),
+    APT(SP_MADHKUR,        SK_SHORT_BLADES,      1),
+    APT(SP_MADHKUR,        SK_LONG_BLADES,       0),
+    APT(SP_MADHKUR,        SK_AXES,              1),
+    APT(SP_MADHKUR,        SK_MACES_FLAILS,      0),
+    APT(SP_MADHKUR,        SK_POLEARMS,         -2),
+    APT(SP_MADHKUR,        SK_STAVES,           -1),
+    APT(SP_MADHKUR,        SK_SLINGS,            1),
+    APT(SP_MADHKUR,        SK_BOWS,             -3),
+    APT(SP_MADHKUR,        SK_CROSSBOWS,         1),
+    APT(SP_MADHKUR,        SK_THROWING,         -1),
+    APT(SP_MADHKUR,        SK_ARMOUR,            1),
+    APT(SP_MADHKUR,        SK_DODGING,           1),
+    APT(SP_MADHKUR,        SK_STEALTH,           3),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_MADHKUR,        SK_STABBING,      UNUSABLE_SKILL),
+#endif
+    APT(SP_MADHKUR,        SK_SHIELDS,           1),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_MADHKUR,        SK_TRAPS,         UNUSABLE_SKILL),
+#endif
+    APT(SP_MADHKUR,        SK_UNARMED_COMBAT,   -1),
+    APT(SP_MADHKUR,        SK_SPELLCASTING,     -1),
+    APT(SP_MADHKUR,        SK_CONJURATIONS,     -1),
+    APT(SP_MADHKUR,        SK_HEXES,            -1),
+    APT(SP_MADHKUR,        SK_CHARMS,           -2),
+    APT(SP_MADHKUR,        SK_SUMMONINGS,        0),
+    APT(SP_MADHKUR,        SK_NECROMANCY,        1),
+    APT(SP_MADHKUR,        SK_TRANSLOCATIONS,    0),
+    APT(SP_MADHKUR,        SK_TRANSMUTATIONS,   -1),
+    APT(SP_MADHKUR,        SK_FIRE_MAGIC,       -1),
+    APT(SP_MADHKUR,        SK_ICE_MAGIC,         1),
+    APT(SP_MADHKUR,        SK_AIR_MAGIC,        -3),
+    APT(SP_MADHKUR,        SK_EARTH_MAGIC,       3),
+    APT(SP_MADHKUR,        SK_POISON_MAGIC,     -1),
+    APT(SP_MADHKUR,        SK_INVOCATIONS,       3),
+    APT(SP_MADHKUR,        SK_EVOCATIONS,        2),
+	
+	
+>>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
 
     // SP_FAERIE_DRAGON
     APT(SP_FAERIE_DRAGON,   SK_FIGHTING,       -1),
@@ -1924,8 +1968,11 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_SKELETON,           SK_POISON_MAGIC,   -1),
     APT(SP_SKELETON,           SK_INVOCATIONS,    -2),
     APT(SP_SKELETON,           SK_EVOCATIONS,     -2),
+<<<<<<< HEAD
 =======
 >>>>>>> 30297ef97e... carcine
+=======
+>>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
   
     // SP_CARCINE
     APT(SP_CARCINE,        SK_FIGHTING,         2),
