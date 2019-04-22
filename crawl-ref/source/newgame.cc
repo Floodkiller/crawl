@@ -182,15 +182,8 @@ static const species_type species_order[] =
     SP_DEEP_ELF,       SP_DEEP_DWARF,
     SP_HILL_ORC,       SP_SLUDGE_ELF,
     SP_PROMETHEAN,     SP_LAVA_ORC,
-<<<<<<< HEAD
     SP_DWARROW,        SP_MADHKUR,
 	SP_GREY_ELF,
-<<<<<<< HEAD
-=======
-=======
-    SP_DWARROW,        SP_GREY_ELF,
->>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
->>>>>>> parent of e358659463... removing heads
     // small species
     SP_HALFLING,       SP_KOBOLD,
     SP_SPRIGGAN,       SP_FAERIE_DRAGON,
@@ -212,18 +205,7 @@ static const species_type species_order[] =
     SP_DEMONSPAWN,    SP_DJINNI,
     // undead species
     SP_MUMMY,          SP_GHOUL,
-<<<<<<< HEAD
     SP_VAMPIRE,        SP_SKELETON,
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-    SP_VAMPIRE,        SP_MADHKUR,
->>>>>>> f1d200ea88... madhkur
-=======
-	SP_MADHKUR,
->>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
->>>>>>> parent of e358659463... removing heads
     // not humanoid at all
     SP_FELID,          SP_OCTOPODE,
 };
@@ -1004,19 +986,7 @@ static species_group species_groups[] =
             SP_OGRE,
             SP_YETI,
             SP_DEEP_DWARF,
-<<<<<<< HEAD
 			SP_MADHKUR,
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-			SP_MADHKUR,
-=======
-            SP_MADHKUR,
->>>>>>> f1d200ea88... madhkur
-=======
-			SP_MADHKUR,
->>>>>>> 0e9f4ea767e16f9eab80a2f23f5cd876b17ea28c
->>>>>>> parent of e358659463... removing heads
             SP_DVERGR,
             SP_GNOLL,
             SP_LAVA_ORC,
