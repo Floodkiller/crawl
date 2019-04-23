@@ -164,3 +164,8 @@ Skeleton
 
 creatures animated by arcane means, skeletons are adept at combat and offensive 
 magic, and can enter a deep murderous trance at will.
+%%%%
+Yeti
+
+Yetis possess a primal connection to storm and snow, but they
+are surprisingly comfortable with the weapons of civilization.
