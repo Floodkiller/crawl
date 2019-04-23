@@ -772,6 +772,9 @@ const string make_cost_description(ability_type ability)
         if (ability == ABIL_HEAL_WOUNDS)
             ret += ", Permanent MP";
 
+        if (ability == ABIL_DEGENERATIVE_HEALING)
+            ret += ", Statrot";
+
         if (abil.hp_cost)
             ret += make_stringf(", %d HP", abil.hp_cost.cost(you.hp_max));
     }
@@ -960,6 +963,8 @@ static const string _detailed_cost_description(ability_type ability)
         ret << "\nIt has a chance of reducing your maximum magic capacity "
                "when used.";
     }
+    if (abil.ability == ABIL_DEGENERATIVE_HEALING)
+        ret << "\nIt often degenerates your body when used.";
 
     return ret.str();
 }
@@ -1594,6 +1599,15 @@ static bool _check_ability_possible(const ability_def& abil, bool quiet = false)
             return false;
         }
         return true;
+            
+    case ABIL_DEGENERATIVE_HEALING:
+        if (you.hp == you.hp_max)
+        {
+            if (!quiet)
+                canned_msg(MSG_FULL_HEALTH);
+            return false;
+        }
+        return true;
 
     case ABIL_SHAFT_SELF:
         return you.can_do_shaft_ability(quiet);
@@ -1831,6 +1845,21 @@ static spret_type _do_ability(const ability_def& abil, bool fail)
         }
         potionlike_effect(POT_HEAL_WOUNDS, 40);
         break;
+            
+     case ABIL_DEGENERATIVE_HEALING:
+        fail_check();
+        if (one_chance_in(3))
+        {
+            mpr("Your flesh begins to degenerate alarmingly!");
+            lose_stat(STAT_RANDOM, 1);
+        }
+        if (one_chance_in(3))
+        {
+            mpr("Your flesh begins to degenerate alarmingly!");
+            lose_stat(STAT_RANDOM, 1);
+        }
+        potionlike_effect(POT_HEAL_WOUNDS, 40);
+        break;        
 
     case ABIL_DIG:
         fail_check();
@@ -3370,6 +3399,9 @@ vector<talent> your_talents(bool check_confused, bool include_unusable)
         _add_talent(talents, ABIL_RECHARGING, check_confused);
         _add_talent(talents, ABIL_HEAL_WOUNDS, check_confused);
     }
+    
+    if (you.species == SP_MADHKUR)
+        _add_talent(talents, ABIL_DEGENERATIVE_HEALING, check_confused);
 
     if (you.species == SP_SKELETON)
         _add_talent(talents, ABIL_REAP, check_confused);
