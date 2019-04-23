@@ -960,6 +960,7 @@ static species_group species_groups[] =
             SP_GHOUL,
             SP_HERMIT_CRAB,
             SP_FAERIE_DRAGON,
+            SP_CARCINE,
         }
     },
     {
