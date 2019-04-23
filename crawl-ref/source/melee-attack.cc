@@ -1096,6 +1096,9 @@ public:
 
         if (you.has_usable_pincers())
             return base_dam + roll_dice(you.has_pincers(), 4);
+            
+        if (you.get_mutation_level(MUT_MASSIVE_PINCER))
+            return base_dam + you.get_mutation_level(MUT_MASSIVE_PINCER) * 3;
 
         return base_dam;
     }
@@ -1113,7 +1116,10 @@ public:
 
         if (you.has_usable_tentacles())
             return "tentacle-slap";
-
+           
+         if (you.get_mutation_level(MUT_MASSIVE_PINCER))
+            return "crush";
+            
         return name;
     }
 
