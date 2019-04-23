@@ -5713,6 +5713,8 @@ static const string felid_shout_verbs[] = {"meow", "yowl", "caterwaul"};
 static const string frog_shout_verbs[] = {"ribbit", "croak", "bellow"};
 static const string dog_shout_verbs[] = {"bark", "howl", "screech"};
 static const string crab_shout_verbs[] = {"bubble", "gurgle", "foam"};
+static const string hag_shout_verbs[] = {"titter", "cackle", "screech"};
+
 
 /**
  * What verb should be used to describe the player's shouting?
@@ -5733,6 +5735,9 @@ string player::shout_verb(bool directed) const
         return dog_shout_verbs[screaminess];
     if (species == SP_BARACHI)
         return frog_shout_verbs[screaminess];
+    if (species == SP_MIRE_HAG)
+        return hag_shout_verbs[screaminess];
+ 
     if (species != SP_FELID)
         return shout_verbs[screaminess];
     if (directed && screaminess == 0)
