@@ -147,6 +147,14 @@ item_def* newgame_make_item(object_class_type base,
             item.sub_type = ARM_ROBE;
     }
 
+     // Carcinia are prevented from starting with an extra shield.
+    if (you.species == SP_CARCINE
+    && (item.sub_type == ARM_SHIELD || item.sub_type == ARM_BUCKLER))
+    {
+        item = item_def();
+        return nullptr;
+    }
+    
     // Make sure we didn't get a stack of shields or such nonsense.
     ASSERT(item.quantity == 1 || is_stackable_item(item));
 
