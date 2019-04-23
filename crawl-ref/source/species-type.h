@@ -49,6 +49,7 @@ enum species_type
     SP_HERMIT_CRAB,
     SP_FAERIE_DRAGON,
     SP_SKELETON,
+    SP_DWARROW,
     NUM_SPECIES,
 
     SP_UNKNOWN  = 100,
