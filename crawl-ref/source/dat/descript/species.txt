@@ -164,3 +164,8 @@ Skeleton
 
 creatures animated by arcane means, skeletons are adept at combat and offensive 
 magic, and can enter a deep murderous trance at will.
+%%%%
+Mire Hag
+
+Twisted by old curses bubbling into the surface world, Hags have
+sharp curved nails and an affinity for distasteful magics.
