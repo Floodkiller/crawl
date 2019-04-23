@@ -185,6 +185,7 @@ static const species_type species_order[] =
     // small species
     SP_HALFLING,       SP_KOBOLD,
     SP_SPRIGGAN,       SP_FAERIE_DRAGON,
+    SP_DVERGR,
     // large species
     SP_OGRE,           SP_TROLL,
     // significantly different body type from human ("monstrous")
@@ -978,6 +979,7 @@ static species_group species_groups[] =
             SP_DEEP_DWARF,
             SP_GNOLL,
             SP_LAVA_ORC,
+            SP_DVERGR,
         }
     },
     {
