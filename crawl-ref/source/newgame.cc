@@ -187,6 +187,7 @@ static const species_type species_order[] =
     SP_SPRIGGAN,       SP_FAERIE_DRAGON,
     // large species
     SP_OGRE,           SP_TROLL,
+    SP_YETI,
     // significantly different body type from human ("monstrous")
     SP_NAGA,           SP_CENTAUR,
     SP_MERFOLK,        SP_MINOTAUR,
@@ -959,6 +960,7 @@ static species_group species_groups[] =
             SP_GHOUL,
             SP_HERMIT_CRAB,
             SP_FAERIE_DRAGON,
+            SP_YETI,
         }
     },
     {
