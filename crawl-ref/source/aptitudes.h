@@ -1685,5 +1685,44 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_SKELETON,           SK_POISON_MAGIC,   -1),
     APT(SP_SKELETON,           SK_INVOCATIONS,    -2),
     APT(SP_SKELETON,           SK_EVOCATIONS,     -2),
+
+    // SP_MIRE_HAG
+    APT(SP_MIRE_HAG,        SK_FIGHTING,        1),
+    APT(SP_MIRE_HAG,        SK_SHORT_BLADES,    0),
+    APT(SP_MIRE_HAG,        SK_LONG_BLADES,    -3),
+    APT(SP_MIRE_HAG,        SK_AXES,           -1),
+    APT(SP_MIRE_HAG,        SK_MACES_FLAILS,   -1),
+    APT(SP_MIRE_HAG,        SK_POLEARMS,       -3),
+    APT(SP_MIRE_HAG,        SK_STAVES,          0),
+    APT(SP_MIRE_HAG,        SK_SLINGS,          0),
+    APT(SP_MIRE_HAG,        SK_BOWS,           -1),
+    APT(SP_MIRE_HAG,        SK_CROSSBOWS,      -1),
+    APT(SP_MIRE_HAG,        SK_THROWING,        0),
+    APT(SP_MIRE_HAG,        SK_ARMOUR,         -1),
+    APT(SP_MIRE_HAG,        SK_DODGING,         1),
+    APT(SP_MIRE_HAG,        SK_STEALTH,         2),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_MIRE_HAG,        SK_STABBING,      UNUSABLE_SKILL),
+#endif
+    APT(SP_MIRE_HAG,        SK_SHIELDS,        -2),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_MIRE_HAG,        SK_TRAPS,         UNUSABLE_SKILL),
+#endif
+    APT(SP_MIRE_HAG,        SK_UNARMED_COMBAT,  0),
+    APT(SP_MIRE_HAG,        SK_SPELLCASTING,    1),
+    APT(SP_MIRE_HAG,        SK_CONJURATIONS,   -2),
+    APT(SP_MIRE_HAG,        SK_HEXES,           1),
+    APT(SP_MIRE_HAG,        SK_CHARMS,          0),
+    APT(SP_MIRE_HAG,        SK_SUMMONINGS,      1),
+    APT(SP_MIRE_HAG,        SK_NECROMANCY,      1),
+    APT(SP_MIRE_HAG,        SK_TRANSLOCATIONS, -1),
+    APT(SP_MIRE_HAG,        SK_TRANSMUTATIONS,  2),
+    APT(SP_MIRE_HAG,        SK_FIRE_MAGIC,      0),
+    APT(SP_MIRE_HAG,        SK_ICE_MAGIC,       0),
+    APT(SP_MIRE_HAG,        SK_AIR_MAGIC,       0),
+    APT(SP_MIRE_HAG,        SK_EARTH_MAGIC,     1),
+    APT(SP_MIRE_HAG,        SK_POISON_MAGIC,    2),
+    APT(SP_MIRE_HAG,        SK_INVOCATIONS,     1),
+    APT(SP_MIRE_HAG,        SK_EVOCATIONS,      1),
 };
 COMPILE_CHECK(ARRAYSZ(species_skill_aptitudes) == NUM_SPECIES * NUM_SKILLS);
