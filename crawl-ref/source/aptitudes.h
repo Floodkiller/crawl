@@ -1685,5 +1685,44 @@ static const species_skill_aptitude species_skill_aptitudes[] =
     APT(SP_SKELETON,           SK_POISON_MAGIC,   -1),
     APT(SP_SKELETON,           SK_INVOCATIONS,    -2),
     APT(SP_SKELETON,           SK_EVOCATIONS,     -2),
+
+    // SP_DVERGR
+    APT(SP_DVERGR,        SK_FIGHTING,          0),
+    APT(SP_DVERGR,        SK_SHORT_BLADES,      3),
+    APT(SP_DVERGR,        SK_LONG_BLADES,       0),
+    APT(SP_DVERGR,        SK_AXES,              2),
+    APT(SP_DVERGR,        SK_MACES_FLAILS,      1),
+    APT(SP_DVERGR,        SK_POLEARMS,         -3),
+    APT(SP_DVERGR,        SK_STAVES,           -2),
+    APT(SP_DVERGR,        SK_SLINGS,            1),
+    APT(SP_DVERGR,        SK_BOWS,             -2),
+    APT(SP_DVERGR,        SK_CROSSBOWS,         2),
+    APT(SP_DVERGR,        SK_THROWING,          2),
+    APT(SP_DVERGR,        SK_ARMOUR,            2),
+    APT(SP_DVERGR,        SK_DODGING,           0),
+    APT(SP_DVERGR,        SK_STEALTH,           1),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_DVERGR,        SK_STABBING,      UNUSABLE_SKILL),
+#endif
+    APT(SP_DVERGR,        SK_SHIELDS,           1),
+#if TAG_MAJOR_VERSION == 34
+    APT(SP_DVERGR,        SK_TRAPS,         UNUSABLE_SKILL),
+#endif
+    APT(SP_DVERGR,        SK_UNARMED_COMBAT,    0),
+    APT(SP_DVERGR,        SK_SPELLCASTING,     -1),
+    APT(SP_DVERGR,        SK_CONJURATIONS,     -1),
+    APT(SP_DVERGR,        SK_HEXES,             1),
+    APT(SP_DVERGR,        SK_CHARMS,            1),
+    APT(SP_DVERGR,        SK_SUMMONINGS,        1),
+    APT(SP_DVERGR,        SK_NECROMANCY,        1),
+    APT(SP_DVERGR,        SK_TRANSLOCATIONS,    1),
+    APT(SP_DVERGR,        SK_TRANSMUTATIONS,    2),
+    APT(SP_DVERGR,        SK_FIRE_MAGIC,        1),
+    APT(SP_DVERGR,        SK_ICE_MAGIC,        -1),
+    APT(SP_DVERGR,        SK_AIR_MAGIC,        -3),
+    APT(SP_DVERGR,        SK_EARTH_MAGIC,       3),
+    APT(SP_DVERGR,        SK_POISON_MAGIC,     -2),
+    APT(SP_DVERGR,        SK_INVOCATIONS,      -1),
+    APT(SP_DVERGR,        SK_EVOCATIONS,        2),
 };
 COMPILE_CHECK(ARRAYSZ(species_skill_aptitudes) == NUM_SPECIES * NUM_SKILLS);
