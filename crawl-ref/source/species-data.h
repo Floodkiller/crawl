@@ -810,7 +810,7 @@ static const map<species_type, species_def> species_data =
     
 { SP_MIRE_HAG, {
     "MH",
-    "Mire Hag", "Haggish", Hag,
+    "Mire Hag", "Haggish", "Hag",
     SPF_NONE,
     0, -1, 1, 4,
     MONS_HUMAN, // placeholder
@@ -823,7 +823,7 @@ static const map<species_type, species_def> species_data =
     { JOB_ASSASSIN, JOB_ARTIFICER, JOB_MONK, JOB_TRANSMUTER,
       JOB_WIZARD, JOB_CONJURER, JOB_NECROMANCER, JOB_SUMMONER,
       JOB_ENCHANTER, JOB_EARTH_ELEMENTALIST, JOB_VENOM_MAGE },
-    { SK_SHORT_BLADES, SK_UNARMED_COMBAT, SK_STAVES, SK_SLINGS,
+    { SK_SHORT_BLADES, SK_UNARMED_COMBAT, SK_STAVES, SK_SLINGS },
 } },
 
 // Ideally this wouldn't be necessary...
