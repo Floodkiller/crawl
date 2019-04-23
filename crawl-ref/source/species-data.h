@@ -807,6 +807,26 @@ static const map<species_type, species_def> species_data =
       JOB_FIRE_ELEMENTALIST, JOB_ARTIFICER },
     { SK_LONG_BLADES, SK_MACES_FLAILS, SK_POLEARMS, SK_STAVES, SK_CROSSBOWS },
 } },
+    
+{ SP_DWARROW, {
+    "DW",
+    "Dwarrow", "Dwarfish", "Dwarf",
+    SPF_NONE,
+    0, 2, -1, 4,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_ALIVE, SIZE_MEDIUM,
+    10, 8, 6, // 24
+    { STAT_STR }, 4,
+    { { MUT_MAGIC_RESISTANCE, 1, 1 }, { MUT_PASSIVE_MAPPING, 1, 7 },
+      { MUT_PASSIVE_MAPPING, 1, 14 }, { MUT_PASSIVE_MAPPING, 1, 21 }, },
+    {},
+    {},
+    { JOB_FIGHTER, JOB_HUNTER, JOB_MONK, JOB_ARTIFICER,
+      JOB_BERSERKER, JOB_ABYSSAL_KNIGHT, JOB_PRIEST,
+      JOB_FIRE_ELEMENTALIST, JOB_EARTH_ELEMENTALIST, },
+    { SK_LONG_BLADES, SK_AXES, SK_MACES_FLAILS, SK_SLINGS,
+      SK_CROSSBOWS },
+} },
 
 // Ideally this wouldn't be necessary...
 { SP_UNKNOWN, { // Line 1: enum
