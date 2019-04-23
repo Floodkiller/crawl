@@ -143,6 +143,7 @@ static const int conflict[][3] =
     { MUT_BERSERK,             MUT_CLARITY,                 1},
     { MUT_FAST,                MUT_SLOW,                    1},
     { MUT_FANGS,               MUT_BEAK,                   -1},
+    { MUT_MASSIVE_PINCER,      MUT_MISSING_HAND,           -1},
     { MUT_ANTENNAE,            MUT_HORNS,                  -1}, // currently overridden by physiology_mutation_conflict
     { MUT_HOOVES,              MUT_TALONS,                 -1}, // currently overridden by physiology_mutation_conflict
     { MUT_TRANSLUCENT_SKIN,    MUT_CAMOUFLAGE,             -1},
@@ -1300,6 +1301,10 @@ bool physiology_mutation_conflict(mutation_type mutat)
                            return t.mutation == mutat;});
     }
 
+    // If a Carcine loses their offhand arm they cant regrow the pincer.
+    if (you.get_mutation_level(MUT_MISSING_HAND) && mutat == MUT_MASSIVE_PINCER)
+        return true;
+    
     // Strict 3-scale limit.
     if (_is_covering(mutat) && _body_covered() >= 3)
         return true;
