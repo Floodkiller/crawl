@@ -182,6 +182,7 @@ static const species_type species_order[] =
     SP_DEEP_ELF,       SP_DEEP_DWARF,
     SP_HILL_ORC,       SP_SLUDGE_ELF,
     SP_PROMETHEAN,     SP_LAVA_ORC,
+    SP_DWARROW,
     // small species
     SP_HALFLING,       SP_KOBOLD,
     SP_SPRIGGAN,       SP_FAERIE_DRAGON,
