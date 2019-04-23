@@ -4265,9 +4265,9 @@ bool player_regenerates_hp()
 
 bool player_regenerates_mp()
 {
-    // Don't let DD use guardian spirit for free HP, since their
+    // Don't let DD or MA use guardian spirit for free HP, since their
     // damage shaving is enough. (due, dpeg)
-    if (you.spirit_shield() && you.species == SP_DEEP_DWARF)
+    if (you.spirit_shield() && you.species == SP_DEEP_DWARF || you.species == SP_MADHKUR)
         return false;
     // Pakellas blocks MP regeneration.
     if (have_passive(passive_t::no_mp_regen) || player_under_penance(GOD_PAKELLAS))
