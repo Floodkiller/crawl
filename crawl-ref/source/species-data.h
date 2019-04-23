@@ -807,6 +807,26 @@ static const map<species_type, species_def> species_data =
       JOB_FIRE_ELEMENTALIST, JOB_ARTIFICER },
     { SK_LONG_BLADES, SK_MACES_FLAILS, SK_POLEARMS, SK_STAVES, SK_CROSSBOWS },
 } },
+    
+{ SP_MADHKUR, {
+    "MA",
+    "Madkhur", "Dwarfish", "Dwarf",
+    SPF_NONE,
+    0, -1, 0, 4,
+    MONS_HUMAN,    // placeholder
+    HT_LAND, US_UNDEAD, SIZE_MEDIUM,
+    11, 9, 10, // 30
+    { STAT_STR, STAT_INT }, 4,
+    { { MUT_DETERIORATION, 1, 1 }, { MUT_NO_REGENERATION, 1, 1 },
+      { MUT_PASSIVE_MAPPING, 1, 1 }, { MUT_PASSIVE_MAPPING, 1, 9 },
+      { MUT_PASSIVE_MAPPING, 1, 18 }, },
+    { "Petrified by your will, your flesh is resistant to damage.",
+      "You can heal your body while risking deterioration" },
+    { "damage resistance", "degenerative healing" },
+    { JOB_FIGHTER, JOB_HUNTER, JOB_BERSERKER, JOB_HEALER,
+      JOB_NECROMANCER, JOB_EARTH_ELEMENTALIST },
+    { SK_MACES_FLAILS, SK_AXES, SK_LONG_BLADES, SK_CROSSBOWS, SK_SLINGS },
+} },
 
 // Ideally this wouldn't be necessary...
 { SP_UNKNOWN, { // Line 1: enum
