@@ -221,6 +221,14 @@ enum tag_minor_version
     TAG_MINOR_NO_ACTOR_HELD,       // Remove actor.held.
     TAG_MINOR_GOLDIFY_BOOKS,       // Spellbooks disintegrate when picked up, like gold/runes/orbs
     TAG_MINOR_PLEDGES,             // Added pledges to new game options/player data
+    TAG_MINOR_VETO_DISINT,         // Replace veto_disintegrate map markers
+    TAG_MINOR_LEVEL_XP_VAULTS,     // XP tracking now tracks vaults, not spawns.
+    TAG_MINOR_REVEAL_TRAPS,        // All traps generate known
+    TAG_MINOR_GAUNTLET_TRAPPED,    // It was briefly possible to get trapped in a specific gauntlet map.
+    TAG_MINOR_REMOVE_DECKS,        // Decks are no more
+    TAG_MINOR_GAMESEEDS,           // Game seeds + rng state saved
+    TAG_MINOR_YELLOW_DRACONIAN_RACID, // Change yellow draconians' rAcid fake mutation to a true mutation.
+    TAG_MINOR_THROW_CONSOLIDATION, // Throwing brands consolidated
 #endif
     NUM_TAG_MINORS,
     TAG_MINOR_VERSION = NUM_TAG_MINORS - 1
