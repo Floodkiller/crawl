@@ -1208,7 +1208,7 @@ void learned_something_new(hints_event_type seen_what, coord_def gc)
              << "</w>') </console>"
                 "you've picked up. Missiles like tomahwaks and throwing nets "
                 "can be thrown by hand, but other missiles like arrows and "
-                "needles require a launcher and training in using it to be "
+                "bolts require a launcher and training in using it to be "
                 "really effective. "
 #ifdef USE_TILE_LOCAL
                 "<w>Right-clicking</w> on "
