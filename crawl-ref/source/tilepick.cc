@@ -2150,7 +2150,6 @@ static tileidx_t _tileidx_missile_base(const item_def &item)
         {
         default:             return TILE_MI_BOOMERANG + 1;
         case 0:              return TILE_MI_BOOMERANG;
-        case SPMSL_STEEL:    return TILE_MI_BOOMERANG_STEEL;
         case SPMSL_SILVER:   return TILE_MI_BOOMERANG_SILVER;
         }
 
@@ -2790,11 +2789,6 @@ tileidx_t tileidx_item_throw(const item_def &item, int dx, int dy)
             case MI_THROWING_NET:
                 ch = TILE_MI_THROWING_NET0;
                 break;
-            case MI_PIE:
-                ch = TILE_MI_PIE0;
-                break;
-            case MI_BOOMERANG:
-                ch = TILE_MI_BOOMERANG0;
             default:
                 break;
         }
@@ -2827,6 +2821,8 @@ tileidx_t tileidx_item_throw(const item_def &item, int dx, int dy)
             case MI_THROWING_NET:
                 ch = TILE_MI_THROWING_NET0;
                 break;
+            case MI_BOOMERANG:
+                ch = TILE_MI_BOOMERANG0;
             default:
                 break;
         }
@@ -3067,6 +3063,8 @@ tileidx_t vary_bolt_tile(tileidx_t tile, int dist)
     case TILE_BOLT_FLAME:
     case TILE_BOLT_IRRADIATE:
         return tile + ui_random(tile_main_count(tile));
+    case TILE_MI_BOOMERANG0:
+        return tile + ui_random(4);
     default:
         return tile;
     }
