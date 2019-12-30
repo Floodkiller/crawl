@@ -23,6 +23,7 @@
 #include "ng-init.h"
 #include "ng-wanderer.h"
 #include "options.h"
+#include "pledge.h"
 #include "prompt.h"
 #include "religion.h"
 #if TAG_MAJOR_VERSION == 34
@@ -601,6 +602,7 @@ static void _setup_generic(const newgame_def& ng)
     you.your_name  = ng.name;
     you.species    = ng.species;
     you.char_class = ng.job;
+    you.pledge     = ng.pledge;
 
     you.chr_class_name = get_job_name(you.char_class);
 

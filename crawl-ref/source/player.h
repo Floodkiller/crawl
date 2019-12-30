@@ -36,6 +36,7 @@
 #include "transformation.h"
 #include "uncancellable-type.h"
 #include "unique-item-status-type.h"
+#include "pledge-type.h"
 
 #define ICY_ARMOUR_KEY "ozocubu's_armour_pow"
 #define TRANSFORM_POW_KEY "transform_pow"
@@ -123,6 +124,7 @@ public:
     string your_name;
     species_type species;
     job_type char_class;
+    pledge_type pledge;
 
     // This field is here even in non-WIZARD compiles, since the
     // player might have been playing previously under wiz mode.

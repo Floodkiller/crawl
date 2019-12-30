@@ -1,0 +1,100 @@
+%%%%
+None
+
+Play Dungeon Crawl with no pledges.
+%%%%
+Brute Force
+
+You are unable to worship the gods.
+UNDER CONSTRUCTION
+%%%%
+Explorer
+
+You must obtain all 15 runes of Zot before you can pick up the orb of Zot.
+UNDER CONSTRUCTION
+%%%%
+Nature's Ally
+
+You cannot enter the Tomb branch until you pick up the orb of Zot. You cannot
+leave the dungeon until you pick up the golden rune of Zot.
+UNDER CONSTRUCTION
+%%%%
+Avarice
+
+You may only enter the Dungeon and the branches of Temple, Lair, Orc, Elf, Depths,
+Abyss, Hell, and Dis until you obtain the iron rune of Zot.
+UNDER CONSTRUCTION
+%%%%
+Darkness
+
+You cannot enter the branches of Lair, Orcish Mines, or Vaults.
+UNDER CONSTRUCTION
+%%%%
+Spiteful
+
+Start the game with random sacrifices of Ru.
+UNDER CONSTRUCTION
+%%%%
+Conqueror
+
+You will die after 50,000 turns have passed.
+UNDER CONSTRUCTION
+%%%%
+Ascetic
+
+You cannot use potions or scrolls.
+UNDER CONSTRUCTION
+%%%%
+Lorekeeper
+
+You are unable to raise any of your skill levels to 13 or higher.
+UNDER CONSTRUCTION
+%%%%
+Courage
+
+You cannot enter the branches of Depths or Zot until you have obtained 6 runes of Zot.
+UNDER CONSTRUCTION
+%%%%
+Efficiency
+
+You will die once you reach experience level 20.
+UNDER CONSTRUCTION
+%%%%
+Madness
+
+You cannot pick up the orb of Zot until you have exited floor 27 of a ziggurat.
+UNDER CONSTRUCTION
+%%%%
+Harvest
+
+You cannot voluntarily leave a floor of the dungeon if a unique monster is alive
+on the same floor.
+UNDER CONSTRUCTION
+%%%%
+Justice
+
+You cannot pick up the orb of Zot until all unique Hell and Pandemonium Lords have
+been killed. Attempting to pick up the orb will summon all Lords that are still alive.
+UNDER CONSTRUCTION
+%%%%
+Chaos
+
+You start the game worshipping Xom. You cannot abandon Xom.
+UNDER CONSTRUCTION
+%%%%
+Haunting
+
+You have a 10% chance when entering a floor to summon a champion of LogicNinja.
+UNDER CONSTRUCTION
+%%%%
+Peer Pressure
+
+You will mutate as if eating a mutagenic chunk whenever you eat any food or chunks.
+UNDER CONSTRUCTION
+%%%%
+Heretic
+
+Whenever you pick up a rune of Zot, experience divine retribution of a random god
+(other than the god you are currently worshipping or any gods allied with them).
+UNDER CONSTRUCTION
+%%%%
