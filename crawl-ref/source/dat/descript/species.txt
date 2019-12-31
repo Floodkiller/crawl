@@ -174,3 +174,8 @@ Grey Elf
 
 The Grey Elves have an affinity for their natural surroundings
 that their more noble brethren lack, practically and magically.
+%%%%
+Carcine
+
+Unintended issue of a mad wizard's crimes against man and god,
+Carcinia bear a sturdy claw large enough to be used as a shield.
