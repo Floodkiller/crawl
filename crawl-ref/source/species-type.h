@@ -49,6 +49,7 @@ enum species_type
     SP_HERMIT_CRAB,
     SP_FAERIE_DRAGON,
     SP_SKELETON,
+    SP_CARCINE,
     SP_ABOMINATION,
     SP_GREY_ELF,
     NUM_SPECIES,
