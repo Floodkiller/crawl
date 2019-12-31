@@ -146,6 +146,7 @@ public:
     int max_magic_points;
     int mp_max_adj_perm;        // max MP loss (ability costs, tutorial bonus)
     int mp_max_adj_temp;        // Temporary max MP loss (reserved MP)
+    int mp_max_adj_temp_base;   // Base amount of MP reserved (before modifying)
 
     FixedVector<int8_t, NUM_STATS> stat_loss;
     FixedVector<int8_t, NUM_STATS> base_stats;

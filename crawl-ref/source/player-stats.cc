@@ -629,6 +629,16 @@ static void _handle_stat_change(stat_type stat)
 
     you.redraw_stats[stat] = true;
     _normalize_stat(stat);
+    
+    // Calc MP/HP for new permabuff totals after stat change (depending on species)
+    if (you.species == SP_DJINNI)
+    {
+        calc_hp();
+    }
+    else
+    {
+        calc_mp();
+    }
 
     switch (stat)
     {

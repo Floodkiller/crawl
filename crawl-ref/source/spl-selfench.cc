@@ -667,7 +667,7 @@ void spell_remove_permabuff(spell_type spell, int release_amount)
 void spell_drop_permabuffs()
 {
     // Only go through this if the player has any permabuffs (to avoid message annoyance/doubled messages)
-    if(you.mp_max_adj_temp != 0)
+    if(you.mp_max_adj_temp_base != 0)
     {
         // If transformed, drop form
         if (you.form != transformation::none)
@@ -693,7 +693,7 @@ void spell_drop_permabuffs()
                 end_battlesphere(old_sphere, false);
         }
         // Unreserve all MP/EP
-        unreserve_mp(-you.mp_max_adj_temp);
+        unreserve_mp(-you.mp_max_adj_temp_base);
         // Remove all permabuffs from player's permabuffs here
         for (int i=0; i < NUM_MUTATIONS; i++)
         {

@@ -1012,6 +1012,18 @@ representing a severe chance).
 Be careful of magic-using enemies! Some of them can use magic just as well as
 you, if not better, and often use it intelligently.
 
+Some spells when cast will stay permanently active at the cost of your maximum
+MP reserves. The cost to reserve these spells is equal to the number of spell
+levels of all permanent spells currently active (plus the one you are casting,
+multiplied based on your intelligence (starting at 5.0 at 0 intelligence and
+reduced by 0.1 per point of intelligence; ex. 25 intelligence will mean your
+spell levels are multipled by 2.5, 43 intelligence is 0.7, etc.), and then 
+finally reduced by your dexterity to a minimum of 1 MP. You can cancel these
+spells and regain your MP by casting the spell again to cancel it, releasing
+all your spells at once from your ability menu, equipping/unequipping body
+armour or a shield, being dispelled/cancelled, or having your MP reduced below
+the amount of MP you have reserved (releasing all of your spells).
+
 ****************************************
 I. Targeting
 ****************************************

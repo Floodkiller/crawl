@@ -680,6 +680,11 @@ static void _setup_generic(const newgame_def& ng)
     request_autoinscribe();
     autoinscribe();
 
+    // Don't adjust for permabuffs at game start
+    // (why is this happening???????)
+    you.mp_max_adj_temp_base = 0;
+    you.mp_max_adj_temp = 0;
+    
     // We calculate hp and mp here; all relevant factors should be
     // finalised by now. (GDL)
     calc_hp();

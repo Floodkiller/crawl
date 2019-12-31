@@ -3994,6 +3994,35 @@ int player_rotted()
         return -you.hp_max_adj_temp-you.mp_max_adj_temp;
 }
 
+static int _modified_reserved_mp(int base_mp)
+{
+    // Only calc if any MP is actually reserved
+    if (base_mp != 0)
+    {
+        // Multiply base_mp by (50 - Int) / 10
+        // round down to nearest whole number (benefits player)
+        // don't worry if mod_mp becomes positive here, checking later
+        int mod_mp = floor(static_cast<double>(base_mp) * 
+                           ((50.0-static_cast<double>(you.intel(false))) / 10.0));
+
+        // Reduce mod_mp by Dex
+        mod_mp += you.dex(false);
+
+        // If modifications make mod_mp zero or positive, change to -1 to reserve
+        // at least one MP
+        if (mod_mp >= 0)
+        {
+            mod_mp = -1;
+        }
+
+        return mod_mp;
+    }
+    else
+    {
+        return base_mp;
+    }
+}
+
 // Attempt to reserve MP (or EP) for permabuffs or other future MP reservations
 bool reserve_mp(int mp_reserved)
 {
@@ -4002,21 +4031,25 @@ bool reserve_mp(int mp_reserved)
     {
         mp_reserved = mp_reserved * DJ_MP_RATE;
     }
+    
+    // Set mp_reserved_mod to what new you.mp_max_adj_temp would be if reserve succeeds
+    int mp_reserved_mod = _modified_reserved_mp(you.mp_max_adj_temp_base - mp_reserved);
+    
     // If not enough MP (or EP if Djinni) left to reserve, return false
     // (include items for MP, do not include trans/berserk if EP)
-    if((-(you.mp_max_adj_temp-mp_reserved) > 
-        get_real_mp(true, false)-you.mp_max_adj_temp) && you.species != SP_DJINNI)
+    if( -mp_reserved_mod > 
+        get_real_mp(true, false)-you.mp_max_adj_temp && you.species != SP_DJINNI)
     {
         return false;
     }
-    else if((-(you.mp_max_adj_temp-mp_reserved) > 
-        get_real_hp(false, false)-you.mp_max_adj_temp && you.species == SP_DJINNI))
+    else if( -mp_reserved_mod > 
+        get_real_hp(false, false)-you.mp_max_adj_temp && you.species == SP_DJINNI)
     {
         return false;
     }
     else
     {
-        you.mp_max_adj_temp -= mp_reserved;
+        you.mp_max_adj_temp_base -= mp_reserved;
         
         if(you.species != SP_DJINNI)
         {
@@ -4041,15 +4074,19 @@ void unreserve_mp(int mp_recovered)
         mp_recovered = mp_recovered * DJ_MP_RATE;
     }
     // This check shouldn't be needed, but something went wrong...
-    if (mp_recovered == -you.mp_max_adj_temp)
-        you.mp_max_adj_temp = 0;
+    if (mp_recovered == -you.mp_max_adj_temp_base)
+    {
+        you.mp_max_adj_temp_base = 0;
+    }
     else
-        you.mp_max_adj_temp += mp_recovered;
+    {
+        you.mp_max_adj_temp_base += mp_recovered;
+    }
     
     // In case I fucked up somewhere, don't add max MP
-    if (you.mp_max_adj_temp > 0)
+    if (you.mp_max_adj_temp_base > 0)
     {
-        you.mp_max_adj_temp = 0;
+        you.mp_max_adj_temp_base = 0;
     }
 
     if(you.species != SP_DJINNI)
@@ -4170,6 +4207,7 @@ int get_real_hp(bool trans, bool rotted)
     // Calculate Djinni permabuffs before trans/berserk
     if (you.species == SP_DJINNI)
     {
+        you.mp_max_adj_temp = _modified_reserved_mp(you.mp_max_adj_temp_base);
         hitp += you.mp_max_adj_temp;
         // If hitp is 0 after application, drop all permabuffs
         if (hitp < 0)
@@ -4239,6 +4277,7 @@ int get_real_mp(bool include_items, bool reserved)
     // Apply permabuff reservations after item calculations
     if (!reserved)
     {
+        you.mp_max_adj_temp = _modified_reserved_mp(you.mp_max_adj_temp_base);
         enp += you.mp_max_adj_temp;
 
         // If enp is less than zero, drop all permabuffs
