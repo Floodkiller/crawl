@@ -1339,7 +1339,7 @@ static void _redraw_title()
     if (you_worship(GOD_NO_GOD))
     {
         if (you.char_class == JOB_MONK && you.species != SP_PROMETHEAN
-            && !had_gods())
+            && !had_gods() && you.pledge != PLEDGE_BRUTE_FORCE)
         {
             string godpiety = "**....";
             textcolour(DARKGREY);

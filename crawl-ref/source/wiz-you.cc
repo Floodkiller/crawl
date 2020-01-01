@@ -974,6 +974,11 @@ void wizard_join_religion()
         mpr("Not even in wizmode may Prometheans worship a god!");
         return;
     }
+    if (you.pledge == PLEDGE_BRUTE_FORCE)
+    {
+        mpr("Not even in wizmode may you break your pledge!");
+        return;
+    }
     god_type god = choose_god();
     if (god == NUM_GODS)
         mpr("That god doesn't seem to exist!");

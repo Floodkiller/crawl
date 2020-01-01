@@ -3620,7 +3620,8 @@ bool is_useless_item(const item_def &item, bool temp)
                    || you.undead_state(temp);
 
         case AMU_FAITH:
-            return (you.species == SP_PROMETHEAN && !you.religion)
+            return ((you.species == SP_PROMETHEAN || you.pledge == PLEDGE_BRUTE_FORCE)
+                     && !you.religion)
                     || you_worship(GOD_GOZAG)
                     || (you_worship(GOD_RU) && you.piety == piety_breakpoint(5));
 

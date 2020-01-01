@@ -6,7 +6,6 @@ Play Dungeon Crawl with no pledges.
 Brute Force
 
 You are unable to worship the gods.
-UNDER CONSTRUCTION
 %%%%
 Explorer
 

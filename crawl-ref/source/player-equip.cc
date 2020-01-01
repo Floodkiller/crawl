@@ -1258,7 +1258,7 @@ static void _equip_jewellery_effect(item_def &item, bool unmeld,
         break;
 
     case AMU_FAITH:
-        if (you.species == SP_PROMETHEAN)
+        if (you.species == SP_PROMETHEAN || you.pledge == PLEDGE_BRUTE_FORCE)
             mpr("The amulet shines brightly for a moment, but becomes dull again.");
         else if (you_worship(GOD_RU) && you.piety >= piety_breakpoint(5))
         {

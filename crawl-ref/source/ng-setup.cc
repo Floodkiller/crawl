@@ -335,7 +335,8 @@ static void _give_items_skills(const newgame_def& ng)
     switch (you.char_class)
     {
     case JOB_BERSERKER:
-        you.religion = GOD_TROG;
+        if (you.pledge != PLEDGE_BRUTE_FORCE)
+            you.religion = GOD_TROG;
         you.piety = 35;
 
         if (you_can_wear(EQ_BODY_ARMOUR))
@@ -349,7 +350,8 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_CHAOS_KNIGHT:
-        you.religion = GOD_XOM;
+        if (you.pledge != PLEDGE_BRUTE_FORCE)
+            you.religion = GOD_XOM;
         you.piety = 100;
         you.gift_timeout = max(5, random2(40) + random2(40));
 
@@ -360,7 +362,8 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_ABYSSAL_KNIGHT:
-        you.religion = GOD_LUGONU;
+        if (you.pledge != PLEDGE_BRUTE_FORCE)
+            you.religion = GOD_LUGONU;
         if (!crawl_state.game_is_sprint())
             you.chapter = CHAPTER_POCKET_ABYSS;
         you.piety = 38;
@@ -372,7 +375,8 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_DEATH_KNIGHT:
-        you.religion = GOD_YREDELEMNUL;
+        if (you.pledge != PLEDGE_BRUTE_FORCE)
+            you.religion = GOD_YREDELEMNUL;
         you.piety = 35;
 
         if (species_apt(SK_ARMOUR) < species_apt(SK_DODGING))
@@ -382,22 +386,26 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_SLIME_APOSTLE:
-        you.religion = GOD_JIYVA;
+        if (you.pledge != PLEDGE_BRUTE_FORCE)
+            you.religion = GOD_JIYVA;
         you.piety = 40;
         break;
 
     case JOB_PRIEST:
-        you.religion = GOD_ZIN;
+        if (you.pledge != PLEDGE_BRUTE_FORCE)
+            you.religion = GOD_ZIN;
         you.piety = 45;
         break;
     
     case JOB_HEALER:
-        you.religion = GOD_ELYVILON;
+        if (you.pledge != PLEDGE_BRUTE_FORCE)
+            you.religion = GOD_ELYVILON;
         you.piety = 55;
         break;
 
     case JOB_JESTER:
-        you.religion = GOD_NEMELEX_XOBEH;
+        if (you.pledge != PLEDGE_BRUTE_FORCE)
+            you.religion = GOD_NEMELEX_XOBEH;
         you.piety = 25;
         you.penance[GOD_XOM] = 50;
         break;

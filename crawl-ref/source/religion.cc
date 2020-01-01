@@ -3080,7 +3080,7 @@ static bool _god_rejects_loveless(god_type god)
 
 bool player_can_join_god(god_type which_god)
 {
-    if (you.species == SP_PROMETHEAN)
+    if (you.species == SP_PROMETHEAN || you.pledge == PLEDGE_BRUTE_FORCE)
         return false;
 
     if (which_god == GOD_TROG && you.mp_max_adj_temp > 0)
@@ -3596,6 +3596,7 @@ void join_religion(god_type which_god)
     ASSERT(which_god != GOD_NO_GOD);
     ASSERT(which_god != GOD_ECUMENICAL);
     ASSERT(you.species != SP_PROMETHEAN);
+    ASSERT(you.pledge != PLEDGE_BRUTE_FORCE);
 
     redraw_screen();
 
