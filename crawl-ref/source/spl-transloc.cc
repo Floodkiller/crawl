@@ -854,7 +854,7 @@ spret_type cast_apportation(int pow, bolt& beam, bool fail)
                     if (runes_in_pack() < 15)
                         start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
                             "You probably should have completed your pledge before doing this!");
-                    break;
+                        break;
                 
                 default:
                     start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
