@@ -2259,7 +2259,8 @@ void world_reacts()
 
     ASSERT(you.time_taken >= 0);
     you.elapsed_time += you.time_taken;
-    if (you.elapsed_time >= 2*1000*1000*1000)
+    if (you.elapsed_time >= 2*1000*1000*1000 ||
+        (you.pledge == PLEDGE_CONQUEROR && you.elapsed_time >= 500000))
     {
         // 2B of 1/10 turns. A 32-bit signed int can hold 2.1B.
         // The worst case of mummy scumming had 92M turns, the second worst
@@ -2269,7 +2270,10 @@ void world_reacts()
         // a gigabyte of bzipped ttyrec.
         // We could extend the counters to 64 bits, but in the light of the
         // above, it's an useless exercise.
-        mpr("Outside, the world ends.");
+        if (you.pledge == PLEDGE_CONQUEROR)
+            mpr("You failed to complete your pledge in time.");
+        else
+            mpr("Outside, the world ends.");
         mpr("Sorry, but your quest for the Orb is now rather pointless. "
             "You quit...");
         // Please do not give it a custom ktyp or make it cool in any way
