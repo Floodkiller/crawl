@@ -1028,7 +1028,11 @@ void pickup_menu(int item_link)
                 if (!move_item_to_inv(j, num_to_take))
                 {
                     n_tried_pickup++;
-                    pickup_warning = "You can't carry that many items.";
+                    item_def &item = mitm[j];
+                    if(!(item_is_orb(item)))
+                    {
+                        pickup_warning = "You can't carry that many items.";
+                    }
                     if (mitm[j].defined())
                         mitm[j].flags = oldflags;
                 }
@@ -1037,7 +1041,7 @@ void pickup_menu(int item_link)
                     n_did_pickup++;
                     // If we deliberately chose to take only part of a
                     // pile, we consider the rest to have been
-                    // "dropped."
+                    // "dropped."6
                     if (!take_all && mitm[j].defined())
                         mitm[j].flags |= ISFLAG_DROPPED;
                 }
@@ -1365,8 +1369,12 @@ bool pickup_single_item(int link, int qty)
 
     if (!pickup_succ)
     {
-        mpr("You can't carry that many items.");
-        learned_something_new(HINT_FULL_INVENTORY);
+        item_def &orbcheck = mitm[link];
+        if(!(item_is_orb(orbcheck)))
+        {
+            mpr("You can't carry that many items.");
+            learned_something_new(HINT_FULL_INVENTORY);
+        }
         return false;
     }
     return true;
@@ -1474,7 +1482,11 @@ void pickup(bool partial_quantity)
                 // attempt to actually pick up the object.
                 if (!move_item_to_inv(o, num_to_take))
                 {
-                    pickup_warning = "You can't carry that many items.";
+                    item_def &item = mitm[o];
+                    if(!(item_is_orb(item)))
+                    {
+                        pickup_warning = "You can't carry that many items.";
+                    }
                     mitm[o].flags = old_flags;
                 }
             }
@@ -2203,8 +2215,22 @@ static bool _merge_items_into_inv(item_def &it, int quant_got,
     // The Orb is also handled specially.
     if (item_is_orb(it))
     {
-        _get_orb(it, quiet);
-        return true;
+        // Check pledges first before allowing orb to be picked up
+        // Let each case fall through to default if it was accomplished
+        switch(you.pledge)
+        {
+            case PLEDGE_EXPLORER:
+                if (runes_in_pack() < 15)
+                {
+                    mpr("You haven't collected enough runes to complete your pledge.");
+                    return false;
+                }
+                
+            default:
+                _get_orb(it, quiet);
+                return true;
+        }
+       
     }
 
     // attempt to merge into an existing stack, if possible

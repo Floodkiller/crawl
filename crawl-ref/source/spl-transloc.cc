@@ -845,7 +845,21 @@ spret_type cast_apportation(int pow, bolt& beam, bool fail)
             orb_pickup_noise(where, 30,
                 "The Orb shrieks as your magic touches it!",
                 "The Orb lets out a furious burst of light as your magic touches it!");
-            start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, "Now pick up the Orb and get out of here!");
+            
+            // Check if pledges were completed; if not, give a different message
+            // (still let the player anger Pandemonium though, that's funny)
+            switch(you.pledge)
+            {
+                case PLEDGE_EXPLORER:
+                    if (runes_in_pack() < 15)
+                        start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
+                            "You probably should have completed your pledge before doing this!");
+                    break;
+                
+                default:
+                    start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
+                        "Now pick up the Orb and get out of here!");
+            }
         }
     }
 

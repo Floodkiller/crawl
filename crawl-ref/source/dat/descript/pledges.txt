@@ -10,7 +10,6 @@ You are unable to worship the gods.
 Explorer
 
 You must obtain all 15 runes of Zot before you can pick up the orb of Zot.
-UNDER CONSTRUCTION
 %%%%
 Nature's Ally
 
