@@ -25,7 +25,6 @@ UNDER CONSTRUCTION
 Darkness
 
 You cannot enter the branches of Lair, Orcish Mines, or Vaults.
-UNDER CONSTRUCTION
 %%%%
 Spiteful
 

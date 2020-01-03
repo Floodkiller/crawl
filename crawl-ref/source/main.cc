@@ -1301,6 +1301,14 @@ static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
             }
             break;
         
+        case PLEDGE_LORD_OF_DARKNESS:
+            if (ftype == DNGN_ENTER_ORC || ftype == DNGN_ENTER_LAIR
+                || ftype == DNGN_ENTER_VAULTS)
+            {
+                mpr("Your pledge prevents you from entering this branch.");
+                return false;
+            }
+            break;
         
         default:
             break;
