@@ -335,9 +335,11 @@ static void _give_items_skills(const newgame_def& ng)
     switch (you.char_class)
     {
     case JOB_BERSERKER:
-        if (you.pledge != PLEDGE_BRUTE_FORCE)
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
             you.religion = GOD_TROG;
-        you.piety = 35;
+            you.piety = 35;
+        }
 
         if (you_can_wear(EQ_BODY_ARMOUR))
             you.skills[SK_ARMOUR] += 2;
@@ -350,9 +352,11 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_CHAOS_KNIGHT:
-        if (you.pledge != PLEDGE_BRUTE_FORCE)
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
             you.religion = GOD_XOM;
-        you.piety = 100;
+            you.piety = 100;
+        }
         you.gift_timeout = max(5, random2(40) + random2(40));
 
         if (species_apt(SK_ARMOUR) < species_apt(SK_DODGING))
@@ -362,11 +366,13 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_ABYSSAL_KNIGHT:
-        if (you.pledge != PLEDGE_BRUTE_FORCE)
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
             you.religion = GOD_LUGONU;
+            you.piety = 38;
+        }
         if (!crawl_state.game_is_sprint())
             you.chapter = CHAPTER_POCKET_ABYSS;
-        you.piety = 38;
 
         if (species_apt(SK_ARMOUR) < species_apt(SK_DODGING))
             you.skills[SK_DODGING]++;
@@ -375,9 +381,11 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_DEATH_KNIGHT:
-        if (you.pledge != PLEDGE_BRUTE_FORCE)
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
             you.religion = GOD_YREDELEMNUL;
-        you.piety = 35;
+            you.piety = 35;
+        }
 
         if (species_apt(SK_ARMOUR) < species_apt(SK_DODGING))
             you.skills[SK_DODGING]++;
@@ -386,27 +394,36 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_SLIME_APOSTLE:
-        if (you.pledge != PLEDGE_BRUTE_FORCE)
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
             you.religion = GOD_JIYVA;
-        you.piety = 40;
+            you.piety = 40;
+        }
         break;
 
     case JOB_PRIEST:
-        if (you.pledge != PLEDGE_BRUTE_FORCE)
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
             you.religion = GOD_ZIN;
-        you.piety = 45;
+            you.piety = 45;
+        }
         break;
     
     case JOB_HEALER:
-        if (you.pledge != PLEDGE_BRUTE_FORCE)
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
             you.religion = GOD_ELYVILON;
-        you.piety = 55;
+            you.piety = 55;
+        }
         break;
 
     case JOB_JESTER:
-        if (you.pledge != PLEDGE_BRUTE_FORCE)
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
             you.religion = GOD_NEMELEX_XOBEH;
-        you.piety = 25;
+            you.piety = 25;
+        }
+        // Pledges still get Xom penance for picking Jester
         you.penance[GOD_XOM] = 50;
         break;
 
@@ -418,12 +435,18 @@ static void _give_items_skills(const newgame_def& ng)
         break;
     }
     
-    // Pledge is same as a Chaos Knight start on the religion side
+    // Chaos pledge is same as a Chaos Knight start on the religion side
+    // override afterwards to make it easier
     if (you.pledge == PLEDGE_CHAOS)
     {
         you.religion = GOD_XOM;
         you.piety = 100;
         you.gift_timeout = max(5, random2(40) + random2(40));
+    }
+    if (you.pledge == PLEDGE_SPITEFUL)
+    {
+        // Need to do join_religion to get all support variables established
+        join_religion(GOD_RU);
     }
 
     if (you.char_class == JOB_ABYSSAL_KNIGHT)

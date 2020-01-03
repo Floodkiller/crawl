@@ -27,8 +27,8 @@ You cannot enter the branches of Lair, Orcish Mines, or Vaults.
 %%%%
 Spiteful
 
-Start the game with random sacrifices of Ru.
-UNDER CONSTRUCTION
+Start the game worshipping Ru. You cannot enter branches other than Lair, Temple, or
+Abyss until you have abandoned Ru. You may only abandon Ru at full piety.
 %%%%
 Conqueror
 

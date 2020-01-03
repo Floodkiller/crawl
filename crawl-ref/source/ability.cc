@@ -3103,6 +3103,12 @@ static spret_type _do_ability(const ability_def& abil, bool fail)
 
     case ABIL_RENOUNCE_RELIGION:
         fail_check();
+        if (you.pledge == PLEDGE_SPITEFUL && you.piety < 160 
+            && you.religion == GOD_RU)
+        {
+            mpr("Your pledge won't allow you to renounce Ru until you become Ru's champion.");
+            return SPRET_ABORT;
+        }
         if (yesno("Really renounce your faith, foregoing its fabulous benefits?",
                   false, 'n')
             && yesno("Are you sure you won't change your mind later?",
@@ -3116,6 +3122,11 @@ static spret_type _do_ability(const ability_def& abil, bool fail)
             else
             {
                 excommunication(true);
+                if (you.pledge == PLEDGE_SPITEFUL)
+                {
+                    you.attribute[ATTR_SPITEFUL] = 1;
+                    mpr("You accomplish your pledge, allowing you to freely roam the dungeon!");
+                }
             }
         }
         else

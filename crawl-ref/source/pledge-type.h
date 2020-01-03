@@ -10,7 +10,8 @@ enum pledge_type
     PLEDGE_NATURES_ALLY,            // Can only enter Tomb after getting orb, can only leave dungeon with golden rune
     PLEDGE_AVARICE,                 // Can only enter non-rune branches (except Zot), Abyss, and Dis until obtaining iron rune
     PLEDGE_LORD_OF_DARKNESS,        // Cannot enter Lair, Orcish Mines, or Vaults
-    PLEDGE_SPITEFUL,                // Start the game with random Ru sacrifces
+    PLEDGE_SPITEFUL,                // Start the game worshipping Ru. Become champion of Ru, then abandon him. 
+                                    //     No entering branches other than Temple, Lair, or Abyss until then.
     PLEDGE_CONQUEROR,               // Must win the game in under 50,000 turns
     PLEDGE_ASCETIC,                 // Cannot use potions or scrolls until obtaining a rune (except slimy or abyssal)
     PLEDGE_LOREKEEPER,              // Cannot raise skills to 13 or higher, no worshipping Ashenzari
