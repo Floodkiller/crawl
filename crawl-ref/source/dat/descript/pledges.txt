@@ -37,7 +37,6 @@ You will die after 50,000 turns have passed.
 Ascetic
 
 You cannot use potions or scrolls.
-UNDER CONSTRUCTION
 %%%%
 Lorekeeper
 

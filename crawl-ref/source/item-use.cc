@@ -2185,6 +2185,12 @@ static bool _drink_fountain()
 
 void drink(item_def* potion)
 {
+    if (you.pledge == PLEDGE_ASCETIC)
+    {
+        mpr("Your pledge prevents you from drinking anything.");
+        return;
+    }
+    
     if (you_foodless(true, true))
     {
         mpr("You can't drink.");
@@ -2892,6 +2898,11 @@ string cannot_read_item_reason(const item_def &item)
  */
 void read(item_def* scroll)
 {
+    if (you.pledge == PLEDGE_ASCETIC)
+    {
+        mpr("Your pledge prevents you from reading anything.");
+        return;
+    }
     if (!player_can_read())
         return;
 
