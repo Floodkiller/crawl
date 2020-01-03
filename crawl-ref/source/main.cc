@@ -1207,6 +1207,34 @@ static void _input()
 
 }
 
+static bool _avarice_prevents_stairs(dungeon_feature_type& ftype)
+{
+    if (!you.runes[RUNE_DIS])
+    {
+        dungeon_feature_type banned_stairs[] = 
+        { DNGN_ENTER_GEHENNA, DNGN_ENTER_COCYTUS, DNGN_ENTER_TARTARUS, DNGN_ABYSS_TO_ZOT,
+          DNGN_ENTER_PANDEMONIUM, DNGN_ENTER_SLIME, DNGN_ENTER_VAULTS, DNGN_ENTER_ZOT,
+          DNGN_ENTER_SNAKE, DNGN_ENTER_TOMB, DNGN_ENTER_SWAMP, DNGN_ENTER_SHOALS,
+          DNGN_ENTER_SPIDER };
+        
+        // This 13 is banned_stairs length, and should not be hardcoded but I'm lazy
+        const int BANNED_STAIRS_LENGTH = 13;
+        
+        for(int i = 0; i < BANNED_STAIRS_LENGTH; i++)
+        {
+            if (banned_stairs[i] == ftype)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
                              bool known_shaft)
 {
@@ -1315,6 +1343,14 @@ static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
                 && runes_in_pack() < 6)
             {
                 mpr("Your pledge prevents you from entering this branch until you have 6 runes.");
+                return false;
+            }
+            break;
+
+        case PLEDGE_AVARICE:
+            if (_avarice_prevents_stairs(ftype))
+            {
+                mpr("Your pledge prevents you from entering this branch until you have the iron rune of Zot.");
                 return false;
             }
             break;

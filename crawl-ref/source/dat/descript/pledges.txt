@@ -20,7 +20,6 @@ Avarice
 
 You may only enter the Dungeon and the branches of Temple, Lair, Orc, Elf, Depths,
 Abyss, Hell, and Dis until you obtain the iron rune of Zot.
-UNDER CONSTRUCTION
 %%%%
 Darkness
 
