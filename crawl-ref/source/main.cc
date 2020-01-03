@@ -1211,7 +1211,7 @@ static bool _avarice_prevents_stairs(dungeon_feature_type& ftype)
 {
     if (!you.runes[RUNE_DIS])
     {
-        dungeon_feature_type banned_stairs[] = 
+        const dungeon_feature_type banned_stairs[] = 
         { DNGN_ENTER_GEHENNA, DNGN_ENTER_COCYTUS, DNGN_ENTER_TARTARUS, DNGN_ABYSS_TO_ZOT,
           DNGN_ENTER_PANDEMONIUM, DNGN_ENTER_SLIME, DNGN_ENTER_VAULTS, DNGN_ENTER_ZOT,
           DNGN_ENTER_SNAKE, DNGN_ENTER_TOMB, DNGN_ENTER_SWAMP, DNGN_ENTER_SHOALS,
