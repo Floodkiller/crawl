@@ -15,7 +15,6 @@ Nature's Ally
 
 You cannot enter the Tomb branch until you pick up the orb of Zot. You cannot
 leave the dungeon until you pick up the golden rune of Zot.
-UNDER CONSTRUCTION
 %%%%
 Avarice
 

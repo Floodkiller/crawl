@@ -1284,6 +1284,27 @@ static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
             return false;
         }
     }
+    
+    // Pledge checks
+    switch(you.pledge)
+    {
+        case PLEDGE_NATURES_ALLY:
+            if (ftype == DNGN_ENTER_TOMB && !player_has_orb())
+            {
+                mpr("Your pledge prevents you from entering until you have the Orb of Zot.");
+                return false;
+            }
+            if (ftype == DNGN_EXIT_DUNGEON && !you.runes[RUNE_TOMB])
+            {
+                mpr("Your pledge prevents you from leaving until you have the golden rune of Zot.");
+                return false;
+            }
+            break;
+        
+        
+        default:
+            break;
+    }
 
     // Rune locks
     int min_runes = 0;

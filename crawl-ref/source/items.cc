@@ -1949,8 +1949,16 @@ static void _get_orb(const item_def &it, bool quiet)
     env.orb_pos = you.pos(); // can be wrong in wizmode
     orb_pickup_noise(you.pos(), 30);
 
-    start_orb_run(CHAPTER_ESCAPING, "Now all you have to do is get back out "
+    if(you.pledge == PLEDGE_NATURES_ALLY)
+    {
+        start_orb_run(CHAPTER_ESCAPING, "Now all you have to do is get the golden rune "
+            "of Zot and then escape the dungeon! Easy, right?");
+    }
+    else
+    {
+        start_orb_run(CHAPTER_ESCAPING, "Now all you have to do is get back out "
                                     "of the dungeon!");
+    }
 }
 
 /**
