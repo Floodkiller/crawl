@@ -3108,7 +3108,15 @@ static spret_type _do_ability(const ability_def& abil, bool fail)
             && yesno("Are you sure you won't change your mind later?",
                      false, 'n'))
         {
-            excommunication(true);
+            if (you.pledge == PLEDGE_CHAOS)
+            {
+                mpr("Nice try, Xom isn't letting you go that easily!");
+                return SPRET_ABORT;
+            }
+            else
+            {
+                excommunication(true);
+            }
         }
         else
         {

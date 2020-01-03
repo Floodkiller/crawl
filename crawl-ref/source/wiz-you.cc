@@ -331,8 +331,16 @@ void wizard_set_piety_to(int newpiety, bool force)
     {
         if (yesno("Are you sure you want to be excommunicated?", false, 'n'))
         {
-            you.piety = 0;
-            excommunication();
+            if (you.pledge == PLEDGE_CHAOS)
+            {
+                mpr("Even in wizmode you cannot break your pledge!");
+                you.piety = 1;
+            }
+            else
+            {
+                you.piety = 0;
+                excommunication();
+            }
         }
         else
             canned_msg(MSG_OK);
@@ -974,7 +982,7 @@ void wizard_join_religion()
         mpr("Not even in wizmode may Prometheans worship a god!");
         return;
     }
-    if (you.pledge == PLEDGE_BRUTE_FORCE)
+    if (you.pledge == PLEDGE_BRUTE_FORCE || you.pledge == PLEDGE_CHAOS)
     {
         mpr("Not even in wizmode may you break your pledge!");
         return;

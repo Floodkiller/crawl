@@ -3083,6 +3083,12 @@ bool player_can_join_god(god_type which_god)
     if (you.species == SP_PROMETHEAN || you.pledge == PLEDGE_BRUTE_FORCE)
         return false;
 
+    if (you.pledge == PLEDGE_CHAOS)
+    {
+        mpr("Nice try, Xom isn't letting you go that easily!");
+        return false;
+    }
+
     if (which_god == GOD_TROG && you.mp_max_adj_temp > 0)
         return false;
 

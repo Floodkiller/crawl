@@ -417,6 +417,14 @@ static void _give_items_skills(const newgame_def& ng)
     default:
         break;
     }
+    
+    // Pledge is same as a Chaos Knight start on the religion side
+    if (you.pledge == PLEDGE_CHAOS)
+    {
+        you.religion = GOD_XOM;
+        you.piety = 100;
+        you.gift_timeout = max(5, random2(40) + random2(40));
+    }
 
     if (you.char_class == JOB_ABYSSAL_KNIGHT)
         newgame_make_item(OBJ_WEAPONS, ng.weapon, 1, +1);
