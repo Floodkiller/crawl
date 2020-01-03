@@ -1309,7 +1309,16 @@ static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
                 return false;
             }
             break;
-        
+
+        case PLEDGE_VOW_OF_COURAGE:
+            if ((ftype == DNGN_ABYSS_TO_ZOT || ftype == DNGN_ENTER_DEPTHS)
+                && runes_in_pack() < 6)
+            {
+                mpr("Your pledge prevents you from entering this branch until you have 6 runes.");
+                return false;
+            }
+            break;
+
         default:
             break;
     }

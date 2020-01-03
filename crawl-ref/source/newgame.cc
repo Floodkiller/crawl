@@ -456,7 +456,8 @@ static pledge_group pledges_order[] =
           PLEDGE_ASCETIC,
           PLEDGE_LOREKEEPER,
           PLEDGE_RUTHLESS_EFFICIENCY,
-          PLEDGE_HARVEST }
+          PLEDGE_HARVEST,
+          PLEDGE_ANGEL_OF_JUSTICE }
     },
     {
         "Hard",
@@ -464,7 +465,7 @@ static pledge_group pledges_order[] =
         { PLEDGE_NATURES_ALLY,
           PLEDGE_AVARICE,
           PLEDGE_LORD_OF_DARKNESS,
-          PLEDGE_ANGEL_OF_JUSTICE,
+          PLEDGE_VOW_OF_COURAGE,
           PLEDGE_HAUNTING,
           PLEDGE_HERETIC }
     }
