@@ -2899,6 +2899,14 @@ void level_change(bool skip_attribute_increase)
         {
             // Don't want to see the dead creature at the prompt.
             redraw_screen();
+            
+            if (new_exp >= 20 && you.pledge == PLEDGE_RUTHLESS_EFFICIENCY)
+            {
+                mpr("You have broken your pledge by reaching level 20.");
+                mpr("Sorry, but your quest for the Orb is now rather pointless. "
+                    "You quit...");
+                ouch(INSTANT_DEATH, KILLED_BY_QUITTING);
+            }
 
             if (new_exp == 27)
                 mprf(MSGCH_INTRINSIC_GAIN, "You have reached level 27, the final one!");

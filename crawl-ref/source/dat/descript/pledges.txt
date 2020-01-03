@@ -51,7 +51,6 @@ You cannot enter the branches of Depths or Zot until you have obtained 6 runes o
 Efficiency
 
 You will die once you reach experience level 20.
-UNDER CONSTRUCTION
 %%%%
 Madness
 
