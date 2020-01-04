@@ -53,7 +53,6 @@ You will die once you reach experience level 20.
 Madness
 
 You cannot pick up the orb of Zot until you have exited floor 27 of a ziggurat.
-UNDER CONSTRUCTION
 %%%%
 Harvest
 

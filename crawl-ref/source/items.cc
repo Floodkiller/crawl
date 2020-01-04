@@ -2260,7 +2260,14 @@ static bool _merge_items_into_inv(item_def &it, int quant_got,
                     mpr("You haven't collected enough runes to complete your pledge.");
                     return false;
                 }
-                
+
+            case PLEDGE_DESCENT_INTO_MADNESS:
+                if (you.zigs_completed < 1)
+                {
+                    mpr("You haven't finished a ziggurat to complete your pledge.");
+                    return false;
+                }
+
             default:
                 _get_orb(it, quiet);
                 return true;
