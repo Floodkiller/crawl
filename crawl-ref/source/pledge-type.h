@@ -20,7 +20,7 @@ enum pledge_type
     PLEDGE_DESCENT_INTO_MADNESS,    // Cannot pick up the orb until leaving the bottom floor of a ziggurat
     PLEDGE_HARVEST,                 // Cannot leave a floor voluntarily until all unique monsters on it are dead or banished
     PLEDGE_ANGEL_OF_JUSTICE,        // Cannot pick up orb until all unique Pan/Hell lords are dead,
-                                    //     attempting to pick up orb will spawn remaining lords
+                                    //     attempting to pick up orb will spawn unspawned Pan lords
     PLEDGE_CHAOS,                   // Start the game worshipping Xom, cannot abandon Xom
 
     // Goon inspired challenges
