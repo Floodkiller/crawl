@@ -58,7 +58,6 @@ Harvest
 
 You cannot voluntarily leave a floor of the dungeon if a unique monster is alive
 on the same floor.
-UNDER CONSTRUCTION
 %%%%
 Justice
 

@@ -1248,7 +1248,7 @@ static bool _spiteful_prevents_stairs(dungeon_feature_type& ftype)
           DNGN_ENTER_SLIME, DNGN_ENTER_VAULTS, DNGN_ENTER_ORC, DNGN_ENTER_SNAKE,
           DNGN_ENTER_SWAMP, DNGN_ENTER_SHOALS, DNGN_ENTER_SPIDER };
           
-        // This 13 is banned_stairs length, and should not be hardcoded but I'm lazy
+        // This 11 is banned_stairs length, and should not be hardcoded but I'm lazy
         const int BANNED_STAIRS_LENGTH = 11;
         
         for(int i = 0; i < BANNED_STAIRS_LENGTH; i++)
@@ -1391,6 +1391,21 @@ static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
             {
                 mpr("Your pledge prevents you from entering this branch until you abandon Ru at least once.");
                 return false;
+            }
+
+        case PLEDGE_HARVEST:
+            // Harvest blocks any stairs or portals except stuff that stays on the level
+            if (ftype != DNGN_ENTER_SHOP && !feat_is_altar(ftype)
+                && ftype != DNGN_PASSAGE_OF_GOLUBRIA && ftype != DNGN_TRANSPORTER)
+            {
+                for (monster_iterator mi; mi; ++mi)
+                {
+                    if (mons_is_unique(mi->type))
+                    {
+                        mpr("A unique monster is still present on the level, preventing you from leaving!");
+                        return false;
+                    }
+                }
             }
 
         default:
