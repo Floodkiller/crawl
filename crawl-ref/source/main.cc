@@ -1207,6 +1207,65 @@ static void _input()
 
 }
 
+static bool _avarice_prevents_stairs(dungeon_feature_type& ftype)
+{
+    if (!you.runes[RUNE_DIS])
+    {
+        const dungeon_feature_type banned_stairs[] = 
+        { DNGN_ENTER_GEHENNA, DNGN_ENTER_COCYTUS, DNGN_ENTER_TARTARUS, DNGN_ABYSS_TO_ZOT,
+          DNGN_ENTER_PANDEMONIUM, DNGN_ENTER_SLIME, DNGN_ENTER_VAULTS, DNGN_ENTER_ZOT,
+          DNGN_ENTER_SNAKE, DNGN_ENTER_TOMB, DNGN_ENTER_SWAMP, DNGN_ENTER_SHOALS,
+          DNGN_ENTER_SPIDER };
+        
+        // This 13 is banned_stairs length, and should not be hardcoded but I'm lazy
+        const int BANNED_STAIRS_LENGTH = 13;
+        
+        for(int i = 0; i < BANNED_STAIRS_LENGTH; i++)
+        {
+            if (banned_stairs[i] == ftype)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+static bool _spiteful_prevents_stairs(dungeon_feature_type& ftype)
+{
+    if (you.attribute[ATTR_SPITEFUL] == 0)
+    {
+        // Can only enter Lair and Temple, ban all available entrances from there
+        // (including Hell and Pandemonium due to special vaults)
+        // Allow Abyss as well despite that not being per the tournament descriptions
+        // to avoid weird hardcoding/frustration
+        const dungeon_feature_type banned_stairs[] =
+        { DNGN_ENTER_DEPTHS, DNGN_ENTER_HELL, DNGN_ABYSS_TO_ZOT, DNGN_ENTER_PANDEMONIUM,
+          DNGN_ENTER_SLIME, DNGN_ENTER_VAULTS, DNGN_ENTER_ORC, DNGN_ENTER_SNAKE,
+          DNGN_ENTER_SWAMP, DNGN_ENTER_SHOALS, DNGN_ENTER_SPIDER };
+          
+        // This 11 is banned_stairs length, and should not be hardcoded but I'm lazy
+        const int BANNED_STAIRS_LENGTH = 11;
+        
+        for(int i = 0; i < BANNED_STAIRS_LENGTH; i++)
+        {
+            if (banned_stairs[i] == ftype)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
                              bool known_shaft)
 {
@@ -1283,6 +1342,74 @@ static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
                 mpr("You can't go up here!");
             return false;
         }
+    }
+    
+    // Pledge checks
+    switch(you.pledge)
+    {
+        case PLEDGE_NATURES_ALLY:
+            if (ftype == DNGN_ENTER_TOMB && !player_has_orb())
+            {
+                mpr("Your pledge prevents you from entering until you have the Orb of Zot.");
+                return false;
+            }
+            if (ftype == DNGN_EXIT_DUNGEON && !you.runes[RUNE_TOMB])
+            {
+                mpr("Your pledge prevents you from leaving until you have the golden rune of Zot.");
+                return false;
+            }
+            break;
+        
+        case PLEDGE_LORD_OF_DARKNESS:
+            if (ftype == DNGN_ENTER_ORC || ftype == DNGN_ENTER_LAIR
+                || ftype == DNGN_ENTER_VAULTS)
+            {
+                mpr("Your pledge prevents you from entering this branch.");
+                return false;
+            }
+            break;
+
+        case PLEDGE_VOW_OF_COURAGE:
+            if ((ftype == DNGN_ABYSS_TO_ZOT || ftype == DNGN_ENTER_DEPTHS)
+                && runes_in_pack() < 6)
+            {
+                mpr("Your pledge prevents you from entering this branch until you have 6 runes.");
+                return false;
+            }
+            break;
+
+        case PLEDGE_AVARICE:
+            if (_avarice_prevents_stairs(ftype))
+            {
+                mpr("Your pledge prevents you from entering this branch until you have the iron rune of Zot.");
+                return false;
+            }
+            break;
+        
+        case PLEDGE_SPITEFUL:
+            if (_spiteful_prevents_stairs(ftype))
+            {
+                mpr("Your pledge prevents you from entering this branch until you abandon Ru at least once.");
+                return false;
+            }
+
+        case PLEDGE_HARVEST:
+            // Harvest blocks any stairs or portals except stuff that stays on the level
+            if (ftype != DNGN_ENTER_SHOP && !feat_is_altar(ftype)
+                && ftype != DNGN_PASSAGE_OF_GOLUBRIA && ftype != DNGN_TRANSPORTER)
+            {
+                for (monster_iterator mi; mi; ++mi)
+                {
+                    if (mons_is_unique(mi->type))
+                    {
+                        mpr("A unique monster is still present on the level, preventing you from leaving!");
+                        return false;
+                    }
+                }
+            }
+
+        default:
+            break;
     }
 
     // Rune locks
@@ -2259,7 +2386,8 @@ void world_reacts()
 
     ASSERT(you.time_taken >= 0);
     you.elapsed_time += you.time_taken;
-    if (you.elapsed_time >= 2*1000*1000*1000)
+    if (you.elapsed_time >= 2*1000*1000*1000 ||
+        (you.pledge == PLEDGE_CONQUEROR && you.elapsed_time >= 500000))
     {
         // 2B of 1/10 turns. A 32-bit signed int can hold 2.1B.
         // The worst case of mummy scumming had 92M turns, the second worst
@@ -2269,7 +2397,10 @@ void world_reacts()
         // a gigabyte of bzipped ttyrec.
         // We could extend the counters to 64 bits, but in the light of the
         // above, it's an useless exercise.
-        mpr("Outside, the world ends.");
+        if (you.pledge == PLEDGE_CONQUEROR)
+            mpr("You failed to complete your pledge in time.");
+        else
+            mpr("Outside, the world ends.");
         mpr("Sorry, but your quest for the Orb is now rather pointless. "
             "You quit...");
         // Please do not give it a custom ktyp or make it cool in any way

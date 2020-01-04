@@ -124,6 +124,11 @@ void try_god_conversion(god_type god)
         mpr("The gods refuse to answer you.");
         return;
     }
+    if (you.pledge == PLEDGE_BRUTE_FORCE)
+    {
+        mpr("You refuse to break your pledge.");
+        return;
+    }
 
     if (god == GOD_ECUMENICAL)
     {

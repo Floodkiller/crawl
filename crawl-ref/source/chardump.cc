@@ -40,6 +40,7 @@
 #include "notes.h"
 #include "output.h"
 #include "place.h"
+#include "pledge.h"
 #include "prompt.h"
 #include "religion.h"
 #include "showsymb.h"
@@ -62,6 +63,7 @@ static void _sdump_stats(dump_params &);
 static void _sdump_location(dump_params &);
 static void _sdump_religion(dump_params &);
 static void _sdump_hunger(dump_params &);
+static void _sdump_pledge(dump_params &);
 static void _sdump_transform(dump_params &);
 static void _sdump_visits(dump_params &);
 static void _sdump_gold(dump_params &);
@@ -120,6 +122,7 @@ static dump_section_handler dump_handlers[] =
     { "location",       _sdump_location      },
     { "religion",       _sdump_religion      },
     { "hunger",         _sdump_hunger        },
+    { "pledge",         _sdump_pledge        },
     { "transform",      _sdump_transform     },
     { "visits",         _sdump_visits        },
     { "gold",           _sdump_gold          },
@@ -225,6 +228,11 @@ static void _sdump_hunger(dump_params &par)
 
     par.text += hunger_level();
     par.text += ".\n\n";
+}
+
+static void _sdump_pledge(dump_params &par)
+{
+    par.text += get_pledge_morgue_line(you.pledge) + "\n\n";
 }
 
 static void _sdump_transform(dump_params &par)
@@ -403,6 +411,7 @@ static void _sdump_misc(dump_params &par)
     _sdump_location(par);
     _sdump_religion(par);
     _sdump_hunger(par);
+    _sdump_pledge(par);
     _sdump_transform(par);
     _sdump_visits(par);
     _sdump_gold(par);

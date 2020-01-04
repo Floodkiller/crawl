@@ -24,6 +24,7 @@
 #include "ng-input.h"
 #include "ng-restr.h"
 #include "options.h"
+#include "pledge.h"
 #include "prompt.h"
 #include "state.h"
 #include "stringutil.h"
@@ -46,7 +47,7 @@ static bool _choose_weapon(newgame_def& ng, newgame_def& ng_choice,
 newgame_def::newgame_def()
     : name(), type(GAME_TYPE_NORMAL),
       species(SP_UNKNOWN), job(JOB_UNKNOWN),
-      weapon(WPN_UNKNOWN),
+      weapon(WPN_UNKNOWN), pledge(PLEDGE_UNKNOWN),
       fully_random(false)
 {
 }
@@ -56,6 +57,7 @@ void newgame_def::clear_character()
     species  = SP_UNKNOWN;
     job      = JOB_UNKNOWN;
     weapon   = WPN_UNKNOWN;
+    pledge   = PLEDGE_UNKNOWN;
 }
 
 enum MenuOptions
@@ -434,6 +436,182 @@ static bool _reroll_random(newgame_def& ng)
     return toalower(c) == 'n' || c == '\t' || c == '!' || c == '#';
 }
 
+static pledge_group pledges_order[] =
+{
+    {
+        "Easy",
+        coord_def(0, 0), 20,
+        { PLEDGE_NONE,
+          PLEDGE_EXPLORER,
+          PLEDGE_CHAOS,
+          PLEDGE_PEER_PRESSURE,
+          PLEDGE_CONQUEROR,
+          PLEDGE_DESCENT_INTO_MADNESS }
+    },
+    {
+        "Medium",
+        coord_def(20, 0), 20,
+        { PLEDGE_BRUTE_FORCE,
+          PLEDGE_SPITEFUL,
+          PLEDGE_ASCETIC,
+          PLEDGE_LOREKEEPER,
+          PLEDGE_RUTHLESS_EFFICIENCY,
+          PLEDGE_HARVEST,
+          PLEDGE_ANGEL_OF_JUSTICE }
+    },
+    {
+        "Hard",
+        coord_def(40, 0), 20,
+        { PLEDGE_NATURES_ALLY,
+          PLEDGE_AVARICE,
+          PLEDGE_LORD_OF_DARKNESS,
+          PLEDGE_VOW_OF_COURAGE,
+          //PLEDGE_HAUNTING,            // TODO: Implement
+          PLEDGE_HERETIC }
+    }
+};
+
+static const int COLUMN_WIDTH = 35;
+static const int X_MARGIN = 4;
+static const int CHAR_DESC_START_Y = 16;
+static const int CHAR_DESC_HEIGHT = 3;
+static const int SPECIAL_KEYS_START_Y = CHAR_DESC_START_Y
+                                        + CHAR_DESC_HEIGHT + 1;
+
+static void _construct_pledge_menu(const newgame_def& ng,
+                                   const newgame_def& defaults,
+                                   MenuFreeform* menu)
+{
+    menu_letter letter = 'a';
+    // Add entries for any pledge groups with at least one pledge.
+    for (pledge_group& group : pledges_order)
+    {
+        group.attach(ng, defaults, menu, letter);
+    }
+    
+    TextItem* tmp = new TextItem();
+    
+    coord_def min_coord = coord_def(X_MARGIN, SPECIAL_KEYS_START_Y);
+    coord_def max_coord = coord_def(min_coord.x + tmp->get_text().size(),
+                                    min_coord.y + 1);
+    
+    tmp->set_text("? - Help");
+    min_coord.x = X_MARGIN;
+    min_coord.y = SPECIAL_KEYS_START_Y;
+    max_coord.x = min_coord.x + tmp->get_text().size();
+    max_coord.y = min_coord.y + 1;
+    tmp->set_bounds(min_coord, max_coord);
+    tmp->set_fg_colour(BROWN);
+    tmp->add_hotkey('?');
+    tmp->set_id(M_HELP);
+    tmp->set_highlight_colour(BLUE);
+    tmp->set_description_text("Opens the help screen");
+    menu->attach_item(tmp);
+    tmp->set_visible(true);
+}
+
+/**
+ * Returns false if user escapes
+ */
+static bool _prompt_pledge(const newgame_def& ng, newgame_def& ng_choice,
+                           const newgame_def& defaults)
+{
+    PrecisionMenu menu;
+    menu.set_select_type(PrecisionMenu::PRECISION_SINGLESELECT);
+    MenuFreeform* freeform = new MenuFreeform();
+    freeform->init(coord_def(1,1), coord_def(get_number_of_cols(),
+                   get_number_of_lines()), "freeform");
+    menu.attach_object(freeform);
+    menu.set_active_object(freeform);
+
+    _construct_pledge_menu(ng, defaults, freeform);
+
+    BoxMenuHighlighter* highlighter = new BoxMenuHighlighter(&menu);
+    highlighter->init(coord_def(0,0), coord_def(0,0), "highlighter");
+    menu.attach_object(highlighter);
+    
+    MenuDescriptor* descriptor = new MenuDescriptor(&menu);
+    descriptor->init(
+        coord_def(X_MARGIN, CHAR_DESC_START_Y),
+        coord_def(get_number_of_cols(),
+        CHAR_DESC_START_Y + CHAR_DESC_HEIGHT),
+        "descriptor"
+    );
+    menu.attach_object(descriptor);
+
+    // Did we have a previous pledge?
+    if (menu.get_active_item() == nullptr)
+        freeform->activate_first_item();
+    _print_character_info(ng); // calls clrscr() so needs to be before attach()
+
+#ifdef USE_TILE_LOCAL
+    tiles.get_crt()->attach_menu(&menu);
+#endif
+
+    freeform->set_visible(true);
+    highlighter->set_visible(true);
+
+    textcolour(YELLOW);
+    cprintf("Choose your pledge:  ");
+
+    while (true)
+    {
+        menu.draw_menu();
+
+        int keyn = getch_ck();
+
+        // First process menu entries
+        if (!menu.process_key(keyn))
+        {
+            // Process all the keys that are not attached to items
+            switch (keyn)
+            {
+            case 'X':
+            case CONTROL('Q'):
+                cprintf("\nGoodbye!");
+#ifdef USE_TILE_WEB
+                tiles.send_exit_reason("cancel");
+#endif
+                end(0);
+                break;
+            case ' ':
+            CASE_ESCAPE
+            case CK_MOUSE_CMD:
+                return false;
+            default:
+                // if we get this far, we did not get a significant selection
+                // from the menu, nor did we get an escape character
+                // continue the while loop from the beginning and poll a new key
+                continue;
+            }
+        }
+        // We have a significant key input!
+        // Construct selection vector
+        vector<MenuItem*> selection = menu.get_selected_items();
+        // There should only be one selection, otherwise something broke
+        if (selection.size() != 1)
+        {
+            // poll a new key
+            continue;
+        }
+
+        // Get the stored id from the selection
+        int selection_ID = selection.at(0)->get_id();
+        switch (selection_ID)
+        {
+        case M_HELP:
+            list_commands('?');
+            return _prompt_pledge(ng, ng_choice, defaults);
+        default:
+            // We got an item selection
+            ng_choice.pledge = static_cast<pledge_type> (selection_ID);
+            return true;
+        }
+    }
+    // This should never happen
+    return false;
+}
+
 static void _choose_char(newgame_def& ng, newgame_def& choice,
                          newgame_def defaults)
 {
@@ -468,6 +646,27 @@ static void _choose_char(newgame_def& ng, newgame_def& choice,
         }
     }
 #endif
+    // If playing normal game type, have player choose pledge (or none)
+    // before resolving species/background
+    if (ng.type == GAME_TYPE_NORMAL)
+    {
+        ng.pledge = rcfile_str_to_pledge(Options.pledge);
+    
+        // If not, create pledge menu and prompt until one is chosen
+        while (ng.pledge == PLEDGE_UNKNOWN)
+        {
+            if(!_prompt_pledge(ng, choice, defaults))
+            {
+#ifdef USE_TILE_WEB
+                tiles.send_exit_reason("cancel");
+#endif
+                game_ended(game_exit::abort);
+            }
+            // This would normally be in a _resolve_pledge(), but there isn't
+            // anything to check right now so just directly write it
+            ng.pledge = choice.pledge;
+        }
+    }
 
     while (true)
     {
@@ -669,18 +868,6 @@ static void _mark_fully_random(newgame_def& ng, newgame_def& ng_choice,
         ng_choice.job = JOB_RANDOM;
     }
 }
-
-
-/**
- * Helper function for _choose_species
- * Constructs the menu screen
- */
-static const int COLUMN_WIDTH = 35;
-static const int X_MARGIN = 4;
-static const int CHAR_DESC_START_Y = 16;
-static const int CHAR_DESC_HEIGHT = 3;
-static const int SPECIAL_KEYS_START_Y = CHAR_DESC_START_Y
-                                        + CHAR_DESC_HEIGHT + 1;
 
 static void _add_choice_menu_options(int choice_type,
                                      const newgame_def& ng,
@@ -914,6 +1101,47 @@ static void _attach_group_item(MenuFreeform* menu,
     tmp->set_visible(true);
     if (is_active_item)
         menu->set_active_item(tmp);
+}
+
+/**
+ * Helper function for _choose_pledge
+ * Constructs the menu screen
+ */
+
+void pledge_group::attach(const newgame_def& ng, const newgame_def& defaults,
+                       MenuFreeform* menu, menu_letter &letter)
+{
+    _add_group_title(menu, name, position, width);
+
+    coord_def min_coord(2 + position.x, 3 + position.y);
+    coord_def max_coord(min_coord.x + width, min_coord.y + 1);
+
+    for (pledge_type &pledge : pledge_list)
+    {
+        if (pledge == PLEDGE_UNKNOWN)
+            break;
+
+        int item_status = ITEM_STATUS_ALLOWED;
+
+        string pledge_name = get_pledge_name(pledge);
+        const bool is_active_item = defaults.pledge == pledge;
+
+        ++min_coord.y;
+        ++max_coord.y;
+
+        _attach_group_item(
+            menu,
+            letter,
+            pledge,
+            item_status,
+            pledge_name,
+            is_active_item,
+            min_coord,
+            max_coord
+        );
+
+        ++letter;
+    }
 }
 
 void species_group::attach(const newgame_def& ng, const newgame_def& defaults,

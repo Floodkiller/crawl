@@ -66,6 +66,7 @@
  #include "mon-util.h"
 #endif
 #include "place.h"
+#include "pledge.h"
 #include "player-stats.h"
 #include "prompt.h" // index_to_letter
 #include "religion.h"
@@ -1344,6 +1345,8 @@ static void tag_construct_char(writer &th)
     marshallString2(th, crawl_state.map);
 
     marshallByte(th, you.explore);
+    
+    marshallByte(th, you.pledge);
 }
 
 /// is a custom scoring mechanism being stored?
@@ -2251,6 +2254,15 @@ void tag_read_char(reader &th, uint8_t format, uint8_t major, uint8_t minor)
 
     if (major > 34 || major == 34 && minor >= 130)
         you.explore = unmarshallBoolean(th);
+    
+    if (major > 34 || major == 34 && minor >= 197)
+    {
+        you.pledge = static_cast<pledge_type>(unmarshallUByte(th));
+    }
+    else
+    {
+        you.pledge = PLEDGE_NONE;
+    }
 }
 
 static void _cap_mutation_at(mutation_type mut, int cap)
@@ -2273,6 +2285,7 @@ static void tag_read_you(reader &th)
 
     ASSERT_RANGE(you.species, 0, NUM_SPECIES);
     ASSERT_RANGE(you.char_class, 0, NUM_JOBS);
+    ASSERT_RANGE(you.pledge, 0, NUM_PLEDGES);
     ASSERT_RANGE(you.experience_level, 1, 28);
     ASSERT(you.religion < NUM_GODS);
     ASSERT_RANGE(crawl_state.type, GAME_TYPE_UNSPECIFIED + 1, NUM_GAME_TYPE);

@@ -56,6 +56,7 @@
 #include "makeitem.h"
 #include "message.h"
 #include "mon-ench.h"
+#include "mon-place.h"
 #include "nearby-danger.h"
 #include "notes.h"
 #include "options.h"
@@ -1028,7 +1029,11 @@ void pickup_menu(int item_link)
                 if (!move_item_to_inv(j, num_to_take))
                 {
                     n_tried_pickup++;
-                    pickup_warning = "You can't carry that many items.";
+                    item_def &item = mitm[j];
+                    if(!(item_is_orb(item)))
+                    {
+                        pickup_warning = "You can't carry that many items.";
+                    }
                     if (mitm[j].defined())
                         mitm[j].flags = oldflags;
                 }
@@ -1365,8 +1370,12 @@ bool pickup_single_item(int link, int qty)
 
     if (!pickup_succ)
     {
-        mpr("You can't carry that many items.");
-        learned_something_new(HINT_FULL_INVENTORY);
+        item_def &orbcheck = mitm[link];
+        if(!(item_is_orb(orbcheck)))
+        {
+            mpr("You can't carry that many items.");
+            learned_something_new(HINT_FULL_INVENTORY);
+        }
         return false;
     }
     return true;
@@ -1474,7 +1483,11 @@ void pickup(bool partial_quantity)
                 // attempt to actually pick up the object.
                 if (!move_item_to_inv(o, num_to_take))
                 {
-                    pickup_warning = "You can't carry that many items.";
+                    item_def &item = mitm[o];
+                    if(!(item_is_orb(item)))
+                    {
+                        pickup_warning = "You can't carry that many items.";
+                    }
                     mitm[o].flags = old_flags;
                 }
             }
@@ -1920,6 +1933,33 @@ static void _get_rune(const item_def& it, bool quiet)
 
     if (it.sub_type == RUNE_ABYSSAL)
         mpr("You feel the abyssal rune guiding you out of this place.");
+    
+    if (you.pledge == PLEDGE_HERETIC)
+    {
+        bool valid_god = false;
+        god_type random_god_wrath;
+        while (!valid_god)
+        {
+            // Exclude GOD_NO_GOD at 0, NUM_GODS from random results
+            random_god_wrath = static_cast<god_type>(random2(static_cast<int>(NUM_GODS) - 2) + 1);
+            // Ru's 'wrath' is boring
+            if (random_god_wrath == GOD_RU)
+                continue;
+            if (is_good_god(you.religion))
+            {
+                if (!is_good_god(random_god_wrath))
+                    valid_god = true;
+            }
+            else
+            {
+                if (you.religion != random_god_wrath)
+                    valid_god = true;
+            }
+        }
+        ASSERT(random_god_wrath != GOD_NO_GOD && random_god_wrath < NUM_GODS);
+        you.penance[random_god_wrath] = 50;
+        mprf("Your pledge invites the wrath of %s!", god_name(random_god_wrath).c_str());
+    }
 }
 
 /**
@@ -1937,8 +1977,16 @@ static void _get_orb(const item_def &it, bool quiet)
     env.orb_pos = you.pos(); // can be wrong in wizmode
     orb_pickup_noise(you.pos(), 30);
 
-    start_orb_run(CHAPTER_ESCAPING, "Now all you have to do is get back out "
+    if(you.pledge == PLEDGE_NATURES_ALLY)
+    {
+        start_orb_run(CHAPTER_ESCAPING, "Now all you have to do is get the golden rune "
+            "of Zot and then escape the dungeon! Easy, right?");
+    }
+    else
+    {
+        start_orb_run(CHAPTER_ESCAPING, "Now all you have to do is get back out "
                                     "of the dungeon!");
+    }
 }
 
 /**
@@ -2203,8 +2251,67 @@ static bool _merge_items_into_inv(item_def &it, int quant_got,
     // The Orb is also handled specially.
     if (item_is_orb(it))
     {
-        _get_orb(it, quiet);
-        return true;
+        // Check pledges first before allowing orb to be picked up
+        // Let each case fall through to default if it was accomplished
+        switch(you.pledge)
+        {
+            case PLEDGE_EXPLORER:
+                if (runes_in_pack() < 15)
+                {
+                    mpr("You haven't collected enough runes to complete your pledge.");
+                    return false;
+                }
+
+            case PLEDGE_DESCENT_INTO_MADNESS:
+                if (you.zigs_completed < 1)
+                {
+                    mpr("You haven't finished a ziggurat to complete your pledge.");
+                    return false;
+                }
+
+            case PLEDGE_ANGEL_OF_JUSTICE:
+                // Check if any of the Pan or Hell unique lords are still alive
+                // Being in the Abyss still counts as alive (have fun!)
+                monster_type mon;
+                
+                // Hell lords are always in levels that don't disappear
+                // force players to do them the hard way
+                if(!you.props["dispater_dead"] || !you.props["asmodeus_dead"]
+                   || !you.props["antaeus_dead"] || !you.props["ereshkigal_dead"])
+                {
+                    mpr("You have not yet completed your pledge! A challenger from Hell is still alive!");
+                    return false;
+                }   
+                
+                // Allow spawning of Pan lords if not spawned (in case player leaves their realm)
+                // but at least summon their bands with them since this could be a shortcut
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!you.unique_creatures[MONS_MNOLEG + i])
+                    {
+                        mon = static_cast<monster_type>(MONS_MNOLEG + i);
+                        mgen_data mg(mon, BEH_HOSTILE, you.pos(), MHITYOU, MG_PERMIT_BANDS);
+                        create_monster(mg);
+                        mpr("You have not yet completed your pledge!" 
+                            "A challenger for the Orb has been summoned from Pandemonium!");
+                        return false;
+                    }
+                }
+                
+                // If all the Pan lords are spawned, then they are either in Zot or Abyss
+                // Force the player to hunt them down themselves at this point
+                if (!you.props["mnoleg_dead"] || !you.props["cerebov_dead"]
+                   || !you.props["lom_dead"] || !you.props["gloorx_dead"])
+                {
+                    mpr("You have not yet completed your pledge! A challenger from Pandemonium is still alive!");
+                    return false;
+                }
+
+            default:
+                _get_orb(it, quiet);
+                return true;
+        }
+       
     }
 
     // attempt to merge into an existing stack, if possible

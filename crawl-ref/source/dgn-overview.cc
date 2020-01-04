@@ -356,8 +356,8 @@ static string _get_branches(bool display)
 // iterate through every god and display their altar's discovery state by colour
 static string _get_altars(bool display)
 {
-    // Just wastes space for prometheans.
-    if (you.species == SP_PROMETHEAN)
+    // Just wastes space for prometheans and Brute Force pledges
+    if (you.species == SP_PROMETHEAN || you.pledge == PLEDGE_BRUTE_FORCE)
         return "";
 
     string disp;

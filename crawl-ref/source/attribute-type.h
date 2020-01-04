@@ -97,5 +97,6 @@ enum attribute_type
     ATTR_PLAYING_HARP,         // Playing the harp of healing
     ATTR_TIME_STOP,            // How many turns of Time Stop are left.
     ATTR_REAPING,              // Skeleton reaping.
+    ATTR_SPITEFUL,             // Abandoned Ru at least once under Spiteful pledge
     NUM_ATTRIBUTES
 };

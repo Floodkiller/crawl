@@ -187,6 +187,7 @@ player-equip.o \
 player-reacts.o \
 player-stats.o \
 player.o \
+pledge.o \
 potion.o \
 prompt.o \
 quiver.o \
