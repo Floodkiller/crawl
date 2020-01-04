@@ -746,6 +746,14 @@ bool eat_item(item_def &food)
     else
         dec_mitm_item_quantity(food.index(), 1);
 
+    if (you.pledge == PLEDGE_PEER_PRESSURE)
+    {
+        mpr("The food tastes really weird. An unseen audience cheers!");
+        mutate(RANDOM_MUTATION, "mutagenic meat");
+        did_god_conduct(DID_DELIBERATE_MUTATING, 10);
+        xom_is_stimulated(100);
+    }
+
     you.turn_is_over = true;
     return true;
 }

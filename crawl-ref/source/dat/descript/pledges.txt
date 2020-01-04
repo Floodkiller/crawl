@@ -79,7 +79,6 @@ UNDER CONSTRUCTION
 Peer Pressure
 
 You will mutate as if eating a mutagenic chunk whenever you eat any food or chunks.
-UNDER CONSTRUCTION
 %%%%
 Heretic
 

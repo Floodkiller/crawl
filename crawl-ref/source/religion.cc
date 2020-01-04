@@ -3088,6 +3088,11 @@ bool player_can_join_god(god_type which_god)
         mpr("Nice try, Xom isn't letting you go that easily!");
         return false;
     }
+    if (you.pledge == PLEDGE_PEER_PRESSURE && which_god == GOD_ZIN)
+    {
+        mpr("Zin refuses to participate in your sinful debauchery!");
+        return false;
+    }
 
     if (which_god == GOD_TROG && you.mp_max_adj_temp > 0)
         return false;
