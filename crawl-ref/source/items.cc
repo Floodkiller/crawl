@@ -1042,7 +1042,7 @@ void pickup_menu(int item_link)
                     n_did_pickup++;
                     // If we deliberately chose to take only part of a
                     // pile, we consider the rest to have been
-                    // "dropped."6
+                    // "dropped."
                     if (!take_all && mitm[j].defined())
                         mitm[j].flags |= ISFLAG_DROPPED;
                 }
