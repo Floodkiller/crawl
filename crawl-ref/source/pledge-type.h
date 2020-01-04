@@ -24,9 +24,10 @@ enum pledge_type
     PLEDGE_CHAOS,                   // Start the game worshipping Xom, cannot abandon Xom
 
     // Goon inspired challenges
-    PLEDGE_HAUNTING,                // All floors have a 10% chance to generate a ghostly champion of LogicNinja
     PLEDGE_PEER_PRESSURE,           // All food and chunks mutate player when eaten
     PLEDGE_HERETIC,                 // Divine retribution from a random god (except current or allied) when picking up a rune
+    // TODO: Implement
+    //PLEDGE_HAUNTING,              // All floors have a 10% chance to generate a ghostly champion of LogicNinja
     
     NUM_PLEDGES,                    // always after last pledge
     

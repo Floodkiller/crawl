@@ -466,7 +466,7 @@ static pledge_group pledges_order[] =
           PLEDGE_AVARICE,
           PLEDGE_LORD_OF_DARKNESS,
           PLEDGE_VOW_OF_COURAGE,
-          PLEDGE_HAUNTING,
+          //PLEDGE_HAUNTING,            // TODO: Implement
           PLEDGE_HERETIC }
     }
 };

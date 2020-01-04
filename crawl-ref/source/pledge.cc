@@ -130,11 +130,12 @@ static map<pledge_type, pledge_def> _pledge_data = {
     {"chaos"},
 } },
 
-{ PLEDGE_HAUNTING, {
-    "Haunting",
-    "You have taken the pledge of Haunting.",
-    {"haunting"},
-} },
+// TODO: Implement
+//{ PLEDGE_HAUNTING, {
+//    "Haunting",
+//    "You have taken the pledge of Haunting.",
+//    {"haunting"},
+//} },
 
 { PLEDGE_PEER_PRESSURE, {
     "Peer Pressure",
