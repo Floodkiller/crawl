@@ -170,7 +170,7 @@ bool SkillMenuEntry::is_set(int flag) const
 bool SkillMenuEntry::mastered() const
 {
     return (is_set(SKMF_EXPERIENCE) ? skm.get_raw_skill_level(m_sk)
-                                    : you.skills[m_sk]) >= MAX_SKILL_LEVEL;
+                                    : you.skills[m_sk]) >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL);
 }
 
 void SkillMenuEntry::refresh(bool keep_hotkey)
@@ -240,7 +240,7 @@ void SkillMenuEntry::set_name(bool keep_hotkey)
     if (is_set(SKMF_SKILL_ICONS))
     {
         m_name->clear_tile();
-        if (you.skills[m_sk] >= MAX_SKILL_LEVEL)
+        if (you.skills[m_sk] >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         {
             m_name->add_tile(tile_def(tileidx_skill(m_sk, TRAINING_MASTERED),
                                       TEX_GUI));
@@ -531,8 +531,8 @@ void SkillMenuEntry::set_training()
 void SkillMenuEntry::set_cost()
 {
     m_progress->set_editable(false);
-
-    if (you.skills[m_sk] == MAX_SKILL_LEVEL)
+    
+    if (you.skills[m_sk] == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         return;
     if (skill_has_manual(m_sk))
         m_progress->set_fg_colour(LIGHTRED);

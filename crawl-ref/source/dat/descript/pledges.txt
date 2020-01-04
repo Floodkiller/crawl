@@ -40,8 +40,7 @@ You cannot use potions or scrolls.
 %%%%
 Lorekeeper
 
-You are unable to raise any of your skill levels to 13 or higher.
-UNDER CONSTRUCTION
+You are unable to raise any of your skill levels higher than 13.
 %%%%
 Courage
 
