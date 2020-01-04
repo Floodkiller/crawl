@@ -938,11 +938,11 @@ dire elephant
 A huge pachyderm, wilder and fiercer than normal elephants, with a very thick
 hide, powerful legs, and a memory to die for.
 %%%%
-disaster prism
+disaster emanation
 
 A spark created by the meeting of adversaries, bound and shaped by powerful magic.
-It will explode with dreadful force not long after the magic that enabled its creation
-expires.
+It will explode with dreadful force not long after the magic that enabled its
+creation expires.
 %%%%
 doom hound
 
