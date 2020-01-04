@@ -1932,6 +1932,33 @@ static void _get_rune(const item_def& it, bool quiet)
 
     if (it.sub_type == RUNE_ABYSSAL)
         mpr("You feel the abyssal rune guiding you out of this place.");
+    
+    if (you.pledge == PLEDGE_HERETIC)
+    {
+        bool valid_god = false;
+        god_type random_god_wrath;
+        while (!valid_god)
+        {
+            // Exclude GOD_NO_GOD at 0, NUM_GODS from random results
+            random_god_wrath = static_cast<god_type>(random2(static_cast<int>(NUM_GODS) - 2) + 1);
+            // Ru's 'wrath' is boring
+            if (random_god_wrath == GOD_RU)
+                continue;
+            if (is_good_god(you.religion))
+            {
+                if (!is_good_god(random_god_wrath))
+                    valid_god = true;
+            }
+            else
+            {
+                if (you.religion != random_god_wrath)
+                    valid_god = true;
+            }
+        }
+        ASSERT(random_god_wrath != GOD_NO_GOD && random_god_wrath < NUM_GODS);
+        you.penance[random_god_wrath] = 50;
+        mprf("Your pledge invites the wrath of %s!", god_name(random_god_wrath).c_str());
+    }
 }
 
 /**

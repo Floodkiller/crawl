@@ -84,5 +84,4 @@ Heretic
 
 Whenever you pick up a rune of Zot, experience divine retribution of a random god
 (other than the god you are currently worshipping or any gods allied with them).
-UNDER CONSTRUCTION
 %%%%
