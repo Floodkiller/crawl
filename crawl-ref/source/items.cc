@@ -56,6 +56,7 @@
 #include "makeitem.h"
 #include "message.h"
 #include "mon-ench.h"
+#include "mon-place.h"
 #include "nearby-danger.h"
 #include "notes.h"
 #include "options.h"
@@ -2265,6 +2266,44 @@ static bool _merge_items_into_inv(item_def &it, int quant_got,
                 if (you.zigs_completed < 1)
                 {
                     mpr("You haven't finished a ziggurat to complete your pledge.");
+                    return false;
+                }
+
+            case PLEDGE_ANGEL_OF_JUSTICE:
+                // Check if any of the Pan or Hell unique lords are still alive
+                // Being in the Abyss still counts as alive (have fun!)
+                monster_type mon;
+                
+                // Hell lords are always in levels that don't disappear
+                // force players to do them the hard way
+                if(!you.props["dispater_dead"] || !you.props["asmodeus_dead"]
+                   || !you.props["antaeus_dead"] || !you.props["ereshkigal_dead"])
+                {
+                    mpr("You have not yet completed your pledge! A challenger from Hell is still alive!");
+                    return false;
+                }   
+                
+                // Allow spawning of Pan lords if not spawned (in case player leaves their realm)
+                // but at least summon their bands with them since this could be a shortcut
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!you.unique_creatures[MONS_MNOLEG + i])
+                    {
+                        mon = static_cast<monster_type>(MONS_MNOLEG + i);
+                        mgen_data mg(mon, BEH_HOSTILE, you.pos(), MHITYOU, MG_PERMIT_BANDS);
+                        create_monster(mg);
+                        mpr("You have not yet completed your pledge!" 
+                            "A challenger for the Orb has been summoned from Pandemonium!");
+                        return false;
+                    }
+                }
+                
+                // If all the Pan lords are spawned, then they are either in Zot or Abyss
+                // Force the player to hunt them down themselves at this point
+                if (!you.props["mnoleg_dead"] || !you.props["cerebov_dead"]
+                   || !you.props["lom_dead"] || !you.props["gloorx_dead"])
+                {
+                    mpr("You have not yet completed your pledge! A challenger from Pandemonium is still alive!");
                     return false;
                 }
 

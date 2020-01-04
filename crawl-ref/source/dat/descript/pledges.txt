@@ -63,8 +63,8 @@ UNDER CONSTRUCTION
 Justice
 
 You cannot pick up the orb of Zot until all unique Hell and Pandemonium Lords have
-been killed. Attempting to pick up the orb will summon all Lords that are still alive.
-UNDER CONSTRUCTION
+been killed. Attempting to pick up the orb will summon a unique Pan lord if they are
+not already dead or summoned.
 %%%%
 Chaos
 

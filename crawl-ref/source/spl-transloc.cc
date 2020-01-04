@@ -848,6 +848,7 @@ spret_type cast_apportation(int pow, bolt& beam, bool fail)
             
             // Check if pledges were completed; if not, give a different message
             // (still let the player anger Pandemonium though, that's funny)
+            // No need to check Angel of Justice here
             switch(you.pledge)
             {
                 case PLEDGE_EXPLORER:
