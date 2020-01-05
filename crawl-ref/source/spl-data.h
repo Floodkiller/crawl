@@ -2620,7 +2620,6 @@ static const struct spell_desc spelldata[] =
     3, 0,
     TILEG_DAZZLING_SPRAY,
 },
-
 {
     SPELL_FORCE_LANCE, "Force Lance",
     SPTYP_CONJURATION | SPTYP_TRANSLOCATION,
@@ -2632,6 +2631,16 @@ static const struct spell_desc spelldata[] =
     TILEG_FORCE_LANCE,
 },
 
+{
+    SPELL_DIFFERENTIAL_EXPANSION, "Differential Expansion",
+    SPTYP_CONJURATION | SPTYP_ICE,
+    SPFLAG_DIR_OR_TARGET | SPFLAG_NEEDS_TRACER,
+    4,
+    100,
+    1, 1,
+    5, 0,
+    TILEG_COLD_BREATH,
+},
 {
     SPELL_SENTINEL_MARK, "Sentinel's Mark",
     SPTYP_HEXES,

@@ -392,7 +392,7 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_BLINK,
     SPELL_OZOCUBUS_ARMOUR,
     SPELL_CONJURE_FLAME,
-    SPELL_FORCE_LANCE,
+    SPELL_DIFFERENTIAL_EXPANSION,
     SPELL_BLADE_OF_DISASTER,
     
 },

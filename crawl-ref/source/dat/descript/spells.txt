@@ -424,6 +424,13 @@ spell has a chance of draining the caster's power, with a lower chance of
 expiry at high power. Casting the spell again will cancel the spell's
 effects.
 %%%%
+Differential Expansion spell
+
+A thick icy shell forms over the caster's weapon as the caster manifests their
+rage into a single white-hot point on their weapon. A degree of thermal shock
+ensues, the result of which is directed to a target within melee range, 
+causing ice damage and potential knockback.
+%%%%
 Dig spell
 
 Digs a tunnel through unworked rock.

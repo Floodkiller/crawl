@@ -4604,11 +4604,15 @@ void bolt::knockback_actor(actor *act, int dam)
     const int distance =
         (origin_spell == SPELL_FORCE_LANCE)
             ? 1 + div_rand_round(ench_power, 40) :
+        (origin_spell == SPELL_DIFFERENTIAL_EXPANSION)
+            ? 2 + div_rand_round(ench_power, 40) :
         (origin_spell == SPELL_CHILLING_BREATH) ? 2 : 1;
 
     const int roll = origin_spell == SPELL_FORCE_LANCE
-                     ? 7 + 0.27 * ench_power
-                     : 17;
+                     ? 7 + 0.27 * ench_power  :
+                     origin_spell == SPELL_DIFFERENTIAL_EXPANSION
+                     ? 10 + 0.24 * ench_power                     :
+                     17;
     const int weight = max_corpse_chunks(act->is_monster() ? act->type :
                                    player_species_to_mons_species(you.species));
 
@@ -4624,8 +4628,11 @@ void bolt::knockback_actor(actor *act, int dam)
     coord_def newpos = oldpos;
     for (int dist_travelled = 0; dist_travelled < distance; ++dist_travelled)
     {
-        if (x_chance_in_y(weight, roll))
-            continue;
+        // add 1 guaranteed distance to blowback for differential expansion
+        // mprf("weight: %i  roll: %i  distance: %i dist_travelled: %i",weight,roll,distance,dist_travelled);
+        if (origin_spell != SPELL_DIFFERENTIAL_EXPANSION || dist_travelled != 0)
+            if (x_chance_in_y(weight, roll)) 
+                    continue;
 
         const ray_def oldray(ray);
 
@@ -4649,7 +4656,6 @@ void bolt::knockback_actor(actor *act, int dam)
 
     if (newpos == oldpos)
         return;
-
     if (you.can_see(*act))
     {
         if (origin_spell == SPELL_CHILLING_BREATH)
@@ -6639,7 +6645,8 @@ bool bolt::can_knockback(const actor &act, int dam) const
 
     return flavour == BEAM_WATER && origin_spell == SPELL_PRIMAL_WAVE
            || origin_spell == SPELL_CHILLING_BREATH && act.airborne()
-           || origin_spell == SPELL_FORCE_LANCE && dam;
+           || origin_spell == SPELL_FORCE_LANCE && dam
+           || origin_spell == SPELL_DIFFERENTIAL_EXPANSION && dam;
 }
 
 /**

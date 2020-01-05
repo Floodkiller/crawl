@@ -972,7 +972,23 @@ _mon_hex_zap(ZAP_SLEEP, BEAM_SLEEP),
     false,
     5
 },
-
+{
+    ZAP_DIFFERENTIAL_EXPANSION,
+    "differential expansion",
+    100,
+    new dicedef_calculator<2, 6, 1, 6>,
+    new tohit_calculator<11, 1, 6>,
+    new dicedef_calculator<3, 6, 1, 15>,
+    new tohit_calculator<20, 1, 20>,
+    BLUE,
+    false,
+    BEAM_ICE,
+    DCHAR_FIRED_ZAP,
+    true,
+    false,
+    false,
+    5
+},
 {
     ZAP_SEARING_RAY_I,
     "searing ray",
