@@ -137,10 +137,11 @@ Casting the spell again will cancel the form.
 %%%%
 Blade of Disaster spell
 
-Manifests the fury of battle into crystallized sparks with each swing of the
-caster's weapon. The sparks explode in a large radius shortly after the spell
-expires. The damage of the explosion is based on both spellpower and the
-caster's weapon.
+A reckless and dangerous spell capable of great destruction. Channels emanations
+of disastrous arcane power through the caster's weapon that explode in a large
+radius shortly after the spell expires, damaging all creatures, including the
+caster, caught within the blast. The damage of the explosion is based on both
+spellpower and the caster's weapon.
 
 Unarmed fighters find it easier to channel the full power of the spell into their
 attacks, but lose the benefit of their weapon.

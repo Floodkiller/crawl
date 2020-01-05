@@ -3047,6 +3047,11 @@ void Disaster_Prism(actor* agent, coord_def where, int pow, god_type god)
 {
     ASSERT(agent);
     int boompower;
+    int range=3;
+    targeter_cone hitfunc(agent, range);
+    hitfunc.set_aim(where);
+
+    
     item_def* wpn = agent->weapon();
 
     if (!weapon_is_disastrous(wpn))
@@ -3063,14 +3068,30 @@ gets no benefit from an equipped weapon, but gets extra spellpower.*/
     }
     else
         boompower = property(*you.weapon(), PWPN_DAMAGE) + pow/8;
+    
+    vector<coord_def> spots;
+    
+    for (int i = 1; i <= range; i++)
+    {
+        for (const auto &entry : hitfunc.sweep[i])
+        {
+            if (entry.second <= 0)
+                continue;
 
+            if (!actor_at(entry.first))
+            {
+                spots.push_back(entry.first);
+            }
+        }
+    }
+
+    const coord_def pos = spots[random2(spots.size())];
     int hd = boompower;
 
     mgen_data disaster(MONS_DISASTER_PRISM,
                  agent->is_player() ? BEH_FRIENDLY
                                     : SAME_ATTITUDE(agent->as_monster()),
-                 where);
-                 //target->mindex();
+                 pos, MHITNOT, MG_FORCE_PLACE);
     disaster.set_summoned(agent, 0, SPELL_BLADE_OF_DISASTER);
     disaster.hd = hd;
     monster* BoD = create_monster(disaster);
