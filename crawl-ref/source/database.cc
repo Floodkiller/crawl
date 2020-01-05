@@ -89,7 +89,8 @@ static TextDB AllDBs[] =
 
     TextDB("gamestart", "descript/",
           { "species.txt",
-            "backgrounds.txt" }),
+            "backgrounds.txt",
+            "pledges.txt"}),
 
     TextDB("randart", "database/",
           { "randname.txt",

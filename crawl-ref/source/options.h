@@ -471,6 +471,7 @@ public:
 
     // -1 and 0 mean no confirmation, other possible values are 1,2,3 (see fail_severity())
     int         fail_severity_to_confirm;
+    string      pledge;
 #ifdef WIZARD
     // Parameters for fight simulations.
     string      fsim_mode;

@@ -3457,6 +3457,8 @@ bool is_useless_item(const item_def &item, bool temp)
         return false;
 
     case OBJ_SCROLLS:
+        if (you.pledge == PLEDGE_ASCETIC)
+            return true;
         if (you.species == SP_LAVA_ORC && temperature_effect(LORC_NO_SCROLLS))
             return true;
         if (temp && silenced(you.pos()))
@@ -3526,6 +3528,8 @@ bool is_useless_item(const item_def &item, bool temp)
 
     case OBJ_POTIONS:
     {
+        if (you.pledge == PLEDGE_ASCETIC)
+            return true;
         // Mummies can't use potions.
         if (you.undead_state(temp) == US_UNDEAD)
             return true;
@@ -3620,7 +3624,8 @@ bool is_useless_item(const item_def &item, bool temp)
                    || you.undead_state(temp);
 
         case AMU_FAITH:
-            return (you.species == SP_PROMETHEAN && !you.religion)
+            return ((you.species == SP_PROMETHEAN || you.pledge == PLEDGE_BRUTE_FORCE)
+                     && !you.religion)
                     || you_worship(GOD_GOZAG)
                     || (you_worship(GOD_RU) && you.piety == piety_breakpoint(5));
 

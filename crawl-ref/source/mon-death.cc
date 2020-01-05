@@ -2615,6 +2615,7 @@ item_def* monster_die(monster& mons, killer_type killer,
         {
             switch (mons.type)
             {
+                // TODO: These could probably be parsed from you.kills instead
                 case MONS_DISPATER:
                     you.props["dispater_dead"] = true;
                     mpr("You no longer feel the iron fury of Dis assaulting you.");
@@ -2633,6 +2634,22 @@ item_def* monster_die(monster& mons, killer_type killer,
                 case MONS_ERESHKIGAL:
                     you.props["ereshkigal_dead"] = true;
                     mpr("You no longer feel the haunting ire of Tartarus assaulting you.");
+                    break;
+                
+                case MONS_MNOLEG:
+                    you.props["mnoleg_dead"] = true;
+                    break;
+
+                case MONS_CEREBOV:
+                    you.props["cerebov_dead"] = true;
+                    break;
+
+                case MONS_LOM_LOBON:
+                    you.props["lom_dead"] = true;
+                    break;
+
+                case MONS_GLOORX_VLOQ:
+                    you.props["gloorx_dead"] = true;
                     break;
 
                 default:

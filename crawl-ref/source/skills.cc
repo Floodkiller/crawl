@@ -186,7 +186,7 @@ int skill_cost_baseline()
  */
 int one_level_cost(skill_type sk)
 {
-    if (you.skills[sk] >= MAX_SKILL_LEVEL)
+    if (you.skills[sk] >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         return 0;
     return skill_exp_needed(you.skills[sk] + 1, sk)
            - skill_exp_needed(you.skills[sk], sk);
@@ -201,7 +201,7 @@ int one_level_cost(skill_type sk)
  */
 float scaled_skill_cost(skill_type sk)
 {
-    if (you.skills[sk] == MAX_SKILL_LEVEL || is_useless_skill(sk))
+    if (you.skills[sk] == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL) || is_useless_skill(sk))
         return 0;
     int baseline = skill_cost_baseline();
     int next_level = one_level_cost(sk);
@@ -280,7 +280,7 @@ static void _change_skill_level(skill_type exsk, int n)
 
     // are you drained/crosstrained/ash'd in the relevant skill?
     const bool specify_base = you.skill(exsk, 1) != you.skill(exsk, 1, true);
-    if (you.skills[exsk] == MAX_SKILL_LEVEL)
+    if (you.skills[exsk] == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         mprf(MSGCH_INTRINSIC_GAIN, "You have mastered %s!", skill_name(exsk));
     else if (abs(n) == 1 && you.num_turns)
     {
@@ -305,7 +305,7 @@ static void _change_skill_level(skill_type exsk, int n)
     if (n > 0 && you.num_turns)
         learned_something_new(HINT_SKILL_RAISE);
 
-    if (you.skills[exsk] - n == MAX_SKILL_LEVEL)
+    if (you.skills[exsk] - n == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
     {
         you.train[exsk] = TRAINING_ENABLED;
         need_reset = true;
@@ -372,7 +372,7 @@ int calc_skill_level_change(skill_type sk, int starting_level, int sk_points)
     int new_level = starting_level;
     while (1)
     {
-        if (new_level < MAX_SKILL_LEVEL
+        if (new_level < ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL)
             && sk_points >= (int) skill_exp_needed(new_level + 1, sk))
         {
             ++new_level;
@@ -839,7 +839,7 @@ void reset_training()
 
 void exercise(skill_type exsk, int deg)
 {
-    if (you.skills[exsk] >= MAX_SKILL_LEVEL)
+    if (you.skills[exsk] >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         return;
 
     dprf(DIAG_SKILLS, "Exercise %s by %d.", skill_name(exsk), deg);
@@ -863,8 +863,9 @@ void exercise(skill_type exsk, int deg)
 // We look at skill points because actual level up comes later.
 static bool _level_up_check(skill_type sk, bool simu)
 {
+    
     // Don't train past level 27.
-    if (you.skill_points[sk] >= skill_exp_needed(MAX_SKILL_LEVEL, sk))
+    if (you.skill_points[sk] >= skill_exp_needed(((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL), sk))
     {
         you.training[sk] = 0;
         if (!simu)
@@ -1326,9 +1327,9 @@ skill_diff skill_level_to_diffs(skill_type skill, double amount,
     // TODO: can `amount` be converted to fixed point?
     double level;
     double fractional = modf(amount, &level);
-    if (level >= MAX_SKILL_LEVEL)
+    if (level >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
     {
-        level = MAX_SKILL_LEVEL;
+        level = ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL);
         fractional = 0;
     }
 
@@ -1453,7 +1454,7 @@ void set_skill_level(skill_type skill, double amount)
 
 int get_skill_progress(skill_type sk, int level, int points, int scale)
 {
-    if (level >= MAX_SKILL_LEVEL)
+    if (level >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         return 0;
 
     const int needed = skill_exp_needed(level + 1, sk);
@@ -2131,7 +2132,7 @@ int transfer_skill_points(skill_type fsk, skill_type tsk, int skp_max,
         if (fsk != tsk)
         {
             change_skill_points(tsk, skp_gained, false);
-            if (you.skills[tsk] == MAX_SKILL_LEVEL)
+            if (you.skills[tsk] == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
                 break;
         }
     }
@@ -2169,7 +2170,7 @@ int transfer_skill_points(skill_type fsk, skill_type tsk, int skp_max,
         }
 
         if (you.transfer_skill_points == 0
-            || you.skills[tsk] == MAX_SKILL_LEVEL)
+            || you.skills[tsk] == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         {
             ashenzari_end_transfer(true);
         }
@@ -2220,7 +2221,7 @@ void skill_state::restore_training()
 {
     for (skill_type sk = SK_FIRST_SKILL; sk < NUM_SKILLS; ++sk)
     {
-        if (you.skills[sk] < MAX_SKILL_LEVEL)
+        if (you.skills[sk] < ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
             you.train[sk] = train[sk];
     }
 
@@ -2248,8 +2249,9 @@ void fixup_skills()
         }
         else if (is_gnoll)
             you.train[sk] = TRAINING_ENABLED;
+        
         you.skill_points[sk] = min(you.skill_points[sk],
-                                   skill_exp_needed(MAX_SKILL_LEVEL, sk));
+                                   skill_exp_needed(((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL), sk));
         check_skill_level_change(sk);
     }
     init_can_train();
@@ -2272,7 +2274,7 @@ bool can_enable_skill(skill_type sk, bool override)
 {
     // TODO: should this check you.skill_points or you.skills?
     return you.species != SP_GNOLL
-       && you.skills[sk] < MAX_SKILL_LEVEL
+       && you.skills[sk] < ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL)
        && !is_useless_skill(sk)
        && (override || (you.can_train[sk] && !is_harmful_skill(sk)));
 }

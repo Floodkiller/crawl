@@ -7,6 +7,7 @@
 
 #include "job-type.h"
 #include "species-type.h"
+#include "pledge-type.h"
 
 class MenuFreeform;
 struct menu_letter;
@@ -46,3 +47,16 @@ struct species_group
     void attach(const newgame_def& ng, const newgame_def& defaults,
                 MenuFreeform* menu, menu_letter &letter);
 };
+
+struct pledge_group
+{
+    const char* name;   ///< Name of the group.
+    coord_def position; ///< Relative coordinates of the title.
+    int width;          ///< Column width.
+    vector<pledge_type> pledge_list; ///< List of pledges in the group.
+    
+    /// A method to attach the group to a freeform.
+    void attach(const newgame_def& ng, const newgame_def& defaults,
+                MenuFreeform* menu, menu_letter &letter);
+};
+

@@ -17,7 +17,7 @@ The contents of this text are:
 1-  Starting Screen.
                 name, remember_name, weapon, species, background, combo,
                 restart_after_game, restart_after_save, name_bypasses_menu,
-                default_manual_training, autopickup_starting_ammo
+                default_manual_training, autopickup_starting_ammo, pledge
 2-  File System and Sound.
                 crawl_dir, morgue_dir, save_dir, macro_dir, sound, hold_sound,
                 sound_file_path
@@ -399,6 +399,11 @@ autopickup_starting_ammo = true
         for Earth Elementalists and arrows for Transmuters). Even when this
         option is set, autopickup of those items can be disabled from the
         \ menu once the game has begun.
+
+pledge = <pledge>
+        When set, specifies the pledge choice. Will show the pledge selection
+        prompt if the entered pledge is not recognized.
+        
 
 2-  File System.
 ================
