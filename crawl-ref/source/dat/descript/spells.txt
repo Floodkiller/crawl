@@ -280,6 +280,11 @@ sufficiently close to the caster. Its damage partially bypasses armour.
 Chaos Breath spell
 
 Exhales a large cloud of fumes filled with the very essence of chaos.
+%%%%Chill Thread spell
+
+The caster damps down their rage and focuses on their weapon's spirit,
+creating a chill thread they weave through their garments that will
+freeze anyone who attacks them.
 %%%%
 Chilling Breath spell
 

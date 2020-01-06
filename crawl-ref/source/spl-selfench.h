@@ -29,6 +29,7 @@ int cast_selective_amnesia(const string &pre_msg = "");
 spret_type cast_silence(int pow, bool fail = false);
 
 spret_type cast_infusion(int pow, bool fail);
+spret_type cast_chill_thread(int pow, bool fail);
 spret_type cast_song_of_slaying(int pow, bool fail);
 
 spret_type cast_liquefaction(int pow, bool fail);

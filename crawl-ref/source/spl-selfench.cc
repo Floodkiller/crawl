@@ -373,6 +373,26 @@ spret_type cast_infusion(int pow, bool fail)
     }
 }
 
+spret_type cast_chill_thread(int pow, bool fail)
+{
+    fail_check();
+    if (!you.permabuffs[MUT_CHILL_THREAD])
+    {
+        if(spell_add_permabuff(SPELL_CHILL_THREAD, 1))
+        {
+            return SPRET_SUCCESS;
+        }
+        else
+            return SPRET_ABORT;
+    }
+    else
+    {
+        // Don't have the player pay MP to remove their permabuff
+        spell_remove_permabuff(SPELL_CHILL_THREAD, 1);
+        return SPRET_ABORT;
+    }
+}
+
 spret_type cast_song_of_slaying(int pow, bool fail)
 {
     fail_check();
@@ -616,6 +636,8 @@ static mutation_type _permabuff_to_mut(spell_type spell)
             return MUT_DEFLECT_MISSILES;
         case SPELL_REPEL_MISSILES:
             return MUT_REPEL_MISSILES;
+        case SPELL_CHILL_THREAD:
+            return MUT_CHILL_THREAD;
         default:
             return MUT_NON_MUTATION; //Failed to find permabuff, fail out
     }

@@ -496,7 +496,8 @@ bool melee_attack::handle_phase_hit()
         if (!defender->alive())
             return true;
     }
-	if (attacker != defender && adjacent(defender->pos(), attack_position)
+
+    if (attacker != defender && adjacent(defender->pos(), attack_position)
         && attacker->alive() && defender->can_see(*attacker)
         && !defender->cannot_act() && !defender->confused()
         && (!defender->is_player() || (!you.duration[DUR_LIFESAVING]
@@ -523,7 +524,9 @@ bool melee_attack::handle_phase_hit()
                 return false;
         }
     }
-    else if (defender->is_player())
+
+    // taking off an "else" here so passives fire on the first attach
+    if (defender->is_player())
     {
         // These effects (mutations right now) are only triggered when
         // the player is hit, each of them will verify their own required
@@ -3071,7 +3074,7 @@ void melee_attack::mons_apply_attack_flavour()
 
 void melee_attack::do_passive_freeze()
 {
-    if (you.has_mutation(MUT_PASSIVE_FREEZE)
+    if ( (you.has_mutation(MUT_PASSIVE_FREEZE) || you.permabuffs[MUT_CHILL_THREAD] )
         && attacker->alive()
         && adjacent(you.pos(), attacker->as_monster()->pos()))
     {
@@ -3081,13 +3084,20 @@ void melee_attack::do_passive_freeze()
 
         monster* mon = attacker->as_monster();
 
-        const int orig_hurted = random2(11);
+        int orig_hurted = 0;
+        // mutation and spell are additive
+        if (you.has_mutation(MUT_PASSIVE_FREEZE)) orig_hurted = orig_hurted + random2(11);
+        if (you.permabuffs[MUT_CHILL_THREAD]) orig_hurted = orig_hurted + random2(3);
         int hurted = mons_adjust_flavoured(mon, beam, orig_hurted);
 
         if (!hurted)
             return;
 
-        simple_monster_message(*mon, " is very cold.");
+        if (you.permabuffs[MUT_CHILL_THREAD]) 
+            simple_monster_message(*mon, " feels very chill.");
+
+        if (you.has_mutation(MUT_PASSIVE_FREEZE)) 
+            simple_monster_message(*mon, " is very cold.");
 
 #ifndef USE_TILE_LOCAL
         flash_monster_colour(mon, LIGHTBLUE, 200);

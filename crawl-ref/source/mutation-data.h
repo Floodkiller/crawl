@@ -2033,6 +2033,14 @@ static const mutation_def mut_data[] =
   {"You feel less protected from missiles.", "", ""},
 },
 
+{ MUT_CHILL_THREAD, 0, 1, mutflag::good, false,
+  "chill thread",
+
+  {"You have woven a chill thread.", "", ""},
+  {"You weave a chill thread through your apparel!", "", ""},
+  {"Your chill thread evaporates in a brief flame.", "", ""},
+},
+
 };
 
 static const mutation_category_def category_mut_data[] =

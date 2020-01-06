@@ -2820,7 +2820,6 @@ void monster::expose_to_element(beam_type flavour, int strength,
             && res_cold() <= 0 && coinflip())
         {
             do_slow_monster(*this, this, (strength + random2(5)) * BASELINE_DELAY);
-            simple_monster_message(*this, " should be slowed by BEAM_COLD.");
         }
         break;
     // BEAM_ICE is not flavor and always has chance to slow

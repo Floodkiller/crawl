@@ -773,7 +773,6 @@ bool fill_status_info(int status, status_info& inf)
             inf.light_text = "Inf";
         }
         break;
-
     case STATUS_FIRE_SHIELD:
         if (you.permabuffs[MUT_RING_OF_FLAMES] > 0)
         {
@@ -811,6 +810,14 @@ bool fill_status_info(int status, status_info& inf)
         {
             inf.light_colour = WHITE;
             inf.light_text = "Ozo";
+        }
+        break;
+
+    case STATUS_CHILL_THREAD:
+        if (you.permabuffs[MUT_CHILL_THREAD] > 0)
+        {
+            inf.light_colour = WHITE;
+            inf.light_text = "Chill";
         }
         break;
 
