@@ -2255,7 +2255,7 @@ void tag_read_char(reader &th, uint8_t format, uint8_t major, uint8_t minor)
     if (major > 34 || major == 34 && minor >= 130)
         you.explore = unmarshallBoolean(th);
     
-    if (major > 34 || major == 34 && minor >= 207)
+    if (major > 34 || major == 34 && minor >= 198)
     {
         you.pledge = static_cast<pledge_type>(unmarshallUByte(th));
     }
