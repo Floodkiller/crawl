@@ -6,6 +6,7 @@
 #pragma once
 
 #include "god-type.h"
+#include "pledge-type.h"
 #include "score-format-type.h"
 
 class scorefile_entry;
@@ -130,6 +131,8 @@ private:
 
     int         scrolls_used;       // Number of scrolls used.
     int         potions_used;       // Number of potions used.
+    
+    pledge_type pledge;             // Pledge taken
 
     mutable unique_ptr<xlog_fields> fields;
 
