@@ -3510,7 +3510,7 @@ static void _join_jiyva()
 }
 
 /// Setup when joining the sacred cult of Ru.
-static void _join_ru()
+void join_ru()
 {
     _make_empty_vec(you.props[AVAILABLE_SAC_KEY], SV_INT);
     _make_empty_vec(you.props[HEALTH_SAC_KEY], SV_INT);
@@ -3597,7 +3597,7 @@ static const map<god_type, function<void ()>> on_join = {
             gain_piety(20, 1, false);  // allow instant access to first power
     }},
     { GOD_PAKELLAS, _join_pakellas },
-    { GOD_RU, _join_ru },
+    { GOD_RU, join_ru },
     { GOD_TROG, _join_trog },
     { GOD_ZIN, _join_zin },
 };
