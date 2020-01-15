@@ -43,6 +43,7 @@
 #include "options.h"
 #include "ouch.h"
 #include "place.h"
+#include "pledge.h"
 #include "religion.h"
 #include "skills.h"
 #include "state.h"
@@ -741,6 +742,7 @@ void scorefile_entry::init_from(const scorefile_entry &se)
     zigmax             = se.zigmax;
     scrolls_used       = se.scrolls_used;
     potions_used       = se.potions_used;
+    pledge             = se.pledge;
     fixup_char_name();
 
     // We could just reset raw_line to "" instead.
@@ -1044,6 +1046,8 @@ void scorefile_entry::init_with_fields()
     scrolls_used = fields->int_field("scrollsused");
     potions_used = fields->int_field("potionsused");
 
+    pledge     = name_to_pledge(fields->str_field("pledge"));
+
     fixup_char_name();
 }
 
@@ -1141,6 +1145,7 @@ void scorefile_entry::set_base_xlog_fields() const
         fields->add_field("zigdeepest", "%d", zigmax);
     fields->add_field("scrollsused", "%d", scrolls_used);
     fields->add_field("potionsused", "%d", potions_used);
+    fields->add_field("pledge", "%s", get_pledge_name(pledge).c_str());
 }
 
 void scorefile_entry::set_score_fields() const
@@ -1478,6 +1483,7 @@ void scorefile_entry::reset()
     zigmax               = 0;
     scrolls_used         = 0;
     potions_used         = 0;
+    pledge               = PLEDGE_NONE;
 }
 
 static int _award_modified_experience()
@@ -1715,6 +1721,7 @@ void scorefile_entry::init(time_t dt)
         for (int i = 0; i < maxlev; i++)
             potions_used += you.action_count[p][i];
 
+    pledge = you.pledge;
     wiz_mode = (you.wizard || you.suppress_wizard ? 1 : 0);
     explore_mode = (you.explore ? 1 : 0);
 }

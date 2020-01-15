@@ -183,6 +183,7 @@ static bool _string_in_rcfile_options(pledge_type pledge, const string &str)
                 str) != _get_pledge_def(pledge).rcfile_options.end();
 }
 
+// Change rcfile option entry into pledge_type
 pledge_type rcfile_str_to_pledge(const string &str)
 {
     pledge_type pledge;
@@ -193,6 +194,22 @@ pledge_type rcfile_str_to_pledge(const string &str)
     {
         pledge = static_cast<pledge_type>(i);
         if (_string_in_rcfile_options(pledge, str_nospace))
+            return pledge;
+    }
+
+    // Could not find pledge, return PLEDGE_UNKNOWN
+    return PLEDGE_UNKNOWN;
+}
+
+// Change name into pledge_type (logfile support)
+pledge_type name_to_pledge(const string &str)
+{
+    pledge_type pledge;
+
+    for (int i = 0; i < NUM_PLEDGES; ++i)
+    {
+        pledge = static_cast<pledge_type>(i);
+        if (str == get_pledge_name(pledge))
             return pledge;
     }
 
