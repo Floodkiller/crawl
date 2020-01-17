@@ -3084,10 +3084,12 @@ gets no benefit from an equipped weapon, but gets extra spellpower.*/
             }
         }
     }
-
+    if (spots.size() > 0)
+    {
     const coord_def pos = spots[random2(spots.size())];
     int hd = boompower;
 
+    
     mgen_data disaster(MONS_DISASTER_PRISM,
                  agent->is_player() ? BEH_FRIENDLY
                                     : SAME_ATTITUDE(agent->as_monster()),
@@ -3095,12 +3097,13 @@ gets no benefit from an equipped weapon, but gets extra spellpower.*/
     disaster.set_summoned(agent, 0, SPELL_BLADE_OF_DISASTER);
     disaster.hd = hd;
     monster* BoD = create_monster(disaster);
-
+    
+    
     if (!BoD)
     {
         return;
     }
-
+    }
     return;
 }
 
