@@ -2252,7 +2252,6 @@ static bool _merge_items_into_inv(item_def &it, int quant_got,
     if (item_is_orb(it))
     {
         // Check pledges first before allowing orb to be picked up
-        // Let each case fall through to default if it was accomplished
         switch(you.pledge)
         {
             case PLEDGE_EXPLORER:
@@ -2261,6 +2260,7 @@ static bool _merge_items_into_inv(item_def &it, int quant_got,
                     mpr("You haven't collected enough runes to complete your pledge.");
                     return false;
                 }
+                break;
 
             case PLEDGE_DESCENT_INTO_MADNESS:
                 if (you.zigs_completed < 1)
@@ -2268,6 +2268,7 @@ static bool _merge_items_into_inv(item_def &it, int quant_got,
                     mpr("You haven't finished a ziggurat to complete your pledge.");
                     return false;
                 }
+                break;
 
             case PLEDGE_ANGEL_OF_JUSTICE:
                 // Check if any of the Pan or Hell unique lords are still alive
@@ -2306,11 +2307,15 @@ static bool _merge_items_into_inv(item_def &it, int quant_got,
                     mpr("You have not yet completed your pledge! A challenger from Pandemonium is still alive!");
                     return false;
                 }
+                break;
 
             default:
-                _get_orb(it, quiet);
-                return true;
+                break;
         }
+        
+        // If through the switch statement alive, pick up the orb
+        _get_orb(it, quiet);
+        return true;
        
     }
 
