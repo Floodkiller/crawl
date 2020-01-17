@@ -11,6 +11,7 @@
 #include "end.h"
 #include "files.h"
 #include "food.h"
+#include "god-abil.h"
 #include "god-companions.h"
 #include "hints.h"
 #include "invent.h"
@@ -445,8 +446,19 @@ static void _give_items_skills(const newgame_def& ng)
     }
     if (you.pledge == PLEDGE_SPITEFUL)
     {
-        // Need to do join_religion to get all support variables established
-        join_religion(GOD_RU);
+        // join_religion breaks WebTiles, so just copying wholesale
+        // from bloatcrawl 2 for proper Ru setup
+        you.religion = GOD_RU;
+        you.piety = 10;
+        you.piety_hysteresis = 0;
+        you.gift_timeout = 0;
+        you.props[RU_SACRIFICE_PROGRESS_KEY] = 9999;
+        {
+            int delay = 50;
+            you.props[RU_SACRIFICE_DELAY_KEY] = delay;
+        }
+        you.props[RU_SACRIFICE_PENALTY_KEY] = 0;
+        join_ru();
     }
 
     if (you.char_class == JOB_ABYSSAL_KNIGHT)
