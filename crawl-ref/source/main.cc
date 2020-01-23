@@ -1392,6 +1392,7 @@ static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
                 mpr("Your pledge prevents you from entering this branch until you abandon Ru at least once.");
                 return false;
             }
+            break;
 
         case PLEDGE_HARVEST:
             // Harvest blocks any stairs or portals except stuff that stays on the level
@@ -1407,6 +1408,7 @@ static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
                     }
                 }
             }
+            break;
 
         default:
             break;

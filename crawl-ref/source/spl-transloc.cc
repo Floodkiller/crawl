@@ -849,33 +849,25 @@ spret_type cast_apportation(int pow, bolt& beam, bool fail)
             // Check if pledges were completed; if not, give a different message
             // (still let the player anger Pandemonium though, that's funny)
             // No need to check Angel of Justice here
-            switch(you.pledge)
+            if(you.pledge == PLEDGE_EXPLORER && runes_in_pack() < 15)
             {
-                case PLEDGE_EXPLORER:
-                    if (runes_in_pack() < 15)
-                    {
-                        start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
-                            "You probably should have completed your pledge before doing this!");
-                        break;
-                    }
-                
-                case PLEDGE_DESCENT_INTO_MADNESS:
-                    if (you.zigs_completed < 1)
-                    {
-                        start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
-                            "You probably should have completed your pledge before doing this!");
-                        break;
-                    }
-                
-                case PLEDGE_NATURES_ALLY:
-                    start_orb_run(CHAPTER_ANGERED_PANDEMONIUM,
-                        "Now pick up the Orb and go beat up some mummies!");
-                    break;
-                
-                default:
-                    start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
-                        "Now pick up the Orb and get out of here!");
-                    break;
+                start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
+                    "You probably should have completed your pledge before doing this!");
+            }
+            else if(you.pledge == PLEDGE_DESCENT_INTO_MADNESS && you.zigs_completed < 1)
+            {
+                start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
+                    "You probably should have completed your pledge before doing this!");
+            }
+            else if(you.pledge == PLEDGE_NATURES_ALLY)
+            {
+                start_orb_run(CHAPTER_ANGERED_PANDEMONIUM,
+                    "Now pick up the Orb and go beat up some mummies!");
+            }
+            else                    
+            {
+                start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
+                    "Now pick up the Orb and get out of here!");
             }
         }
     }

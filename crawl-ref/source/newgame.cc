@@ -57,7 +57,7 @@ void newgame_def::clear_character()
     species  = SP_UNKNOWN;
     job      = JOB_UNKNOWN;
     weapon   = WPN_UNKNOWN;
-    pledge   = PLEDGE_UNKNOWN;
+    // Don't clear pledge away here
 }
 
 enum MenuOptions
@@ -667,6 +667,11 @@ static void _choose_char(newgame_def& ng, newgame_def& choice,
             ng.pledge = choice.pledge;
         }
     }
+    // If not, just set pledge to None
+    else
+    {
+        ng.pledge = PLEDGE_NONE;
+    }
 
     while (true)
     {
@@ -840,6 +845,8 @@ bool choose_game(newgame_def& ng, newgame_def& choice,
 static void _set_default_choice(newgame_def& ng, newgame_def& ng_choice,
                                 const newgame_def& defaults)
 {
+    // Save the pledge between clears
+    const pledge_type selected_pledge = ng.pledge;
     // Reset ng so _resolve_species_job will work properly.
     ng.clear_character();
 
@@ -848,6 +855,7 @@ static void _set_default_choice(newgame_def& ng, newgame_def& ng_choice,
     ng_choice = defaults;
     ng_choice.name = name;
     ng_choice.type = type;
+    ng_choice.pledge = selected_pledge;
 }
 
 static void _mark_fully_random(newgame_def& ng, newgame_def& ng_choice,
