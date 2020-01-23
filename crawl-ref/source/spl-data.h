@@ -3997,7 +3997,7 @@ static const struct spell_desc spelldata[] =
     SPELL_DIFFERENTIAL_EXPANSION, "Differential Expansion",
     SPTYP_CONJURATION | SPTYP_ICE,
     SPFLAG_DIR_OR_TARGET | SPFLAG_NEEDS_TRACER,
-    4,
+    3,
     100,
     1, 1,
     5, 0,
