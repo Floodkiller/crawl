@@ -391,7 +391,7 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_CHILL_THREAD,
     SPELL_BLINK,
     SPELL_OZOCUBUS_ARMOUR,
-    SPELL_CONJURE_FLAME,
+    SPELL_DAZZLING_SPRAY,
     SPELL_DIFFERENTIAL_EXPANSION,
     SPELL_BLADE_OF_DISASTER,
     
