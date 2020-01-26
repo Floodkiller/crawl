@@ -2620,7 +2620,6 @@ static const struct spell_desc spelldata[] =
     3, 0,
     TILEG_DAZZLING_SPRAY,
 },
-
 {
     SPELL_FORCE_LANCE, "Force Lance",
     SPTYP_CONJURATION | SPTYP_TRANSLOCATION,
@@ -3914,7 +3913,7 @@ static const struct spell_desc spelldata[] =
     200,
     -1, -1,
     5, 0,
-    TILEG_EXCRUCIATING_WOUNDS,
+    TILEG_BLADE_OF_DISASTER,
 },
 
 {
@@ -3994,6 +3993,26 @@ static const struct spell_desc spelldata[] =
     TILEG_ISKENDERUNS_UNDOING,
 },
 
+{
+    SPELL_DIFFERENTIAL_EXPANSION, "Differential Expansion",
+    SPTYP_CONJURATION | SPTYP_ICE,
+    SPFLAG_DIR_OR_TARGET | SPFLAG_NEEDS_TRACER,
+    3,
+    100,
+    1, 1,
+    5, 0,
+    TILEG_DIFFERENTIAL_EXPANSION,
+},
+{
+    SPELL_CHILL_THREAD, "Chill Thread",
+    SPTYP_CHARMS| SPTYP_ICE,
+    SPFLAG_UTILITY,
+    1,
+    25,
+    -1, -1,
+    1, 0,
+    TILEG_CHILL_THREAD,
+},
 {
     SPELL_NO_SPELL, "nonexistent spell",
     SPTYP_NONE,

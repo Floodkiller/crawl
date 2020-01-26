@@ -2822,6 +2822,14 @@ void monster::expose_to_element(beam_type flavour, int strength,
             do_slow_monster(*this, this, (strength + random2(5)) * BASELINE_DELAY);
         }
         break;
+    // BEAM_ICE is not flavor and always has chance to slow
+    case BEAM_ICE:
+        if (mons_class_flag(type, M_COLD_BLOOD)
+            && res_cold() <= 0 && coinflip())
+        {
+            do_slow_monster(*this, this, (strength + random2(5)) * BASELINE_DELAY);
+        }
+        break;
     case BEAM_WATER:
         del_ench(ENCH_STICKY_FLAME);
         break;

@@ -21,6 +21,8 @@ force_lance FORCE_LANCE
 fulminant_prism FULMINANT_PRISM
 searing_ray SEARING_RAY
 iskenderuns_undoing ISKENDERUNS_UNDOING
+differential_expansion DIFFERENTIAL_EXPANSION
+blade_of_disaster BLADE_OF_DISASTER
 
 %sdir gui/spells/earth
 iron_shot IRON_SHOT
@@ -38,6 +40,7 @@ stone_arrow STONE_ARROW
 %sdir gui/spells/enchantment
 berserker_rage BERSERKER_RAGE
 cause_fear CAUSE_FEAR
+chill_thread CHILL_THREAD
 confuse CONFUSE
 confusing_touch CONFUSING_TOUCH
 corona CORONA

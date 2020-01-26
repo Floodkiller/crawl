@@ -388,11 +388,11 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_NECROMUTATION,
 },
 {   // Book of Reaving
-    SPELL_INFUSION,
+    SPELL_CHILL_THREAD,
     SPELL_BLINK,
     SPELL_OZOCUBUS_ARMOUR,
-    SPELL_CONJURE_FLAME,
-    SPELL_FORCE_LANCE,
+    SPELL_DAZZLING_SPRAY,
+    SPELL_DIFFERENTIAL_EXPANSION,
     SPELL_BLADE_OF_DISASTER,
     
 },
