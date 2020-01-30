@@ -365,6 +365,17 @@ bool is_channeling_item(const item_def& item, bool calc_unid)
               && item.sub_type == MISC_CRYSTAL_BALL_OF_ENERGY;
 }
 
+// staff of battle is wizardly, i guess that's something that's a thing?
+bool is_wizardly_item(const item_def& item, bool calc_unid)
+{
+    if (is_unrandom_artefact(item, UNRAND_BATTLE))
+        return true;
+
+    return false;
+}
+
+bool is_corpse_violating_spell(spell_type spell)
+
 bool is_corpse_violating_spell(spell_type spell)
 {
     unsigned int flags = get_spell_flags(spell);
