@@ -1867,6 +1867,9 @@ int player_spec_conj()
 
     // Staves
     sc += you.wearing(EQ_STAFF, STAFF_CONJURATION);
+    // staff of battle is conj enchancer
+    if (player_equip_unrand(UNRAND_BATTLE))
+        sc++;
 
     return sc;
 }

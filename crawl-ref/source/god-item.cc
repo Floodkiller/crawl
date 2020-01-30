@@ -365,6 +365,17 @@ bool is_channeling_item(const item_def& item, bool calc_unid)
               && item.sub_type == MISC_CRYSTAL_BALL_OF_ENERGY;
 }
 
+// staff of battle is wizardly, i guess that's something that's a thing?
+bool is_wizardly_item(const item_def& item, bool calc_unid)
+{
+    if (is_unrandom_artefact(item, UNRAND_BATTLE))
+        return true;
+
+    return false;
+}
+
+bool is_corpse_violating_spell(spell_type spell)
+
 bool is_corpse_violating_spell(spell_type spell)
 {
     unsigned int flags = get_spell_flags(spell);
@@ -441,9 +452,10 @@ vector<conduct_type> item_conducts(const item_def &item)
 
     if (item_is_spellbook(item))
         conducts.push_back(DID_SPELL_MEMORISE);
-
-    if (item.sub_type == BOOK_MANUAL && item_type_known(item)
+  
+   if ((item.sub_type == BOOK_MANUAL && item_type_known(item)
         && is_magic_skill((skill_type)item.plus))
+        || is_wizardly_item(item))
     {
         conducts.push_back(DID_SPELL_PRACTISE);
     }
