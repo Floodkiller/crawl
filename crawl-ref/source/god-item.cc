@@ -452,9 +452,10 @@ vector<conduct_type> item_conducts(const item_def &item)
 
     if (item_is_spellbook(item))
         conducts.push_back(DID_SPELL_MEMORISE);
-
-    if (item.sub_type == BOOK_MANUAL && item_type_known(item)
+  
+   if ((item.sub_type == BOOK_MANUAL && item_type_known(item)
         && is_magic_skill((skill_type)item.plus))
+        || is_wizardly_item(item))
     {
         conducts.push_back(DID_SPELL_PRACTISE);
     }
