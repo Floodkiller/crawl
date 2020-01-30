@@ -3086,8 +3086,10 @@ void melee_attack::do_passive_freeze()
 
         int orig_hurted = 0;
         // mutation and spell are additive
-        if (you.has_mutation(MUT_PASSIVE_FREEZE)) orig_hurted = orig_hurted + random2(11);
-        if (you.permabuffs[MUT_CHILL_THREAD]) orig_hurted = orig_hurted + random2(3);
+        if (you.has_mutation(MUT_PASSIVE_FREEZE))
+            orig_hurted = orig_hurted + random2(11);
+        if (you.permabuffs[MUT_CHILL_THREAD]) 
+            orig_hurted = orig_hurted + random2(3);
         int hurted = mons_adjust_flavoured(mon, beam, orig_hurted);
 
         if (!hurted)
