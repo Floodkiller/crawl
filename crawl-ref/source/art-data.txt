@@ -527,7 +527,7 @@ MAGIC:   1
 
 NAME:     Elemental Staff
 OBJ:      OBJ_WEAPONS/WPN_STAFF
-PLUS:     +3
+PLUS:     +8
 COLOUR:   DARKGREY
 TILE:     urand_elemental
 TILE_EQ:  elemental_staff
