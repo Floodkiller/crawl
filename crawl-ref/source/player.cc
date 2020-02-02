@@ -1796,7 +1796,7 @@ int player_spec_fire()
     // elemental staff enhances all elements 
     if (player_equip_unrand(UNRAND_ELEMENTAL_STAFF)) 
     {
-        sf++
+        sf++;
     }
 
     // rings of fire:
@@ -1820,7 +1820,7 @@ int player_spec_cold()
     // elemental staff enhances all elements 
     if (player_equip_unrand(UNRAND_ELEMENTAL_STAFF)) 
     {
-        sc++
+        sc++;
     }
 
     // rings of ice:
@@ -1842,6 +1842,11 @@ int player_spec_earth()
 
     // Staves
     se += you.wearing(EQ_STAFF, STAFF_EARTH);
+    // elemental staff enhances all elements 
+    if (player_equip_unrand(UNRAND_ELEMENTAL_STAFF)) 
+    {
+        se++;
+    }
 
     return se;
 }
@@ -1855,7 +1860,7 @@ int player_spec_air()
     // elemental staff enhances all elements 
     if (player_equip_unrand(UNRAND_ELEMENTAL_STAFF)) 
     {
-        sa++
+        sa++;
     }
 
     return sa;
@@ -1870,6 +1875,11 @@ int player_spec_conj()
     // staff of battle is conj enchancer
     if (player_equip_unrand(UNRAND_BATTLE))
         sc++;
+    // elemental staff enhances all elements sure why not conj
+    if (player_equip_unrand(UNRAND_ELEMENTAL_STAFF)) 
+    {
+        sc++;
+    }
 
     return sc;
 }
@@ -1904,7 +1914,7 @@ int player_spec_poison()
     // elemental staff enhances all elements 
     if (player_equip_unrand(UNRAND_ELEMENTAL_STAFF)) 
     {
-        sp++
+        sp++;
     }
 
     if (player_equip_unrand(UNRAND_OLGREB))
