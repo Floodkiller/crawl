@@ -766,6 +766,17 @@ int make_mons_weapon(monster_type type, int level, bool melee_only)
               { 1, 0, 5 },
               HELL_KNIGHT_BRANDS
         } },
+        { MONS_MAGGIE,
+            { { { WPN_HALBERD,          1 },
+                { WPN_GLAIVE,           1 },
+                { WPN_WAR_AXE,          1 },
+                { WPN_MORNINGSTAR,       1 },
+                { WPN_LONG_SWORD,       1 },
+                { WPN_SCIMITAR,         1 },
+                { WPN_BROAD_AXE,        1 }, },
+              { },
+              HELL_KNIGHT_BRANDS
+        } },
         { MONS_MARGERY,
             { { { WPN_DEMON_WHIP,       2 },
                 { WPN_DEMON_BLADE,      2 },
