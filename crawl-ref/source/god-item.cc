@@ -375,8 +375,6 @@ bool is_wizardly_item(const item_def& item, bool calc_unid)
 }
 
 bool is_corpse_violating_spell(spell_type spell)
-
-bool is_corpse_violating_spell(spell_type spell)
 {
     unsigned int flags = get_spell_flags(spell);
 
