@@ -1203,14 +1203,6 @@ int make_mons_weapon(monster_type type, int level, bool melee_only)
         }
         break;
             
-    case MONS_MAGGIE:
-        if (one_chance_in(100) && !get_unique_item_status(UNRAND_WYRMBANE))
-        {
-            make_item_unrandart(item, UNRAND_WYRMBANE);
-            item.plus = 9; // Since she's wearing a dragon armour
-        }
-        break;
-
     case MONS_MARGERY:
         if (one_chance_in(100) && !get_unique_item_status(UNRAND_WYRMBANE))
         {
