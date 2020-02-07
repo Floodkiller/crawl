@@ -502,7 +502,7 @@ static const ability_def Ability_List[] =
     { ABIL_JIYVA_SLIMIFY, "Slimify",
       4, 0, 0, 8, {fail_basis::invo, 90, 0, 2}, abflag::none },
     { ABIL_JIYVA_CURE_BAD_MUTATION, "Cure Bad Mutation",
-      0, 0, 0, 15, {fail_basis::invo}, abflag::none },
+      0, 0, 0, 10, {fail_basis::invo}, abflag::none },
 
     // Fedhas
     { ABIL_FEDHAS_FUNGAL_BLOOM, "Fungal Bloom",
