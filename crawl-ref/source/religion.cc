@@ -2767,10 +2767,6 @@ void excommunication(bool voluntary, god_type new_god)
 
     switch (old_god)
     {
-    case GOD_JIYVA:
-        mprf(MSGCH_GOD, old_god, "You no longer evolve innately."); 
-         you.innate_mutation[MUT_EVOLUTION]--;
-        break;
 
     case GOD_KIKUBAAQUDGHA:
         mprf(MSGCH_GOD, old_god, "You sense decay."); // in the state of Denmark
@@ -2854,6 +2850,10 @@ void excommunication(bool voluntary, god_type new_god)
         break;
 
     case GOD_JIYVA:
+
+        mprf(MSGCH_GOD, old_god, "You no longer evolve innately."); 
+        you.innate_mutation[MUT_EVOLUTION]--;
+
         if (you.duration[DUR_SLIMIFY])
             you.duration[DUR_SLIMIFY] = 0;
 
