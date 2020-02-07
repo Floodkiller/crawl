@@ -3507,7 +3507,7 @@ static void _join_hepliaklqana()
 static void _join_jiyva()
 {
     // give innate rank of evolution
-    mutate(MUT_EVOLUTION,"Jiyva's grace",false,true,true,true,MUTCLASS_INNATE,false)
+    mutate(MUT_EVOLUTION,"Jiyva's grace",false,true,true,true,MUTCLASS_INNATE,false);
     // Complimentary jelly upon joining.
     if (_has_jelly())
         return;
