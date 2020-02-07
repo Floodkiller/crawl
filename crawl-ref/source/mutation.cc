@@ -1540,7 +1540,7 @@ bool undead_mutation_rot()
  * @param force_mutation    whether to override mutation protection and the like.
  * @param god_gift          is this a god gift? Entails overriding mutation resistance if not forced.
  * @param mutclass          is the mutation temporary, regular, or permanent (innate)? permanent entails force_mutation.
- *
+ * @param permabuff         this is a permabuff (spell) mutation - default is false
  * @return whether the mutation succeeded.
  */
 bool mutate(mutation_type which_mutation, const string &reason, bool failMsg,

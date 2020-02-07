@@ -890,7 +890,8 @@ static void _jiyva_effects(int /*time_delta*/)
         jiyva_stat_action();
     }
 
-    if (have_passive(passive_t::jelly_eating) && one_chance_in(25))
+    // 1 in 25 for vanilla crawl
+    if (have_passive(passive_t::jelly_eating) && one_chance_in(500))
         jiyva_eat_offlevel_items();
 }
 
@@ -909,6 +910,7 @@ static void _evolve(int time_delta)
                        "evolution", false, false, false, false, MUTCLASS_NORMAL);
             // it would kill itself anyway, but let's speed that up
             if (one_chance_in(10)
+                && (!(god == GOD_JIYVA))
                 && (!you.rmut_from_item()
                     || one_chance_in(10)))
             {
