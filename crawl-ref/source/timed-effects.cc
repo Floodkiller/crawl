@@ -910,7 +910,7 @@ static void _evolve(int time_delta)
                        "evolution", false, false, false, false, MUTCLASS_NORMAL);
             // it would kill itself anyway, but let's speed that up
             if (one_chance_in(10)
-                && (!(god == GOD_JIYVA))
+                && (!(you_worship(GOD_JIYVA)))
                 && (!you.rmut_from_item()
                     || one_chance_in(10)))
             {
