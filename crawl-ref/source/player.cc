@@ -2214,7 +2214,7 @@ static int _player_evasion_bonuses()
         evbonus += 8;
 
     if (you.get_mutation_level(MUT_DISTORTION_FIELD))
-        evbonus += you.get_mutation_level(MUT_DISTORTION_FIELD) + 1;
+        evbonus += you.get_mutation_level(MUT_DISTORTION_FIELD)*4;
 
     // transformation penalties/bonuses not covered by size alone:
     if (you.get_mutation_level(MUT_SLOW_REFLEXES))
@@ -2407,7 +2407,7 @@ int player_shield_class()
     // mutations
     // +4, +6, +8 (displayed values)
     shield += (you.get_mutation_level(MUT_LARGE_BONE_PLATES) > 0
-               ? you.get_mutation_level(MUT_LARGE_BONE_PLATES) * 400 + 400
+               ? you.get_mutation_level(MUT_LARGE_BONE_PLATES) * 600 + 600
                : 0);
 
     shield += you.get_mutation_level(MUT_SHIMMERING_SCALES) * 1200;
