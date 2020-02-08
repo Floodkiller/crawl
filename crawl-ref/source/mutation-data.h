@@ -1260,9 +1260,9 @@ static const mutation_def mut_data[] =
 { MUT_DISTORTION_FIELD, 2, 3, mutflag::good, false,
   "repulsion field",
 
-  {"You are surrounded by a mild repulsion field. (EV +2)",
-   "You are surrounded by a moderate repulsion field. (EV +3)",
-   "You are surrounded by a strong repulsion field. (EV +4, RMsl)"},
+  {"You are surrounded by a mild repulsion field. (EV +4)",
+   "You are surrounded by a moderate repulsion field. (EV +8)",
+   "You are surrounded by a strong repulsion field. (EV +12, RMsl)"},
 
   {"You begin to radiate repulsive energy.",
    "Your repulsive radiation grows stronger.",
@@ -1308,9 +1308,9 @@ static const mutation_def mut_data[] =
 { MUT_LARGE_BONE_PLATES, 2, 3, mutflag::good, true,
   "large bone plates",
 
-  {"You are partially covered in large bone plates. (SH +4)",
-   "You are mostly covered in large bone plates. (SH +6)",
-   "You are completely covered in large bone plates. (SH +8)"},
+  {"You are partially covered in large bone plates. (SH +6)",
+   "You are mostly covered in large bone plates. (SH +9)",
+   "You are completely covered in large bone plates. (SH +12)"},
 
   {"Large bone plates grow over parts of your arms.",
    "Large bone plates spread over more of your arms.",
@@ -1848,7 +1848,7 @@ static const mutation_def mut_data[] =
 { MUT_MP_WANDS, 7, 1, mutflag::good, false,
   "MP-powered wands",
 
-  {"You expend magic power (3 MP) to strengthen your wands.", "", ""},
+  {"You expend magic power (0 MP) to strengthen your wands.", "", ""},
   {"You feel your magical essence link to your wands.", "", ""},
   {"Your magical essence is no longer linked to your wands.", "", ""},
 },

@@ -2,11 +2,14 @@ changed chance to eat offlevel item from 1 in 25 to 1 in 500
 reduced piety cost to cure bad mutation from 15 to 10
 changed minimum hp and mp healing to 2 instead of 1
 removed something about jiyva not allowing artefacts to be created
-give rank of evolution on joining jiyva
+give innate rank of evolution on joining jiyva
+make evolution non-innate leaving jiyva
 evolution will not remove itself if you worship Jiyva  
 doubled chance of gift activating after timeout 
 reduced gift timeout from 15+2d4 to 8+2d3
 GIFTS - cut chance of removing mutations from 5%/25% to 2%/8% 
 GIFTS - added 5% chance to remove a bad mutatoin
 GIFTS - changed chance of random/slime/good mut to 20/25/30
-review _demon_facets and  _order_ds_mutations()
+
+Changed Ds scales for EV to +4/+8/+12
+Changed Ds scales for SH to +6/+9/+12

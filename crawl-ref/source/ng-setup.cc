@@ -407,7 +407,6 @@ static void _give_items_skills(const newgame_def& ng)
             mgen_data mg(MONS_JELLY, BEH_STRICT_NEUTRAL, you.pos());
             mg.set_summoned(&you, 0, 0, GOD_JIYVA);
             delayed_monster(mg);
-            simple_god_message(" grants you a jelly!");
         }
         break;
 
