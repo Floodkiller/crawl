@@ -403,9 +403,7 @@ static void _give_items_skills(const newgame_def& ng)
             // webtiles breaks if it's called directly
             // give innate rank of evolution
             mutate(MUT_EVOLUTION,"Jiyva's grace",false,true,true,true,MUTCLASS_INNATE,false);
-               // Complimentary jelly upon joining.
-            if (_has_jelly())
-                return;
+            // Complimentary jelly upon joining.
             mgen_data mg(MONS_JELLY, BEH_STRICT_NEUTRAL, you.pos());
             mg.set_summoned(&you, 0, 0, GOD_JIYVA);
             delayed_monster(mg);
