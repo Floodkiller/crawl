@@ -1068,17 +1068,17 @@ static bool _jiyva_mutate()
     // 2% delete slime mut, 8% delete mut, 5% delete bad mut
     // 20% random mut, 35% random slime mut, 30% good mut
     if (rand < 2)
-        return delete_mutation(RANDOM_SLIME_MUTATION, "Jiyva's grace", true, false, true);
+        return delete_mutation(RANDOM_SLIME_MUTATION, "Jiyva's grace - lose slime", true, false, true);
     else if (rand < 10)
-        return delete_mutation(RANDOM_NON_SLIME_MUTATION, "Jiyva's grace", true, false, true);
+        return delete_mutation(RANDOM_NON_SLIME_MUTATION, "Jiyva's grace - lose random", true, false, true);
     else if (rand < 15)
-        return delete_mutation(RANDOM_BAD_MUTATION, "Jiyva's grace", true, false, true);
+        return delete_mutation(RANDOM_BAD_MUTATION, "Jiyva's grace - lose bad", true, false, true);
     else if (rand < 35)
-        return mutate(RANDOM_MUTATION, "Jiyva's grace", true, false, true);
+        return mutate(RANDOM_MUTATION, "Jiyva's grace - gain random", true, false, true);
     else if (rand < 70)
-        return mutate(RANDOM_SLIME_MUTATION, "Jiyva's grace", true, false, true);
+        return mutate(RANDOM_SLIME_MUTATION, "Jiyva's grace - gain slime", true, false, true);
     else
-        return mutate(RANDOM_GOOD_MUTATION, "Jiyva's grace", true, false, true);
+        return mutate(RANDOM_GOOD_MUTATION, "Jiyva's grace - gain good", true, false, true);
 }
 
 bool vehumet_is_offering(spell_type spell)
