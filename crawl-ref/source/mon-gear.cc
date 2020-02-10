@@ -1209,6 +1209,8 @@ int make_mons_weapon(monster_type type, int level, bool melee_only)
             make_item_unrandart(item, UNRAND_WYRMBANE);
             item.plus = 10 + random2(2); // Since she's killed at least 2 dragons
         }
+        break;
+
     case MONS_ANCESTOR_HEXER:
     case MONS_ANCESTOR_BATTLEMAGE:
     case MONS_ANCESTOR_KNIGHT:
