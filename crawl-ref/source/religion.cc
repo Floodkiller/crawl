@@ -1065,8 +1065,8 @@ static bool _jiyva_mutate()
     simple_god_message(" alters your body.");
 
     const int rand = random2(100);
-    // 2% delete slime mut, 8% delete mut, 5% delete bad mut
     // 20% random mut, 35% random slime mut, 30% good mut
+    // parameters are mutation class, log text, produce fail message, force_mutation, god_gift
     if (rand < 2)
         return delete_mutation(RANDOM_SLIME_MUTATION, "Jiyva's grace - lose slime", true, false, true);
     else if (rand < 10)
