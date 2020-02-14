@@ -381,7 +381,8 @@ LUAFN(debug_cpp_assert)
     return 0;
 }
 
-LUAFN(debug_reset_rng)
+// TODO: This is related to dungeon seeds, uncomment when/if that gets added
+/* LUAFN(debug_reset_rng)
 {
     // call this with care...
 
@@ -414,7 +415,7 @@ LUAFN(debug_get_rng_state)
         r += make_stringf("%" PRIu64 " ", i);
     lua_pushstring(ls, r.c_str());
     return 1;
-}
+} */
 
 const struct luaL_reg debug_dlib[] =
 {

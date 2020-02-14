@@ -97,6 +97,7 @@ LUAFN(l_spells_min_range)
     PLUARET(number, spell_range(spell, 0));
 }
 
+// TODO: I don't know what added this, but only add it in after I figure it out and add whatever needs it
 /*** If this spell is aimed at (x,y), what path will it actually take?
  * @tparam string spell name
  * @tparam int x coordinate to aim at, in player coordinates
@@ -108,7 +109,7 @@ LUAFN(l_spells_min_range)
      or if the spell has zero range.
  * @function path
  */
-LUAFN(l_spells_path)
+/* LUAFN(l_spells_path)
 {
     spell_type spell = spell_by_name(luaL_checkstring(ls, 1), false);
     zap_type zap = spell_to_zap(spell);
@@ -160,7 +161,7 @@ LUAFN(l_spells_path)
         lua_rawseti(ls, -2, ++index);
     }
     return 1;
-}
+} */
 
 /*** The failure rate of the spell as a number in [0,100].
  * @tparam string name
