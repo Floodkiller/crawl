@@ -139,7 +139,7 @@ char_choice_restriction weapon_restriction(weapon_type wpn,
     }
 
     if (wpn == WPN_QUARTERSTAFF && ng.job != JOB_GLADIATOR
-        && !(ng.job == JOB_FIGHTER && ng.species == SP_FORMICID || ng.species == SP_ABOMINATION))
+        && !(ng.job == JOB_FIGHTER && (ng.species == SP_FORMICID || ng.species == SP_ABOMINATION)))
     {
         return CC_BANNED;
     }
