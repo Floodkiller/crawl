@@ -3083,6 +3083,12 @@ bool player_can_join_god(god_type which_god)
     if (you.species == SP_PROMETHEAN || you.pledge == PLEDGE_BRUTE_FORCE)
         return false;
 
+    if (you.pledge == PLEDGE_SPITEFUL && !you.attribute[ATTR_SPITEFUL])
+    {
+        mpr("You cannot worship a new god until you have abandoned Ru once before!");
+        return false;
+    }
+
     if (you.pledge == PLEDGE_CHAOS)
     {
         mpr("Nice try, Xom isn't letting you go that easily!");
