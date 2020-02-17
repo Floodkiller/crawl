@@ -1342,7 +1342,7 @@ bool physiology_mutation_conflict(mutation_type mutat)
     }
     
     // Need tentacles to grow something on them.
-    if ((you.species != SP_OCTOPODE || you.species != SP_ABOMINATION) && mutat == MUT_TENTACLE_SPIKE)
+    if ((you.species != SP_OCTOPODE && you.species != SP_ABOMINATION) && mutat == MUT_TENTACLE_SPIKE)
         return true;
 
     // No bones for thin skeletal structure, and too squishy for horns.
