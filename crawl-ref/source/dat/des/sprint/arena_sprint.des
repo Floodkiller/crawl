@@ -436,8 +436,8 @@ function arena_sprint_get_monster_set(round, boss)
                 -- Gimmicks
                 "neqoxec", "smoke demon", "catoblepas",
                 "moth of wrath / w:20 stone giant", "ball lightning",
-                "orb spider", "hungry ghost / harpy", "shining eye",
-                "tormentor",
+                "boulder beetle", "orb spider", "hungry ghost / harpy", 
+                "shining eye", "tormentor", 
                 "skeletal warrior / w:5 skeletal warrior ; dart ego:atropa"
             }
         elseif round <= 26 then
