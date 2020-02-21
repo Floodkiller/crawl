@@ -1411,7 +1411,7 @@ static void _give_ammo(monster* mon, int level, bool mons_summoned)
             if (one_chance_in(
                     player_in_branch(BRANCH_ORC)? 9 : 20))
             {
-                weap_type = MI_TOMAHAWK;
+                weap_type = MI_BOOMERANG;
                 qty       = random_range(4, 8);
             }
             break;
@@ -1419,7 +1419,7 @@ static void _give_ammo(monster* mon, int level, bool mons_summoned)
         case MONS_ORC:
             if (one_chance_in(20))
             {
-                weap_type = MI_TOMAHAWK;
+                weap_type = MI_BOOMERANG;
                 qty       = random_range(2, 5);
             }
             break;
@@ -1451,7 +1451,7 @@ static void _give_ammo(monster* mon, int level, bool mons_summoned)
             if (one_chance_in(3)
                 || active_monster_band == BAND_MERFOLK_JAVELINEER)
             {
-                weap_type  = MI_TOMAHAWK;
+                weap_type  = MI_BOOMERANG;
                 qty        = random_range(4, 8);
                 if (active_monster_band == BAND_MERFOLK_JAVELINEER)
                     break;

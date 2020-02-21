@@ -520,7 +520,7 @@ static bool _item_matches(const item_def &item, fire_type types,
         return true;
     if ((types & FIRE_PIE) && item.sub_type == MI_PIE)
         return true;
-    if ((types & FIRE_TOMAHAWK) && item.sub_type == MI_TOMAHAWK)
+    if ((types & FIRE_BOOMERANG) && item.sub_type == MI_BOOMERANG)
         return true;
     if ((types & FIRE_DART) && item.sub_type == MI_DART)
         return true;

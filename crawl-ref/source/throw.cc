@@ -661,7 +661,7 @@ static bool _setup_missile_beam(const actor *agent, bolt &beam, item_def &item,
     }
 
     returning = item.base_type == OBJ_MISSILES
-                && (item.sub_type == MI_TOMAHAWK
+                && (item.sub_type == MI_BOOMERANG
                 || (you_worship(GOD_OKAWARU) 
                     && have_passive(passive_t::protected_ammo)
                     && agent->is_player()));
