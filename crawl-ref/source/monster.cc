@@ -1379,12 +1379,9 @@ static bool _is_signature_weapon(const monster* mons, const item_def &weapon)
         if (mons->type == MONS_DONALD)
             return mons->hands_reqd(weapon) == HANDS_ONE;
 
-        // What kind of assassin would forget her blowgun or dagger somewhere else?
+        // What kind of assassin would forget her dagger somewhere else?
         if (mons->type == MONS_SONJA)
-        {
-            return item_attack_skill(weapon) == SK_SHORT_BLADES
-                   || wtype == WPN_BLOWGUN;
-        }
+            return item_attack_skill(weapon) == SK_SHORT_BLADES;
 
         if (mons->type == MONS_IMPERIAL_MYRMIDON)
             return item_attack_skill(weapon) == SK_LONG_BLADES;
@@ -1974,7 +1971,7 @@ bool monster::pickup_missile(item_def &item, bool msg, bool force)
 
         // Allow upgrading throwing weapon brands (XXX: improve this!)
         if (item.sub_type == miss->sub_type
-            && (item.sub_type == MI_TOMAHAWK || item.sub_type == MI_JAVELIN)
+            && (item.sub_type == MI_BOOMERANG || item.sub_type == MI_JAVELIN)
             && get_ammo_brand(*miss) == SPMSL_NORMAL
             && get_ammo_brand(item) != SPMSL_NORMAL)
         {

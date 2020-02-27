@@ -335,8 +335,12 @@ static bool _missile_brand_is_prefix(special_missile_type brand)
     {
     case SPMSL_POISONED:
     case SPMSL_CURARE:
+    case SPMSL_BLINDING:
+    case SPMSL_FRENZY:
     case SPMSL_EXPLODING:
+#if TAG_MAJOR_VERSION == 34
     case SPMSL_STEEL:
+#endif
     case SPMSL_SILVER:
         return true;
     default:
@@ -365,38 +369,38 @@ const char* missile_brand_name(const item_def &item, mbn_type t)
         return t == MBN_NAME ? "poisoned" : "poison";
     case SPMSL_CURARE:
         return t == MBN_NAME ? "curare-tipped" : "curare";
+#if TAG_MAJOR_VERSION == 34
     case SPMSL_EXPLODING:
         return t == MBN_TERSE ? "explode" : "exploding";
     case SPMSL_STEEL:
         return "steel";
+    case SPMSL_RETURNING:
+        return t == MBN_TERSE ? "return" : "returning";
+    case SPMSL_PENETRATION:
+        return t == MBN_TERSE ? "penet" : "penetration";
+#endif
     case SPMSL_SILVER:
         return "silver";
+#if TAG_MAJOR_VERSION == 34
     case SPMSL_PARALYSIS:
         return "paralysis";
-#if TAG_MAJOR_VERSION == 34
     case SPMSL_SLOW:
         return t == MBN_TERSE ? "slow" : "slowing";
-#endif
     case SPMSL_SLEEP:
         return t == MBN_TERSE ? "sleep" : "sleeping";
     case SPMSL_CONFUSION:
         return t == MBN_TERSE ? "conf" : "confusion";
-#if TAG_MAJOR_VERSION == 34
     case SPMSL_SICKNESS:
         return t == MBN_TERSE ? "sick" : "sickness";
 #endif
     case SPMSL_FRENZY:
-        return "frenzy";
-    case SPMSL_RETURNING:
-        return t == MBN_TERSE ? "return" : "returning";
+        return t == MBN_NAME ? "datura-tipped" : "datura";
     case SPMSL_CHAOS:
         return "chaos";
-    case SPMSL_PENETRATION:
-        return t == MBN_TERSE ? "penet" : "penetration";
     case SPMSL_DISPERSAL:
         return t == MBN_TERSE ? "disperse" : "dispersal";
     case SPMSL_BLINDING:
-        return t == MBN_TERSE ? "blind" : "blinding";
+        return t == MBN_NAME ? "atropa-tipped" : "atropa";
     case SPMSL_NORMAL:
         return "";
     default:
@@ -1655,9 +1659,6 @@ string item_def::name_aux(description_level_type desc, bool terse, bool ident,
         buff << ammo_name(static_cast<missile_type>(item_typ));
 
         if (msl_brand != SPMSL_NORMAL
-#if TAG_MAJOR_VERSION == 34
-            && msl_brand != SPMSL_BLINDING
-#endif
             && !basename && !dbname)
         {
             if (terse)

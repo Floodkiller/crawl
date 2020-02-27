@@ -3849,7 +3849,7 @@ bool mons_has_incapacitating_ranged_attack(const monster& mon, const actor& foe)
 
     if (missile && missile->sub_type == MI_THROWING_NET)
         return true;
-    else if (missile && missile->sub_type == MI_NEEDLE)
+    else if (missile && missile->sub_type == MI_DART)
     {
         switch (get_ammo_brand(*missile))
         {
@@ -3860,13 +3860,11 @@ bool mons_has_incapacitating_ranged_attack(const monster& mon, const actor& foe)
                 return true;
             break;
 
-        case SPMSL_SLEEP:
-            if (foe.can_sleep())
-                return true;
-            break;
-
+        case SPMSL_BLINDING:
+#if TAG_MAJOR_VERSION == 34
         case SPMSL_CONFUSION:
         case SPMSL_PARALYSIS:
+#endif
             return true;
 
         default:
