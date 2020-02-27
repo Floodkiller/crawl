@@ -707,7 +707,7 @@ maybe_bool you_can_wear(equipment_type eq, bool temp)
             return MB_FALSE;
         // intentional fallthrough
     case EQ_RIGHT_RING:
-        return (you.species != SP_OCTOPODE || you.species != SP_ABOMINATION) ? MB_TRUE : MB_FALSE;
+        return (you.species != SP_OCTOPODE && you.species != SP_ABOMINATION) ? MB_TRUE : MB_FALSE;
 
     case EQ_RING_EIGHT:
         if (you.get_mutation_level(MUT_MISSING_HAND))
@@ -7208,8 +7208,8 @@ bool player::has_usable_pincers(bool allow_tran) const
 
 bool player::has_usable_claws(bool allow_tran) const
 {
-    if (!has_claws(allow_tran))
-        return false;
+    if (has_claws(allow_tran))
+        return true;
 
     if (player_equip_unrand(UNRAND_FISTS_OF_THUNDER))
         return true;

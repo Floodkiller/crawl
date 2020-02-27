@@ -200,8 +200,8 @@ static bool _try_make_item_unrand(item_def& item, int force_type, int agent)
 
 static bool _weapon_disallows_randart(int sub_type)
 {
-    // Clubs and blowguns are never randarts.
-    return sub_type == WPN_CLUB || sub_type == WPN_BLOWGUN;
+    // Clubs are never randarts.
+    return sub_type == WPN_CLUB;
 }
 
 // Return whether we made an artefact.
@@ -297,9 +297,6 @@ bool is_weapon_brand_ok(int type, int brand, bool strict)
         return true;
 
     if (type == WPN_QUICK_BLADE && brand == SPWPN_SPEED)
-        return false;
-
-    if (type == WPN_BLOWGUN)
         return false;
 
     switch ((brand_type)brand)
@@ -518,9 +515,6 @@ static special_missile_type _determine_missile_brand(const item_def& item,
 
     switch (item.sub_type)
     {
-#if TAG_MAJOR_VERSION == 34
-    case MI_DART:
-#endif
     case MI_THROWING_NET:
     case MI_STONE:
     case MI_LARGE_ROCK:
@@ -532,7 +526,7 @@ static special_missile_type _determine_missile_brand(const item_def& item,
     case MI_PIE:
         rc = SPMSL_BLINDING;
         break;
-    case MI_NEEDLE:
+    case MI_DART:
         // Curare is special cased, all the others aren't.
         if (got_curare_roll(item_level))
         {
@@ -540,27 +534,17 @@ static special_missile_type _determine_missile_brand(const item_def& item,
             break;
         }
 
-        rc = random_choose_weighted(30, SPMSL_SLEEP,
-                                    30, SPMSL_CONFUSION,
-                                    10, SPMSL_PARALYSIS,
-                                    10, SPMSL_FRENZY,
+        rc = random_choose_weighted(60, SPMSL_BLINDING,
+                                    20, SPMSL_FRENZY,
                                     nw, SPMSL_POISONED);
         break;
     case MI_JAVELIN:
-        rc = random_choose_weighted(30, SPMSL_RETURNING,
-                                    32, SPMSL_PENETRATION,
-                                    32, SPMSL_POISONED,
-                                    21, SPMSL_STEEL,
-                                    20, SPMSL_SILVER,
+        rc = random_choose_weighted(90, SPMSL_SILVER,
                                     nw, SPMSL_NORMAL);
         break;
-    case MI_TOMAHAWK:
-        rc = random_choose_weighted(15, SPMSL_POISONED,
-                                    10, SPMSL_SILVER,
-                                    10, SPMSL_STEEL,
-                                    12, SPMSL_DISPERSAL,
-                                    28, SPMSL_RETURNING,
-                                    15, SPMSL_EXPLODING,
+    case MI_BOOMERANG:
+        rc = random_choose_weighted(30, SPMSL_SILVER,
+                                    30, SPMSL_DISPERSAL,
                                     nw, SPMSL_NORMAL);
         break;
     }
@@ -588,34 +572,28 @@ bool is_missile_brand_ok(int type, int brand, bool strict)
     if (brand == SPMSL_FLAME || brand == SPMSL_FROST)
         return false;
 
-    // In contrast, needles should always be branded.
-    // And all of these brands save poison are unique to needles.
+    // In contrast, darts should always be branded.
+    // And all of these brands save poison are unique to darts.
     switch (brand)
     {
     case SPMSL_POISONED:
-        if (type == MI_NEEDLE)
+        if (type == MI_DART)
             return true;
         break;
 
     case SPMSL_CURARE:
     case SPMSL_PARALYSIS:
-#if TAG_MAJOR_VERSION == 34
-    case SPMSL_SLOW:
-#endif
-    case SPMSL_SLEEP:
-    case SPMSL_CONFUSION:
-#if TAG_MAJOR_VERSION == 34
-    case SPMSL_SICKNESS:
-#endif
     case SPMSL_FRENZY:
-        return type == MI_NEEDLE;
+        return type == MI_DART;
 
     case SPMSL_BLINDING:
         // possible on ex-pies
-        return type == MI_PIE;
+        return type == MI_DART 
+            || (type == MI_BOOMERANG && !strict) 
+            || type == MI_PIE;
 
     default:
-        if (type == MI_NEEDLE)
+        if (type == MI_DART)
             return false;
     }
 
@@ -623,7 +601,7 @@ bool is_missile_brand_ok(int type, int brand, bool strict)
     if (brand == SPMSL_NORMAL)
         return true;
 
-    // In non-strict mode, everything other than needles is mostly ok.
+    // In non-strict mode, everything other than darts is mostly ok.
     if (!strict)
         return true;
 
@@ -635,20 +613,13 @@ bool is_missile_brand_ok(int type, int brand, bool strict)
     switch (brand)
     {
     case SPMSL_POISONED:
-        return type == MI_JAVELIN || type == MI_TOMAHAWK;
-    case SPMSL_RETURNING:
-        return type == MI_JAVELIN || type == MI_TOMAHAWK;
+        return false;
     case SPMSL_CHAOS:
-        return type == MI_TOMAHAWK || type == MI_JAVELIN;
-    case SPMSL_PENETRATION:
-        return type == MI_JAVELIN;
+        return type == MI_BOOMERANG || type == MI_JAVELIN;
     case SPMSL_DISPERSAL:
-        return type == MI_TOMAHAWK;
-    case SPMSL_EXPLODING:
-        return type == MI_TOMAHAWK;
-    case SPMSL_STEEL: // deliberate fall through
+        return type == MI_BOOMERANG;
     case SPMSL_SILVER:
-        return type == MI_JAVELIN || type == MI_TOMAHAWK;
+        return type == MI_JAVELIN || type == MI_BOOMERANG;
     default: break;
     }
 
@@ -674,8 +645,8 @@ static void _generate_missile_item(item_def& item, int force_type,
                                    20, MI_ARROW,
                                    12, MI_BOLT,
                                    12, MI_SLING_BULLET,
-                                   10, MI_NEEDLE,
-                                   3,  MI_TOMAHAWK,
+                                   10, MI_DART,
+                                   3,  MI_BOOMERANG,
                                    2,  MI_JAVELIN,
                                    1,  MI_PIE,
                                    1,  MI_THROWING_NET,
@@ -711,8 +682,8 @@ static void _generate_missile_item(item_def& item, int force_type,
     }
 
     // Reduced quantity if special.
-    if (item.sub_type == MI_JAVELIN || item.sub_type == MI_TOMAHAWK
-        || (item.sub_type == MI_NEEDLE && get_ammo_brand(item) != SPMSL_POISONED)
+    if (item.sub_type == MI_JAVELIN || item.sub_type == MI_BOOMERANG
+        || (item.sub_type == MI_DART && get_ammo_brand(item) != SPMSL_POISONED)
         || get_ammo_brand(item) == SPMSL_RETURNING)
     {
         item.quantity = random_range(2, 8);

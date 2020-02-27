@@ -562,16 +562,17 @@ static string _randart_descrip(const item_def &item)
 
 static const char *trap_names[] =
 {
-#if TAG_MAJOR_VERSION == 34
     "dart",
-#endif
     "arrow", "spear",
 #if TAG_MAJOR_VERSION > 34
     "teleport",
 #endif
     "permanent teleport",
     "alarm", "blade",
-    "bolt", "net", "Zot", "needle",
+    "bolt", "net", "Zot",
+#if TAG_MAJOR_VERSION == 34
+    "needle",
+#endif
     "shaft", "passage", "pressure plate", "web",
 #if TAG_MAJOR_VERSION == 34
     "gas", "teleport",
@@ -1401,51 +1402,25 @@ static string _describe_ammo(const item_def &item)
                            "asphyxiation, dealing direct damage as well as "
                            "poisoning and slowing those it strikes.\n"
                            "It is twice as likely to be destroyed on impact as "
-                           "other needles.";
+                           "other darts.";
             break;
-        case SPMSL_PARALYSIS:
-            description += "It is tipped with a paralysing substance.";
-            break;
-        case SPMSL_SLEEP:
-            description += "It is coated with a fast-acting tranquilizer.";
-            break;
-        case SPMSL_CONFUSION:
-            description += "It is tipped with a substance that causes confusion.";
-            break;
-#if TAG_MAJOR_VERSION == 34
-        case SPMSL_SICKNESS:
-            description += "It has been contaminated by something likely to cause disease.";
-            break;
-#endif
         case SPMSL_FRENZY:
             description += "It is tipped with a substance that sends those it "
                            "hits into a mindless rage, attacking friend and "
                            "foe alike.";
             break;
-        case SPMSL_RETURNING:
-            description += "A skilled user can throw it in such a way that it "
-                           "will return to its owner.";
-            break;
-        case SPMSL_PENETRATION:
-            description += "It will pass through any targets it hits, "
-                           "potentially hitting all targets in its path until "
-                           "it reaches its maximum range.";
+        case SPMSL_BLINDING:
+            description += "It is tipped with a substance that causes "
+                           "blindness and brief confusion.";
             break;
         case SPMSL_DISPERSAL:
             description += "It will cause any target it hits to blink, with a "
                            "tendency towards blinking further away from the "
                            "one who " + threw_or_fired + " it.";
             break;
-        case SPMSL_EXPLODING:
-            description += "It will explode into fragments upon hitting a "
-                           "target, hitting an obstruction, or reaching its "
-                           "maximum range.";
-            break;
-        case SPMSL_STEEL:
-            description += "It deals increased damage compared to normal ammo.";
-            break;
         case SPMSL_SILVER:
-            description += "It deals substantially increased damage to chaotic "
+            description += "It deals increased damage compared to normal ammo "
+                           "and substantially increased damage to chaotic "
                            "and magically transformed beings. It also inflicts "
                            "extra damage against mutated beings, according to "
                            "how mutated they are.";

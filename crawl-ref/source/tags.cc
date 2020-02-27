@@ -4423,13 +4423,13 @@ void unmarshallItem(reader &th, item_def &item)
     item.quantity    = unmarshallShort(th);
 #if TAG_MAJOR_VERSION == 34
     // These used to come in stacks in monster inventory as throwing weapons.
-    // Replace said stacks (but not single items) with tomahawks.
+    // Replace said stacks (but not single items) with boomerangs.
     if (item.quantity > 1 && item.base_type == OBJ_WEAPONS
         && (item.sub_type == WPN_CLUB || item.sub_type == WPN_HAND_AXE
             || item.sub_type == WPN_DAGGER || item.sub_type == WPN_SPEAR))
     {
         item.base_type = OBJ_MISSILES;
-        item.sub_type = MI_TOMAHAWK;
+        item.sub_type = MI_BOOMERANG;
         item.plus = item.plus2 = 0;
         item.brand = SPMSL_NORMAL;
     }
@@ -4904,6 +4904,42 @@ void unmarshallItem(reader &th, item_def &item)
     {
         item.props["item_tile_name"] = "food_ration_inventory";
         bind_item_tile(item);
+    }
+
+    if (th.getMinorVersion() < TAG_MINOR_THROW_CONSOLIDATION
+        && item.base_type == OBJ_MISSILES)
+    {
+        if (item.sub_type == MI_NEEDLE)
+        {
+            item.sub_type = MI_DART;
+
+            switch (item.brand)
+            {
+                case SPMSL_PARALYSIS:
+                case SPMSL_SLOW:
+                case SPMSL_SLEEP:
+                case SPMSL_CONFUSION:
+                case SPMSL_SICKNESS:
+                    item.brand = SPMSL_BLINDING;
+                    break;
+                default: break;
+            }
+        }
+        else if (item.sub_type == MI_BOOMERANG || item.sub_type == MI_JAVELIN)
+        {
+            switch (item.brand)
+            {
+                case SPMSL_RETURNING:
+                case SPMSL_EXPLODING:
+                case SPMSL_POISONED:
+                case SPMSL_PENETRATION:
+                    item.brand = SPMSL_NORMAL;
+                    break;
+                case SPMSL_STEEL:
+                    item.brand = SPMSL_SILVER;
+                    break;
+            }
+        }
     }
 
 #endif

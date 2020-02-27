@@ -2029,7 +2029,7 @@ static void _print_overview_screen_equip(column_composer& cols,
     for (equipment_type eqslot : e_order)
     {
         if ((you.species != SP_OCTOPODE
-            || you.species != SP_ABOMINATION)
+            && you.species != SP_ABOMINATION)
             && eqslot != EQ_WEAPON
             && !you_can_wear(eqslot))
         {

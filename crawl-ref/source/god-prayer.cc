@@ -78,6 +78,12 @@ static god_type _altar_identify_ecumenical_altar()
 
 static bool _pray_ecumenical_altar()
 {
+    if (you.pledge == PLEDGE_SPITEFUL && !you.attribute[ATTR_SPITEFUL])
+    {
+        mpr("You cannot worship a new god until you have abandoned Ru once before!");
+        return false;
+    }
+
     if (yesno("You cannot tell which god this altar belongs to. Convert to "
               "them anyway?", false, 'n'))
     {

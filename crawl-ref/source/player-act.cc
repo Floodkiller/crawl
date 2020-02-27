@@ -642,6 +642,10 @@ string player::unarmed_attack_name() const
     {
         if (species == SP_FELID)
             default_name = "Teeth and claws";
+        else if (player_equip_unrand(UNRAND_FISTS_OF_THUNDER) && has_claws(true))
+            default_name = "Electrified claws";
+        else if (player_equip_unrand(UNRAND_FISTS_OF_THUNDER) && !has_claws(true))
+            default_name = "Electrified fists";
         else
             default_name = "Claws";
     }

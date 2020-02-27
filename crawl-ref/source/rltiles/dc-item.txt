@@ -209,7 +209,7 @@ i-confusion BRAND_REACHING
 i-returning BRAND_RETURNING
 i-chaos BRAND_CHAOS
 i-evasion BRAND_EVASION
-# Move i-confusion down to missile-only brands when TAG_MAJOR_VERSION > 34
+# Remove confusion down when TAG_MAJOR_VERSION > 34
 i-confusion BRAND_CONFUSION
 i-penetration BRAND_PENETRATION
 i-reaping BRAND_REAPING BRAND_WEP_LAST
@@ -219,12 +219,13 @@ i-explosion BRAND_EXPLOSION
 i-venom BRAND_POISONED
 i-curare BRAND_CURARE
 i-electrocution BRAND_ELECTRIC
-# Remove sickness and slowing when TAG_MAJOR_VERSION > 34
+# Remove sickness, slowingr, paralysis, and sleep when TAG_MAJOR_VERSION > 34
 i-sickness BRAND_SICKNESS
 i-slowing BRAND_SLOWING
 i-paralysis BRAND_PARALYSIS
 i-frenzy BRAND_FRENZY
 i-sleep BRAND_SLEEP
+i-blinding BRAND_BLINDING
 %rim 1
 %sdir item/weapon/ranged
 
@@ -280,34 +281,29 @@ effect/bolt6 MI_BOLT6
 effect/bolt7 MI_BOLT7
 
 %rim 0
-tomahawk1 MI_TOMAHAWK
-tomahawk2
-steel_tomahawk MI_TOMAHAWK_STEEL
-silver_tomahawk MI_TOMAHAWK_SILVER
-# flying tomahawks
-effect/tomahawk0 MI_TOMAHAWK0
-effect/tomahawk1 MI_TOMAHAWK1
-effect/tomahawk2 MI_TOMAHAWK2
-effect/tomahawk3 MI_TOMAHAWK3
-effect/tomahawk4 MI_TOMAHAWK4
-effect/tomahawk5 MI_TOMAHAWK5
-effect/tomahawk6 MI_TOMAHAWK6
-effect/tomahawk7 MI_TOMAHAWK7
+boomerang1 MI_BOOMERANG
+boomerang2
+silver_boomerang MI_BOOMERANG_SILVER
+# flying boomerangs
+effect/boomerang0 MI_BOOMERANG0
+effect/boomerang1 MI_BOOMERANG1
+effect/boomerang2 MI_BOOMERANG2
+effect/boomerang3 MI_BOOMERANG3
 
 %rim 1
-needle1 MI_NEEDLE
-needle2
-needle-p MI_NEEDLE_P
-needle-c MI_NEEDLE_CURARE
+dart1 MI_DART
+dart2
+dart-p MI_DART_P
+dart-c MI_DART_CURARE
 # flying needles
-effect/needle0 MI_NEEDLE0
-effect/needle1 MI_NEEDLE1
-effect/needle2 MI_NEEDLE2
-effect/needle3 MI_NEEDLE3
-effect/needle4 MI_NEEDLE4
-effect/needle5 MI_NEEDLE5
-effect/needle6 MI_NEEDLE6
-effect/needle7 MI_NEEDLE7
+effect/needle0 MI_DART0
+effect/needle1 MI_DART1
+effect/needle2 MI_DART2
+effect/needle3 MI_DART3
+effect/needle4 MI_DART4
+effect/needle5 MI_DART5
+effect/needle6 MI_DART6
+effect/needle7 MI_DART7
 
 %rim 0
 javelin1 MI_JAVELIN
