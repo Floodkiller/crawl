@@ -399,6 +399,11 @@ static void _give_items_skills(const newgame_def& ng)
         {
             you.religion = GOD_JIYVA;
             you.piety = 40;
+            // copying JIyva setup from _join_jiyva 
+            // webtiles breaks if it's called directly
+            // give innate rank of evolution
+            //mutate(MUT_EVOLUTION,"Jiyva's grace",false,true,true,true,MUTCLASS_INNATE,false);
+            you.mutation[MUT_EVOLUTION] = you.innate_mutation[MUT_EVOLUTION] = 1;
         }
         break;
 

@@ -1065,17 +1065,20 @@ static bool _jiyva_mutate()
     simple_god_message(" alters your body.");
 
     const int rand = random2(100);
-
-    if (rand < 5)
-        return delete_mutation(RANDOM_SLIME_MUTATION, "Jiyva's grace", true, false, true);
-    else if (rand < 30)
-        return delete_mutation(RANDOM_NON_SLIME_MUTATION, "Jiyva's grace", true, false, true);
-    else if (rand < 55)
-        return mutate(RANDOM_MUTATION, "Jiyva's grace", true, false, true);
-    else if (rand < 75)
-        return mutate(RANDOM_SLIME_MUTATION, "Jiyva's grace", true, false, true);
+    // 20% random mut, 35% random slime mut, 30% good mut
+    // parameters are mutation class, log text, produce fail message, force_mutation, god_gift
+    if (rand < 2)
+        return delete_mutation(RANDOM_SLIME_MUTATION, "Jiyva's grace - lose slime", true, false, true);
+    else if (rand < 10)
+        return delete_mutation(RANDOM_NON_SLIME_MUTATION, "Jiyva's grace - lose random", true, false, true);
+    else if (rand < 15)
+        return delete_mutation(RANDOM_BAD_MUTATION, "Jiyva's grace - lose bad", true, false, true);
+    else if (rand < 35)
+        return mutate(RANDOM_MUTATION, "Jiyva's grace - gain random", true, false, true);
+    else if (rand < 70)
+        return mutate(RANDOM_SLIME_MUTATION, "Jiyva's grace - gain slime", true, false, true);
     else
-        return mutate(RANDOM_GOOD_MUTATION, "Jiyva's grace", true, false, true);
+        return mutate(RANDOM_GOOD_MUTATION, "Jiyva's grace - gain good", true, false, true);
 }
 
 bool vehumet_is_offering(spell_type spell)
@@ -1428,12 +1431,12 @@ static bool _gift_jiyva_gift(bool forced)
 {
     if (forced || you.piety >= piety_breakpoint(2)
                   && random2(you.piety) > 50
-                  && one_chance_in(4) && !you.gift_timeout
+                  && one_chance_in(2) && !you.gift_timeout
                   && you.can_safely_mutate())
     {
         if (_jiyva_mutate())
         {
-            _inc_gift_timeout(15 + roll_dice(2, 4));
+            _inc_gift_timeout(8 + roll_dice(2, 3));
             you.num_current_gifts[you.religion]++;
             you.num_total_gifts[you.religion]++;
             return true;
@@ -2764,6 +2767,7 @@ void excommunication(bool voluntary, god_type new_god)
 
     switch (old_god)
     {
+
     case GOD_KIKUBAAQUDGHA:
         mprf(MSGCH_GOD, old_god, "You sense decay."); // in the state of Denmark
         add_daction(DACT_ROT_CORPSES);
@@ -2846,6 +2850,10 @@ void excommunication(bool voluntary, god_type new_god)
         break;
 
     case GOD_JIYVA:
+
+        mprf(MSGCH_GOD, old_god, "You no longer evolve innately."); 
+        you.innate_mutation[MUT_EVOLUTION]--;
+
         if (you.duration[DUR_SLIMIFY])
             you.duration[DUR_SLIMIFY] = 0;
 
@@ -3504,6 +3512,8 @@ static void _join_hepliaklqana()
 /// Setup when joining the gelatinous groupies of Jiyva.
 static void _join_jiyva()
 {
+    // give innate rank of evolution
+    mutate(MUT_EVOLUTION,"Jiyva's grace",false,true,true,true,MUTCLASS_INNATE,false);
     // Complimentary jelly upon joining.
     if (_has_jelly())
         return;
