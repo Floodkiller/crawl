@@ -95,6 +95,11 @@ battleaxe
 
 A large war axe with a formidable double-sided head.
 %%%%
+blowgun	
+
+A long, light tube, open at both ends, through which various types of needles	
+are propelled by puffs of breath at enemies. It makes very little noise.	
+%%%%
 bolt
 
 A metal projectile, shorter than an arrow, intended to be shot from a crossbow.
