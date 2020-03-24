@@ -1439,6 +1439,7 @@ MONS:   guardian mummy w:7 / ushabti w:3
 MONS:   flying skull
 MONS:   mummy / guardian mummy / w:5 nothing
 : end
+KITEM:  I = wizard's key no_pickup
 NSUBST: / = 1:| / 2:* / *:%
 NSUBST: %*| = 1:d / 1:h
 : crypt_loot_plus(_G)
@@ -1446,7 +1447,7 @@ MAP
 cccccccccccccccvvvvvvvvvvvvvvvvvccccccccccccccc
 ccccccccccccccvv..WWWWWWWWWWW..vvcccccccccccccc
 cccccccccccccvv..WWWWWWWWWWWWW..vvccccccccccccc
-cccccccccccccv...WWWb.b.b.bWWW...vccccccccccccc
+cccccccccccccv...WWWb.bIb.bWWW...vccccccccccccc
 cccccccccccccv...WWb$$|*|$$bWW...vccccccccccccc
 cccccccccccccv...WW.$/|1|/$.WW...vccccccccccccc
 cccccccccccccv...WWb$$|*|$$bWW...vccccccccccccc
@@ -1518,6 +1519,7 @@ COLOUR: = = red
 SUBST:  = = +
 COLOUR: r = red
 TILE:   r = wall_hell
+KITEM:  R = wizard's key no_pickup
 SUBST:  r = c
 # emergency exits; most are closed
 NSUBST: ? = 3:+ / *:v
@@ -1544,7 +1546,7 @@ vwwwwwwwwwwwwwwv..........................vAwwwwwwwwwwwwwv
 vwwwwwwwwwwwwwwv.........rrrrrrrr.........vAAAwwwwwwwwwwwv
 vwwwwwwwwwwwwwwv.........r//||//r.........vAAAAAAwwwwwwwwv
 vwwwwwwvvvv?vvvv......rr=rr*/O*rr=rr......v?v?v?v?vwwwwwwv
-vwwwwwwv.......v......r$$*rr++rr*$$r......v.......vwwwwwwv
+vwwwwwwv.......v......rR$*rr++rr*$$r......v.......vwwwwwwv
 vwwwwww?....H..v.....rrrrOr$$$$rOrrrr.....v.......?wwwwwwv
 vwwwwwwv....H..+........rrr$$$$rrr........+.Q..H..vwwwwwwv
 vwwwwww?....H..v......L...r$$$$r...L......v....H..?wwwwwwv
@@ -1619,6 +1621,7 @@ MONS:   flying skull / skeletal warrior / skeleton
 MONS:   ancient champion
 KMONS:  F = orange crystal statue / obsidian statue
 KITEM:  | = | no_pickup
+KITEM:  R = wizard's key no_pickup
 KFEAT:  ^ = alarm trap
 SUBST:  3 = 3., F = G:99 F:1
 {{
@@ -1639,7 +1642,7 @@ MAP
 ..vllll.%|||%.llllv..
 .4vll..%|||||%..llv4.
 ..vl....%|||%....lv..
-..vmm...........mmv..
+..vmm.....R.....mmv..
 ..v1m..F.vvv.F..m1v..
 ..v1m...^^^^^...m1v..
 ..vvvvvvv+++vvvvvvv..
@@ -1708,6 +1711,7 @@ KMONS:  X = w:1 curse skull / w:19 revenant
 KMONS:  t = w:20 hell knight / smoke demon / red devil
 KMONS:  X = w:1 curse skull / w:19 hell knight
 : end
+KITEM:  M = wizard's key no_pickup
 ####### Randomisation of doors
 NSUBST: K = 1:+ / *:v
 NSUBST: ' = 1:+ / *:v
@@ -1732,7 +1736,7 @@ MAP
 vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 vccccccccccccccccccccccccc......"...Bvvvvvvvvvvvvvvvvvvvvvv
 vc..D..c.....c....Bc..+..c.ffff.vvvBLvvvvvvvvvvvvvvvvvvvvvv
-vc.c.c.+.....+....cc..+..c.ffFf.vvvv"vvvvvvvvvvvvvnP+.....v
+vc.c.c.+.....+....cc..+..c.ffFf.vvvv"vvvvvvvvvvvvvnP+....Mv
 vc.._..+...D.c....Bc..c..m.ffFf.vO???||$$$.vvvvv..nPn|????v
 vc.c.c.c.....c....cc..c..c.ffff.v?$$$$$$$$.vvvv...nPn$$$$$v
 vc.....ccc+ccc....Bc..cGGc.ffff.vnnnnnnnnn+vvv..H.nPn$$O$$v
@@ -1853,6 +1857,7 @@ KMONS:  B = necromancer
 KMONS:  C = hellwing
 KMONS:  E = skeleton w:13 / nothing
 KMONS:  F = patrolling reaper
+KITEM:  I = wizard's key no_pickup
 : end
 SUBST:  n : ncc
 : set_feature_name("granite_statue", "gravestone")
@@ -1875,7 +1880,7 @@ ttttt"""""".vvvvv.....ccc--xx**|V|**xx--ccc..555...t..tt..t...TTtttT....Tttttttt
 ttttttTtT"".v--4vvv...ccc--xx-*|||*-xx--ccc.......T.....t....t..TttttT.TTttttttt
 ttttttT..."...-%v--v...c-----------------c...........t...t..t.t..Tttttt.tttttttt
 ttttttT.t.".v-4-v4-v...c------ccccc------c....T.vvvT...t..t......Ttttt.ttcnnnctt
-ttttT.t.....vvvvvvvv..cccc+cccc$$$cccc+cccc.....v4--.T..t....t..tTttttt..c***ctt
+ttttT.t.....vvvvvvvv..cccc+cccc$I$cccc+cccc.....v4--.T..t....t..tTttttt..c***ctt
 tttT.t........v-%-4v..ccc--Bcc0---0ccB--ccc.T...v4%4-v.T...t.....Ttttt...c%%%ctt
 ttT....T...T..v4--.....n--cccccc+cccccc--n......vvvvvv...T..T..t..Tttcc+cc---ctt
 tttT.t........vvvvvv...n--ccccc---ccccc--n.........T...............Ttc3333333ctt
@@ -1994,6 +1999,7 @@ MONS:   guardian mummy ; long sword | great sword | \
         battleaxe | war axe | broad axe . chain mail w:15 | plate armour w:1
 MONS:   bog body / mummy / guardian mummy
 MONS:   generate_awake sphinx
+KITEM:  J = wizard's key no_pickup
 : end
 SUBST:  '" = .
 NSUBST:  %*| = 1:d / 1:h
@@ -2003,7 +2009,7 @@ MAP
                 ccccccccccccccccccccccccccccccc
                 cc*$*c|%*.......**|c.........cc
                 cc$3$c|*...'2'...%|c..G.3.G..cc
-                cc...c|%|.......|%|c.........cc
+                ccJ..c|%|.......|%|c.........cc
                 ccc+cccccc.....ccccccc+cccBBBcc
                 cc...c...ccc+ccc...c.....c$$$cc
                 cc.4.c.G.4.RRR.4.G.+..G..c$$$cc
@@ -2100,6 +2106,7 @@ KMONS:   R = curse skull
 KMONS:   S = ancient champion
 KMONS:   T = skeletal warrior
 : end
+KITEM:   U = wizard's key no_pickup
 
 KFEAT:   R = enter_tomb
 KFEAT:   _ = altar_yredelemnul / altar_kikubaaqudgha
@@ -2111,7 +2118,7 @@ MAP
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ccccccccccccccccccccccccc|*$$...R...$$*|ccccccccccccccccccccccccc
-cccccccccccccccccccccc..cc*$$.T...T.$$*cc..cccccccccccccccccccccc
+cccccccccccccccccccccc..cc*$$.T.U.T.$$*cc..cccccccccccccccccccccc
 cccccccccccccccccccc....ccc$$...T...$$ccc....cccccccccccccccccccc
 ccccccccccccccccccc.G.G.c.ccccc+++ccccc.c.G.G.ccccccccccccccccccc
 cccccccccccccccccc......c...............c......cccccccccccccccccc
@@ -2187,12 +2194,13 @@ SHUFFLE: 56, 89 / 0A
 SUBST:   5 = 5., 6 = 6., 9 = 99., A = AA.
 KFEAT:   Y = altar_yredelemnul
 KFEAT:   K = altar_kikubaaqudgha
+KITEM:   M = wizard's key no_pickup
 NSUBST:  *| = 1:d / 1:h
 : crypt_loot_plus(_G)
 MAP
 cccccccccccccccccccccccc
 ccccccccccc$$ccccccccccc
-cccccccccc$$$$cccccccccc
+cccccccccc$M$$cccccccccc
 cccccccccc$$$$cccccccccc
 ccccccccccc++ccccccccccc
 ccccccc..........ccccccc

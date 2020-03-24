@@ -1307,6 +1307,11 @@ A long plaited strip of leather. Originally developed for use in disagreements
 with cattle, this simple weapon is now widely used to settle differences
 between all sorts of creatures.
 %%%%
+wizard's key
+
+A magical key belonging to an unknown wizard. It vibrates with a desire to open
+an unseen door.
+%%%%
 young poisoner's handbook
 
 An introductory book for the magic arts of poison.

@@ -4070,6 +4070,8 @@ colour_t item_def::miscellany_colour() const
             return ETC_DARK;
         case MISC_ZIGGURAT:
             return _zigfig_colour();
+        case MISC_WIZARD_KEY:
+            return ETC_CRYSTAL;
         case MISC_ANCIENT_CRATE:
             return BROWN;
         case MISC_DUSTY_TOME:

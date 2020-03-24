@@ -310,6 +310,8 @@ enum misc_item_type
     // Archaeologist
     MISC_ANCIENT_CRATE,
     MISC_DUSTY_TOME,
+    
+    MISC_WIZARD_KEY,
 
     NUM_MISCELLANY,
     MISC_DECK_UNKNOWN = NUM_MISCELLANY,
@@ -346,7 +348,8 @@ const vector<misc_item_type> misc_types =
     MISC_BOTTLED_EFREET, MISC_BUGGY_EBONY_CASKET,
 #endif
     MISC_ANCIENT_CRATE,
-    MISC_DUSTY_TOME
+    MISC_DUSTY_TOME,
+    MISC_WIZARD_KEY
 };
 
 enum missile_type

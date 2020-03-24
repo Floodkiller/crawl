@@ -966,6 +966,30 @@ static bool _make_zig(item_def &zig)
     return true;
 }
 
+static bool _make_wizlab(item_def &wiz)
+{
+    if (feat_is_critical(grd(you.pos())))
+    {
+        mpr("You can't unlock a door to a wizard's laboratory here.");
+        return false;
+    }
+    for (int lev = 1; lev <= brdepth[BRANCH_WIZLAB]; lev++)
+    {
+        if (is_level_on_stack(level_id(BRANCH_WIZLAB, lev))
+            || you.where_are_you == BRANCH_WIZLAB)
+        {
+            mpr("Wizards don't let other wizards into their laboratories!");
+            return false;
+        }
+    }
+
+    ASSERT(in_inventory(wiz));
+    dec_inv_item_quantity(wiz.link, 1);
+    dungeon_terrain_changed(you.pos(), DNGN_ENTER_WIZLAB);
+    mpr("You twist the key in front of you, unlocking an unseen door to a wizard's laboratory!");
+    return true;
+}
+
 static bool _ball_of_energy()
 {
     bool ret = false;
@@ -2243,6 +2267,11 @@ bool evoke_item(int slot, bool check_range)
         case MISC_ZIGGURAT:
             // Don't set did_work to false, _make_zig handles the message.
             unevokable = !_make_zig(item);
+            break;
+
+        case MISC_WIZARD_KEY:
+            //Don't set did_work to false, _make_wizlab handles the message.
+            unevokable = !_make_wizlab(item);
             break;
 
         default:

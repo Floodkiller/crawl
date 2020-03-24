@@ -654,7 +654,8 @@ void floor_transition(dungeon_feature_type how,
         ouch(INSTANT_DEATH, KILLED_BY_LEAVING);
     }
 
-    if (how == DNGN_ENTER_LABYRINTH || how == DNGN_ENTER_ZIGGURAT)
+    // TODO: Make DNGN_EXIT_WIZLAB turn into DNGN_WIZLAB_PORTAL_GONE instead of DNGN_STONE_ARCH
+    if (how == DNGN_ENTER_LABYRINTH || how == DNGN_ENTER_ZIGGURAT || how == DNGN_ENTER_WIZLAB)
         dungeon_terrain_changed(you.pos(), DNGN_STONE_ARCH);
 
     if (how == DNGN_ENTER_PANDEMONIUM

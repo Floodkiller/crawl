@@ -2576,6 +2576,9 @@ static tileidx_t _tileidx_misc(const item_def &item)
     case MISC_ZIGGURAT:
         return TILE_MISC_ZIGGURAT;
 
+    case MISC_WIZARD_KEY:
+        return TILE_MISC_WIZARD_KEY;
+
     case MISC_QUAD_DAMAGE:
         return TILE_MISC_QUAD_DAMAGE;
 
