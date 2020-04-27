@@ -1,10 +1,8 @@
 List of implementables from v2.0 list remaining:
-  -Guarantee a generated Wizlab in each game
   -Felid mummy monster type for Tomb
   -Let Ignite Poison cause damage to poison-based monsters (instead of just those who are poisoned)
   -Goldify Food (convert food into a stat tracked outside of inventory, like gold)
   -Give Phantoms an “Open all doors loudly” spell
-  -Add ‘difficulty modifiers/conducts/ to game start
   -Helmet Shell ability for Octopodes (Add as an AC bonus while stationary)
   -Nemelex Reform
     --Give worshippers a hand of cards, rework powers around it
@@ -16,12 +14,11 @@ List of implementables from v2.0 list remaining:
   -Reimplement Pakellas
     --Replace Quick Charge with frequent low charge wand gifts
     --Simplify Device Surge by just maxing wand spellpower when active
-    --Keep Supercharge similar to original (max out a rod’s capacity and recharge rate; give a wand lots of charges...could always change  the wand part if there are complaints about always sinking it into wands of hasting or something)
+    --Keep Supercharge similar to original (max out a rod’s capacity and recharge rate; give a wand lots of charges...could always change the wand part if there are complaints about always sinking it into wands of hasting or something)
   -Reimplement rods
     --Change them to contain spells (using randart spellbook generation code) instead of preset types
     --Can use from inventory without needing to wield
   -‘Damage numbers’ rcfile option (off by default)
-  -Adjust MP reserved from permabuffs based on spell success or something else
   -Change “incredibly out of depth monster” in vault code to be less out of depth (modify to flat +10-+15 instead of multiplying depth based on floor
   -Merge bugfixes/other non-gameplay affecting changes from trunk to bring back to codebase parity (left off at 3322dfd 'Fix bug 11478: Movement-key actions and Wu Jian); will add skipped commits to gooncrawl docs folder for definitions on why any commits before this point were missing
 

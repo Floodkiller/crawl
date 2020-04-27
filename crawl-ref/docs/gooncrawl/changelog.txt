@@ -121,7 +121,7 @@ Dungeon
 
 Misc
 ----------
--Loud noises can now break mesmorization again
+-Loud noises can now break mesmerization again
 -You no longer receive a penalty to experience gain for kills involving allies or summons
 -Tengus can now receive a special Invocations title at max piety rank when worshipping TSO
 -Spellbooks have a chance to drop scrolls of amnesia when adding them to your spell library
