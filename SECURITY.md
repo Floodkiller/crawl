@@ -8,6 +8,9 @@ Support is only provided for the latest unstable version. Support will include
 any vulnerability fixes generated on the Dungeon Crawl Stone Soup fork as well as
 fixes for anything found by Gooncrawl contributors.
 
+Online servers generally run a webtiles server version drawn from trunk,so any
+vulnerability in an up-to-date webtiles server is covered (e.g. in the python code).
+
 ## Reporting a Vulnerability
 
 If the issue is exclusive to the Gooncrawl fork, open an issue on github in this
