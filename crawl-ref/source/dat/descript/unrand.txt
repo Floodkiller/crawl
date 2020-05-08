@@ -100,7 +100,8 @@ the vividly coloured faerie dragons ever existed.
 demon blade "Bloodbane"
 
 A blade forged in Hell by the sacrifice of countless tortured souls. It
-inflicts the rage and suffering of those souls upon its wielder.
+inflicts the rage and suffering of those souls upon its wielder, leaving
+behind a mess of blood and gore.
 %%%%
 scimitar of Flaming Death
 
@@ -768,8 +769,9 @@ reveals the machinations of those who would prefer to stay invisible.
 %%%%
 demon blade "Leech"
 
-An unerringly vampiric blade which gorges itself on drained life force every
-time it strikes.
+An unerringly vampiric blade, forged in Hell by the sacrifice of countless
+tortured souls. It gorges itself further on drained life force every time
+it strikes, leaving behind a mess of blood and gore.
 %%%%
 dagger of Chilly Death
 
