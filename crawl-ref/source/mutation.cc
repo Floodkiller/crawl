@@ -1540,7 +1540,7 @@ bool undead_mutation_rot()
  * @param force_mutation    whether to override mutation protection and the like.
  * @param god_gift          is this a god gift? Entails overriding mutation resistance if not forced.
  * @param mutclass          is the mutation temporary, regular, or permanent (innate)? permanent entails force_mutation.
- *
+ * @param permabuff         this is a permabuff (spell) mutation - default is false
  * @return whether the mutation succeeded.
  */
 bool mutate(mutation_type which_mutation, const string &reason, bool failMsg,
@@ -1622,14 +1622,17 @@ bool mutate(mutation_type which_mutation, const string &reason, bool failMsg,
         }
     }
 
+    // total muts / 15 = chance to remove a mutation instead of add
+    // Don't do this 1 time in 3 or if a forced mutation
     if (mutclass == MUTCLASS_NORMAL
         && (which_mutation == RANDOM_MUTATION
             || which_mutation == RANDOM_XOM_MUTATION)
-        && x_chance_in_y(you.how_mutated(false, true), 15))
+        && x_chance_in_y(you.how_mutated(false, true), 15)
+        && !one_chance_in(3) && !force_mutation)
     {
-        // God gifts override mutation loss due to being heavily
-        // mutated.
-        if (!one_chance_in(3) && !god_gift && !force_mutation)
+        // If a god gift, we won't cause mutation loss, but we 
+        // also won't add a new random mutation
+        if (god_gift)
             return false;
         else
             return delete_mutation(RANDOM_MUTATION, reason, failMsg,

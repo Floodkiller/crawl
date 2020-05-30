@@ -24,6 +24,7 @@
 #include "libutil.h"
 #include "message.h"
 #include "mon-death.h"
+#include "mon-gear.h"
 #include "mon-place.h"
 #include "mon-tentacle.h"
 #include "notes.h"
@@ -629,10 +630,11 @@ void seen_monster(monster* mons)
     set_auto_exclude(mons);
     set_unique_annotation(mons);
 
+    view_monster_equipment(mons);
+
     item_def* weapon = mons->weapon();
     if (weapon && is_range_weapon(*weapon))
         mons->flags |= MF_SEEN_RANGED;
-    mark_mon_equipment_seen(mons);
 
     // Monster was viewed this turn
     mons->flags |= MF_WAS_IN_VIEW;

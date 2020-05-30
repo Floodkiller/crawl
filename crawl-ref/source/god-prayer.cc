@@ -278,7 +278,7 @@ static slurp_gain _sacrifice_one_item_noncount(const item_def& item)
         && x_chance_in_y(you.piety, MAX_PIETY)
         && you.magic_points < you.max_magic_points)
     {
-        inc_mp(max(random2(item_value), 1));
+        inc_mp(max(random2(item_value), 2));
         gain.jiyva_bonus |= jiyva_slurp_result::mp;
     }
 
@@ -287,7 +287,7 @@ static slurp_gain _sacrifice_one_item_noncount(const item_def& item)
         && you.hp < you.hp_max
         && !you.duration[DUR_DEATHS_DOOR])
     {
-        inc_hp(max(random2(item_value), 1));
+        inc_hp(max(random2(item_value), 2));
         gain.jiyva_bonus |= jiyva_slurp_result::hp;
     }
 

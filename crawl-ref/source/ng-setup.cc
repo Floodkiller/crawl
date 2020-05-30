@@ -221,7 +221,7 @@ static void _give_ammo(weapon_type weapon, int plus)
         if (species_can_throw_large_rocks(you.species))
             newgame_make_item(OBJ_MISSILES, MI_LARGE_ROCK, 4 + plus);
         else if (you.body_size(PSIZE_TORSO) <= SIZE_SMALL)
-            newgame_make_item(OBJ_MISSILES, MI_TOMAHAWK, 8 + 2 * plus);
+            newgame_make_item(OBJ_MISSILES, MI_BOOMERANG, 8 + 2 * plus);
         else
             newgame_make_item(OBJ_MISSILES, MI_JAVELIN, 5 + plus);
         newgame_make_item(OBJ_MISSILES, MI_THROWING_NET, 2);
@@ -399,6 +399,11 @@ static void _give_items_skills(const newgame_def& ng)
         {
             you.religion = GOD_JIYVA;
             you.piety = 40;
+            // copying JIyva setup from _join_jiyva 
+            // webtiles breaks if it's called directly
+            // give innate rank of evolution
+            //mutate(MUT_EVOLUTION,"Jiyva's grace",false,true,true,true,MUTCLASS_INNATE,false);
+            you.mutation[MUT_EVOLUTION] = you.innate_mutation[MUT_EVOLUTION] = 1;
         }
         break;
 

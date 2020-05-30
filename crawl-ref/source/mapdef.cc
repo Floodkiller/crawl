@@ -4904,23 +4904,28 @@ int str_to_ego(object_class_type item_type, string ego_str)
         "frost",
         "poisoned",
         "curare",
+#if TAG_MAJOR_VERSION == 34
         "returning",
+#endif
         "chaos",
+#if TAG_MAJOR_VERSION == 34
         "penetration",
+#endif
         "dispersal",
+#if TAG_MAJOR_VERSION == 34
         "exploding",
         "steel",
-        "silver",
-        "paralysis",
-#if TAG_MAJOR_VERSION == 34
-        "slow",
 #endif
+        "silver",
+#if TAG_MAJOR_VERSION == 34
+        "paralysis",
+        "slow",
         "sleep",
         "confusion",
-#if TAG_MAJOR_VERSION == 34
         "sickness",
 #endif
-        "frenzy",
+        "datura",
+        "atropa",
         nullptr
     };
     COMPILE_CHECK(ARRAYSZ(missile_brands) == NUM_REAL_SPECIAL_MISSILES);

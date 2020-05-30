@@ -1951,8 +1951,42 @@ Gladiators
 Monks
   The Monk is a member of an ascetic order dedicated to the perfection of one's
   body and soul through the discipline of the martial arts. Monks start with
-  only a simple weapon and a robe. When they choose a god for the first time,
-  their spiritual training gives them a piety boost.
+  only a simple weapon of their choice and a robe. When they choose a god for
+  the first time, their spiritual training gives them a piety boost.
+
+Hunters
+  The Hunter is a type of fighter who specialises in missile weapons. A Hunter
+  starts with either some throwing weapons or a ranged weapon of their choice
+  and some ammunition, as well as a short sword, and a set of leathers.
+
+Assassins
+  An Assassin is a stealthy character who is especially good at killing, using
+  daggers or darts. They start with a dagger, a robe and cloak, poisoned darts,
+  and a few deadly and rare curare darts.
+
+Adventurer backgrounds
+======================
+
+Adventurers have varied and idiosyncratic skills that they have picked up in
+their travels.
+
+Artificers
+  Artificers are attuned to gadgets, mechanics and magic elicited from arcane
+  items, as opposed to casting magic themselves. As a consequence, they enter
+  the Dungeon with an assortment of wands. Artificers are skilled at evoking
+  magical items, and also understand the basics of melee combat.
+
+Wanderers
+  Wanderers are people who have not learned a specific trade. Instead, they've
+  travelled around becoming "jacks-of-all-trades, masters of none". They start
+  the game with a random assortment of skills and maybe some small items and
+  spells they picked up along the way, but, other than that, they're pretty much
+  on their own.
+
+Zealot backgrounds
+==================
+
+Zealots start the game already worshipping a god.
 
 Berserkers
   Berserkers are hardy warriors who worship Trog the Wrathful, from whom they
@@ -1981,31 +2015,9 @@ Warpers
   distances and positioning themselves precisely and use this to their advantage
   in melee or missile combat. They start with a scroll of blinking.
 
-Assassins
-  An Assassin is a stealthy character who is especially good at killing, using
-  daggers or blowguns. They start with some deadly curare needles.
-
-Hunters
-  The Hunter is a type of fighter who specialises in missile weapons. A Hunter
-  starts with either some throwing weapons or a ranged weapon and some
-  ammunition, as well as a short sword or club and a set of leathers.
-
 Arcane Marksmen
   Arcane Marksmen are Hunters who use debilitating spells to assist their ranged
   attacks. They are particularly good at keeping their enemies at a distance.
-
-Artificers
-  Artificers are attuned to gadgets, mechanics and magic elicited from arcane
-  items, as opposed to casting magic themselves. As a consequence, they enter
-  the Dungeon with an assortment of wands. Artificers are skilled at evoking
-  magical items, and also understand the basics of melee combat.
-
-Wanderers
-  Wanderers are people who have not learned a specific trade. Instead, they've
-  travelled around becoming "jacks-of-all-trades, masters of none". They start
-  the game with a large, random assortment of skills and maybe some small
-  items they picked up along the way, but, other than that, they're pretty much
-  on their own.
 
 Magicians
 ========================================
@@ -2136,16 +2148,15 @@ Ranged combat skills
 
 There are a number of individual weapon skills for missile weapons:
 
-  * Throwing (includes blowguns)
+  * Throwing
   * Bows
   * Crossbows
   * Slings
 
 Throwing is the skill for all things hurled without a launcher: tomahawks,
-javelins, nets, etc. The other skills refer to various types of missiles shot
-with a launcher. An exception to this are needles: these are launched using
-blowguns, an action which uses the Throwing skill. Since stones can be thrown
-without launchers to some effect, these skills crosstrain:
+javelins, nets, darts, etc. The other skills refer to various types of missiles
+shot with a launcher. Since stones can be thrown without launchers to some
+effect, these skills crosstrain:
 
   * Throwing and Slings
 

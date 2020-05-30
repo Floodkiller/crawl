@@ -445,7 +445,7 @@ void black_drac_breath()
 int wand_mp_cost()
 {
     // Update mutation-data.h when updating this value.
-    return you.get_mutation_level(MUT_MP_WANDS) * 3;
+    return you.get_mutation_level(MUT_MP_WANDS) * 0;
 }
 
 void zap_wand(int slot)

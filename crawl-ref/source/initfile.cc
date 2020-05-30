@@ -542,7 +542,7 @@ static map<string, weapon_type> _special_weapon_map = {
 
     {"thrown",      WPN_THROWN},
     {"rocks",       WPN_THROWN},
-    {"tomahawks",   WPN_THROWN},
+    {"boomerangs",   WPN_THROWN},
     {"javelins",    WPN_THROWN},
 
     {"random",      WPN_RANDOM},
@@ -620,12 +620,12 @@ static fire_type _str_to_fire_types(const string &str)
         return FIRE_ROCK;
     else if (str == "javelin")
         return FIRE_JAVELIN;
-    else if (str == "tomahawk")
-        return FIRE_TOMAHAWK;
+    else if (str == "boomerang")
+        return FIRE_BOOMERANG;
+    else if (str == "dart")
+        return FIRE_DART;
     else if (str == "net")
         return FIRE_NET;
-    else if (str == "return" || str == "returning")
-        return FIRE_RETURNING;
     else if (str == "pie")
         return FIRE_PIE;
     else if (str == "inscribed")
@@ -1065,8 +1065,8 @@ void game_options::reset_options()
     fire_items_start       = 0;           // start at slot 'a'
 
     // Clear fire_order and set up the defaults.
-    set_fire_order("launcher, return, "
-                   "javelin / tomahawk / stone / rock / net, "
+    set_fire_order("launcher,"
+                   "javelin / boomerang / stone / rock / net / dart, "
                    "inscribed",
                    false, false);
 
