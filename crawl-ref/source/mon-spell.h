@@ -1502,7 +1502,7 @@ static const mon_spellbook mspell_list[] =
        { SPELL_ENERGY_BOLT, 13, MON_SPELL_MAGICAL },
        { SPELL_SLOW, 13, MON_SPELL_MAGICAL },
        { SPELL_CONFUSE, 13, MON_SPELL_MAGICAL },
-       { SPELL_ENTROPIC_WEAVE, 13, MON_SPELL_MAGICAL },
+       { SPELL_MALMUTATE, 13, MON_SPELL_MAGICAL },
        { SPELL_DIG, 13, MON_SPELL_MAGICAL },
       }
     },
