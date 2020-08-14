@@ -101,8 +101,8 @@ Monsters
 -Joseph now is guaranteed to spawn with a magical sling (50% vorpal/25% flaming/25% freezing)
 -Death Yaks now look death-ier!
 -Shining Eyes have had Malmutate replaced with Polymorph
+-Cacodemons have Malmutate again (see below)
 -Malmutate has been changed to drain 1d3 of each stat instead of mutate the player
- (this only affects orbs of fire, the last remaining monster with Malmutate)
 
 Dungeon
 ----------
@@ -118,6 +118,7 @@ Dungeon
 -Charms and Hexes have been removed as potential miscast effects used by Hell effects
 -Non-summoning Hell effects will no longer trigger if there is not an enemy in sight
 -Hell effects end with the death of each Hell branch's respective Hell lord
+-Added wizard keys as a reward in Crypt:3, which open a portal to a random wizlab
 
 Misc
 ----------
@@ -131,6 +132,7 @@ Misc
 -Added pledges, an optional gameplay modifier selected at game start (see Pledges section)
 -Better tiles by Metoron for a bunch of stuff!
 -Updated crablang with more stuff
+-Fixed claws not adding their bonus damage since 2018 (oops!)
 
 Mainline Crawl Stuff (that I remember I ported over, assume it isn't ported if it isn't here)
 ----------
@@ -140,6 +142,9 @@ Mainline Crawl Stuff (that I remember I ported over, assume it isn't ported if i
  changes)
 -Removed hunger cost from vampiric weapons
 -Elemental staff changes
+-Throwing overhaul
+-Monster equipment identification
+-Security/vulnerability fixes
 
 Pledges
 ----------
