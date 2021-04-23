@@ -98,6 +98,10 @@ string species_walking_verb(species_type sp)
         return "Wriggl";
     case SP_VINE_STALKER:
         return "Stalk";
+    case SP_HERMIT_CRAB:
+        return "Scuttl";
+    case SP_DJINNI:
+        return "Float";
     default:
         return "Walk";
     }
@@ -134,6 +138,11 @@ bool species_likes_water(species_type species)
 {
     return species_can_swim(species)
            || get_species_def(species).habitat == HT_AMPHIBIOUS;
+}
+
+bool species_likes_lava(species_type species)
+{
+    return get_species_def(species).habitat == HT_AMPHIBIOUS_LAVA;
 }
 
 bool species_can_throw_large_rocks(species_type species)
@@ -219,6 +228,8 @@ string species_prayer_action(species_type species)
             return "coil in front of";
         case SP_OCTOPODE:
             return "curl up in front of";
+        case SP_HERMIT_CRAB:
+            return "side step up to";
         case SP_FELID:
             // < TGWi> you curl up on the altar and go to sleep
             return "sit before";
@@ -481,7 +492,7 @@ void change_species_to(species_type sp)
 
     update_vision_range(); // for Ba, and for DS with Nightstalker
 
-    if ((old_sp == SP_OCTOPODE) != (sp == SP_OCTOPODE))
+    if ((old_sp == SP_OCTOPODE || old_sp == SP_ABOMINATION) != (sp == SP_OCTOPODE || sp == SP_ABOMINATION))
     {
         _swap_equip(EQ_LEFT_RING, EQ_RING_ONE);
         _swap_equip(EQ_RIGHT_RING, EQ_RING_TWO);

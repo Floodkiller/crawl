@@ -52,7 +52,13 @@ enum ability_type
     ABIL_SHAFT_SELF,
     // Barachim
     ABIL_HOP,
-    ABIL_MAX_INTRINSIC = ABIL_HOP,
+    // End Permabuffs ability (here to avoid massive save break)
+    ABIL_END_PERMABUFFS,
+    // Also Deep Dwarves (again, trying to avoid save breaks)
+    ABIL_RECHARGING,
+    // Skeletons
+    ABIL_REAP,
+    ABIL_MAX_INTRINSIC = ABIL_REAP,
 
     // Evoking items.
     ABIL_EVOKE_BERSERK = 40,
@@ -73,7 +79,8 @@ enum ability_type
     ABIL_EVOKE_TWISTER,
 #endif
     ABIL_EVOKE_RATSKIN,
-    ABIL_MAX_EVOKE = ABIL_EVOKE_RATSKIN,
+    ABIL_EVOKE_THUNDER,
+    ABIL_MAX_EVOKE = ABIL_EVOKE_THUNDER,
 
     // Divine abilities
     // Zin
@@ -119,8 +126,7 @@ enum ability_type
     ABIL_SIF_MUNA_DIVINE_ENERGY,
     ABIL_SIF_MUNA_STOP_DIVINE_ENERGY,
     // Trog
-    ABIL_TROG_BURN_SPELLBOOKS = 1080,
-    ABIL_TROG_BERSERK,
+    ABIL_TROG_BERSERK = 1080,
     ABIL_TROG_REGEN_MR,
     ABIL_TROG_BROTHERS_IN_ARMS,
     // Elyvilon

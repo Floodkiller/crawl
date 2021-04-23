@@ -89,13 +89,10 @@ void maybe_melt_player_enchantments(beam_type flavour, int damage)
             you.redraw_armour_class = true;
         }
 
-        if (you.duration[DUR_ICY_ARMOUR] > 0)
+        // Used to reduce duration if hit, now just removes permabuff
+        if (you.permabuffs[MUT_OZOCUBUS_ARMOUR])
         {
-            you.duration[DUR_ICY_ARMOUR] -= damage * BASELINE_DELAY;
-            if (you.duration[DUR_ICY_ARMOUR] <= 0)
-                remove_ice_armour();
-            else
-                you.props[MELT_ARMOUR_KEY] = true;
+            remove_ice_armour();
         }
     }
 }
@@ -271,9 +268,7 @@ int check_your_resists(int hurted, beam_type flavour, string source,
     case BEAM_AIR:
     {
         // Airstrike.
-        if (you.res_wind())
-            hurted = 0;
-        else if (you.airborne())
+        if (you.airborne())
             hurted += hurted / 2;
         break;
     }
@@ -570,6 +565,14 @@ static void _maybe_spawn_monsters(int dam, const bool is_torment,
         mon = MONS_BUTTERFLY;
         how_many = 2 + random2(5);
     }
+    // if has ratskin cloak on, chance for rats to drop out of cloak
+    // this won't happen if you were already going to get a slime or a butterfly
+    else if (player_equip_unrand(UNRAND_RATSKIN_CLOAK)
+             && random2(dam) > you.hp_max / 10)
+    {
+        how_many = 1;
+        mon = coinflip() ? MONS_HELL_RAT : MONS_RIVER_RAT;
+    }
 
     if (how_many > 0)
     {
@@ -590,7 +593,11 @@ static void _maybe_spawn_monsters(int dam, const bool is_torment,
                 mprf(MSGCH_GOD, "A shower of butterflies erupts from you!");
                 take_note(Note(NOTE_XOM_EFFECT, you.piety, -1, "butterfly on damage"), true);
             }
-            else
+            else if (mon == MONS_HELL_RAT  || mon == MONS_RIVER_RAT)
+            {
+                mprf("Your ratskin cloak shudders from the %s and a rat falls out! SQUEEEEK!",
+                     death_type == KILLED_BY_MONSTER ? "blow" : "blast");
+            }            else
             {
                 mprf("You shudder from the %s and a %s!",
                      death_type == KILLED_BY_MONSTER ? "blow" : "blast",
@@ -749,7 +756,8 @@ void reset_damage_counters()
 
 bool can_shave_damage()
 {
-    return you.species == SP_DEEP_DWARF;
+    return (you.species == SP_DEEP_DWARF)
+            || you.attribute[ATTR_REAPING];
 }
 
 int do_shave_damage(int dam)
@@ -757,7 +765,7 @@ int do_shave_damage(int dam)
     if (!can_shave_damage())
         return dam;
 
-    // Deep Dwarves get to shave any hp loss.
+    // Deep Dwarves and reaping skeletons get to shave any hp loss.
     int shave = 1 + random2(2 + random2(1 + you.experience_level / 3));
     dprf("HP shaved: %d.", shave);
     dam -= shave;

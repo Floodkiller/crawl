@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
+/* A Bison parser, made by GNU Bison 3.0.4.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.2"
+#define YYBISON_VERSION "3.0.4"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -233,7 +233,7 @@ extern int yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
+
 union YYSTYPE
 {
 #line 34 "levcomp.ypp" /* yacc.c:355  */
@@ -244,6 +244,8 @@ union YYSTYPE
 
 #line 246 "levcomp.tab.cc" /* yacc.c:355  */
 };
+
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
@@ -257,7 +259,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 261 "levcomp.tab.cc" /* yacc.c:358  */
+#line 263 "levcomp.tab.cc" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -1509,31 +1511,31 @@ yyreduce:
         case 2:
 #line 58 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1513 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1515 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 3:
 #line 61 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 1519 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1521 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 4:
 #line 62 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 1525 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1527 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 5:
 #line 65 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 1531 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1533 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 6:
 #line 66 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 1537 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1539 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 7:
@@ -1541,19 +1543,19 @@ yyreduce:
     {
                     yyerror("Unexpected character sequence.");
                 }
-#line 1545 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1547 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 8:
 #line 75 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 1551 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1553 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 9:
 #line 76 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 1557 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1559 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 10:
@@ -1565,7 +1567,7 @@ yyreduce:
                         yyerror(make_stringf("Bad default-depth: %s (%s)",
                                 (yyvsp[0].text), err.c_str()).c_str());
                 }
-#line 1569 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1571 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 11:
@@ -1588,31 +1590,31 @@ yyreduce:
                         yyerror(err.c_str());
                     add_parsed_map(lc_map);
                 }
-#line 1592 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1594 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 12:
 #line 110 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1598 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1600 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 13:
 #line 111 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1604 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1606 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 14:
 #line 114 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1610 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1612 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 15:
 #line 115 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1616 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1618 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 16:
@@ -1638,31 +1640,31 @@ yyreduce:
                         map_file_place(lc_desfile, yylineno);
                     lc_loaded_maps[(yyvsp[0].text)] = lc_map.place_loaded_from;
                 }
-#line 1642 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1644 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 53:
 #line 178 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 1648 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1650 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 54:
 #line 181 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1654 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1656 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 55:
 #line 183 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1660 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1662 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 56:
 #line 184 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1666 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1668 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 57:
@@ -1670,25 +1672,25 @@ yyreduce:
     {
                     lc_global_prelude.add(yylineno, (yyvsp[0].text));
                 }
-#line 1674 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1676 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 58:
 #line 192 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1680 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1682 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 59:
 #line 194 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1686 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1688 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 60:
 #line 195 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1692 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1694 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 61:
@@ -1696,25 +1698,25 @@ yyreduce:
     {
                     lc_map.main.add(yylineno, (yyvsp[0].text));
                 }
-#line 1700 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1702 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 62:
 #line 203 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1706 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1708 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 63:
 #line 205 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1712 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1714 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 64:
 #line 206 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1718 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1720 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 65:
@@ -1722,25 +1724,25 @@ yyreduce:
     {
                     lc_map.validate.add(yylineno, (yyvsp[0].text));
                 }
-#line 1726 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1728 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 66:
 #line 214 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1732 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1734 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 67:
 #line 216 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1738 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1740 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 68:
 #line 217 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1744 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1746 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 69:
@@ -1748,25 +1750,25 @@ yyreduce:
     {
                     lc_map.veto.add(yylineno, (yyvsp[0].text));
                 }
-#line 1752 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1754 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 70:
 #line 225 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1758 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1760 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 71:
 #line 227 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1764 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1766 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 72:
 #line 228 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1770 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1772 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 73:
@@ -1774,25 +1776,25 @@ yyreduce:
     {
                     lc_map.prelude.add(yylineno, (yyvsp[0].text));
                 }
-#line 1778 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1780 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 74:
 #line 236 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1784 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1786 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 75:
 #line 238 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1790 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1792 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 76:
 #line 239 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1796 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1798 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 77:
@@ -1800,13 +1802,13 @@ yyreduce:
     {
                     lc_map.epilogue.add(yylineno, (yyvsp[0].text));
                 }
-#line 1804 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1806 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 78:
 #line 247 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1810 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1812 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 79:
@@ -1817,13 +1819,13 @@ yyreduce:
                         make_stringf("kfeat(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 1821 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1823 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 80:
 #line 256 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1827 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1829 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 81:
@@ -1834,13 +1836,13 @@ yyreduce:
                         make_stringf("kmons(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 1838 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1840 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 82:
 #line 265 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1844 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1846 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 83:
@@ -1851,13 +1853,13 @@ yyreduce:
                         make_stringf("kitem(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 1855 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1857 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 84:
 #line 274 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1861 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1863 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 85:
@@ -1868,13 +1870,13 @@ yyreduce:
                         make_stringf("kmask(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 1872 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1874 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 86:
 #line 283 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1878 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1880 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 87:
@@ -1885,13 +1887,13 @@ yyreduce:
                         make_stringf("kprop(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 1889 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1891 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 88:
 #line 292 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 1895 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1897 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 91:
@@ -1902,7 +1904,7 @@ yyreduce:
                         make_stringf("shuffle(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 1906 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1908 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 92:
@@ -1913,13 +1915,13 @@ yyreduce:
                         make_stringf("clear(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 1917 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1919 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 93:
 #line 316 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 1923 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1925 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 96:
@@ -1930,7 +1932,7 @@ yyreduce:
                         make_stringf("tags(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 1934 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1936 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 97:
@@ -1965,19 +1967,19 @@ yyreduce:
                                       quote_lua_string((yyvsp[0].text)).c_str()));
                     }
                 }
-#line 1969 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1971 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 98:
 #line 365 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1975 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1977 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 99:
 #line 368 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1981 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1983 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 100:
@@ -1988,13 +1990,13 @@ yyreduce:
                         make_stringf("lfloorcol(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 1992 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 1994 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 101:
 #line 377 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 1998 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2000 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 102:
@@ -2005,13 +2007,13 @@ yyreduce:
                         make_stringf("lrockcol(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2009 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2011 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 103:
 #line 386 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 2015 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2017 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 104:
@@ -2022,13 +2024,13 @@ yyreduce:
                         make_stringf("lfloortile(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2026 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2028 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 105:
 #line 396 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 2032 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2034 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 106:
@@ -2039,7 +2041,7 @@ yyreduce:
                         make_stringf("lrocktile(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2043 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2045 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 110:
@@ -2050,7 +2052,7 @@ yyreduce:
                         make_stringf("fheight(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2054 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2056 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 114:
@@ -2061,7 +2063,7 @@ yyreduce:
                         make_stringf("ftile(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2065 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2067 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 118:
@@ -2072,7 +2074,7 @@ yyreduce:
                         make_stringf("rtile(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2076 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2078 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 122:
@@ -2083,19 +2085,19 @@ yyreduce:
                         make_stringf("tile(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2087 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2089 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 123:
 #line 470 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 2093 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2095 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 124:
 #line 471 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 2099 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2101 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 125:
@@ -2106,25 +2108,25 @@ yyreduce:
                           make_stringf("colour(\"%s\")",
                               quote_lua_string((yyvsp[0].text)).c_str()));
                   }
-#line 2110 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2112 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 126:
 #line 483 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 2116 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2118 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 127:
 #line 486 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 2122 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2124 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 128:
 #line 487 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 2128 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2130 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 129:
@@ -2135,13 +2137,13 @@ yyreduce:
                         make_stringf("nsubst(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2139 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2141 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 130:
 #line 499 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 2145 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2147 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 133:
@@ -2152,19 +2154,19 @@ yyreduce:
                         make_stringf("subst(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2156 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2158 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 134:
 #line 515 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 2162 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2164 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 135:
 #line 516 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 2168 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2170 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 138:
@@ -2175,19 +2177,19 @@ yyreduce:
                         make_stringf("item(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2179 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2181 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 139:
 #line 531 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 2185 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2187 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 140:
 #line 532 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 2191 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2193 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 143:
@@ -2198,7 +2200,7 @@ yyreduce:
                         make_stringf("mons(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2202 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2204 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 144:
@@ -2209,7 +2211,7 @@ yyreduce:
                         make_stringf("place(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2213 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2215 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 145:
@@ -2220,7 +2222,7 @@ yyreduce:
                         make_stringf("desc(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2224 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2226 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 146:
@@ -2230,13 +2232,13 @@ yyreduce:
                         yylineno,
                         make_stringf("order(%d)", int((yyvsp[0].f))));
                 }
-#line 2234 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2236 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 147:
 #line 574 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 2240 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2242 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 148:
@@ -2247,19 +2249,19 @@ yyreduce:
                         make_stringf("depth(\"%s\")",
                             quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2251 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2253 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 149:
 #line 584 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 2257 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2259 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 150:
 #line 585 "levcomp.ypp" /* yacc.c:1646  */
     { }
-#line 2263 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2265 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 153:
@@ -2267,7 +2269,7 @@ yyreduce:
     {
                     (yyval.i) = (yyvsp[-1].f) * 100;
                 }
-#line 2271 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2273 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 154:
@@ -2275,7 +2277,7 @@ yyreduce:
     {
                     (yyval.i) = (yyvsp[0].f);
                 }
-#line 2279 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2281 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 155:
@@ -2286,7 +2288,7 @@ yyreduce:
                         make_stringf("depth_chance(\"%s\", %d)",
                                      quote_lua_string((yyvsp[0].text)).c_str(), (int)(yyvsp[-1].i)));
                 }
-#line 2290 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2292 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 156:
@@ -2296,7 +2298,7 @@ yyreduce:
                         yylineno,
                         make_stringf("chance(%d)", (int)(yyvsp[0].i)));
                 }
-#line 2300 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2302 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 160:
@@ -2307,7 +2309,7 @@ yyreduce:
                          make_stringf("depth_weight(\"%s\", %d)",
                                       quote_lua_string((yyvsp[0].text)).c_str(), (int)(yyvsp[-1].f)));
                  }
-#line 2311 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2313 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 161:
@@ -2317,13 +2319,13 @@ yyreduce:
                          yylineno,
                          make_stringf("weight(%d)", (int)(yyvsp[0].f)));
                  }
-#line 2321 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2323 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 162:
 #line 635 "levcomp.ypp" /* yacc.c:1646  */
     {}
-#line 2327 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2329 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 163:
@@ -2334,7 +2336,7 @@ yyreduce:
                         make_stringf("orient(\"%s\")",
                                      quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2338 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2340 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 164:
@@ -2345,7 +2347,7 @@ yyreduce:
                         make_stringf("welcome(\"%s\")",
                                      quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2349 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2351 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 168:
@@ -2356,7 +2358,7 @@ yyreduce:
                         make_stringf("map(\"%s\")",
                                      quote_lua_string((yyvsp[0].text)).c_str()));
                 }
-#line 2360 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2362 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
   case 172:
@@ -2367,11 +2369,11 @@ yyreduce:
                            make_stringf("subvault(\"%s\")",
                                quote_lua_string((yyvsp[0].text)).c_str()));
                    }
-#line 2371 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2373 "levcomp.tab.cc" /* yacc.c:1646  */
     break;
 
 
-#line 2375 "levcomp.tab.cc" /* yacc.c:1646  */
+#line 2377 "levcomp.tab.cc" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

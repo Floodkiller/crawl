@@ -264,6 +264,10 @@ bool feat_is_traversable_now(dungeon_feature_type grid, bool try_fallback)
             return true;
         }
 
+        // Likewise for lava
+        if (grid == DNGN_LAVA && player_likes_lava(true))
+            return true;
+
         // Permanently flying players can cross most hostile terrain.
         if (grid == DNGN_DEEP_WATER || grid == DNGN_LAVA)
             return you.permanent_flight();
@@ -378,7 +382,7 @@ private:
 public:
     precompute_travel_safety_grid() : did_compute(false)
     {
-        if (!_travel_safe_grid.get())
+        if (!_travel_safe_grid)
         {
             did_compute = true;
             auto tsgrid = make_unique<travel_safe_grid>();
@@ -418,7 +422,7 @@ static bool _is_travelsafe_square(const coord_def& c, bool ignore_hostile,
     if (!in_bounds(c))
         return false;
 
-    if (_travel_safe_grid.get())
+    if (_travel_safe_grid)
     {
         const cell_travel_safety &cell((*_travel_safe_grid)(c));
         return ignore_hostile? cell.safe_if_ignoring_hostile_terrain
@@ -2973,7 +2977,7 @@ void start_explore(bool grab_items)
 
 void do_explore_cmd()
 {
-    if (you.hunger_state <= HS_STARVING && !you_min_hunger())
+    if (apply_starvation_penalties())
         mpr("You need to eat something NOW!");
     else if (you.berserk())
         mpr("Calm down first, please.");
@@ -3008,6 +3012,8 @@ level_id level_id::get_next_level_id(const coord_def &pos)
     if (gridc == DNGN_ENTER_PORTAL_VAULT)
         return stair_destination(pos);
 #endif
+    if (gridc == DNGN_EXIT_THROUGH_ABYSS)
+        return level_id(BRANCH_ABYSS, 1);
 
     for (branch_iterator it; it; ++it)
     {
@@ -3023,6 +3029,7 @@ level_id level_id::get_next_level_id(const coord_def &pos)
     {
     case DNGN_STONE_STAIRS_DOWN_I:   case DNGN_STONE_STAIRS_DOWN_II:
     case DNGN_STONE_STAIRS_DOWN_III: case DNGN_ESCAPE_HATCH_DOWN:
+    case DNGN_ABYSSAL_STAIR:
         id.depth++;
         break;
     case DNGN_STONE_STAIRS_UP_I:     case DNGN_STONE_STAIRS_UP_II:
@@ -4345,7 +4352,8 @@ static bool _feat_is_branchlike(dungeon_feature_type feat)
         || feat == DNGN_ENTER_HELL
         || feat == DNGN_ENTER_ABYSS
         || feat == DNGN_EXIT_THROUGH_ABYSS
-        || feat == DNGN_ENTER_PANDEMONIUM;
+        || feat == DNGN_ENTER_PANDEMONIUM
+        || feat == DNGN_ABYSS_TO_ZOT;
 }
 
 void explore_discoveries::found_feature(const coord_def &pos,

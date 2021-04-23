@@ -88,6 +88,7 @@ public:
         mid_t tentacle_connect;///< mid of monster this tentacle is
                                //   connected to: for segments, this is the
                                //   tentacle; for tentacles, the head.
+        int countdown;         ///< Actions till singularity dies.
     };
     int           colour;
     mid_t         summoner;
@@ -383,7 +384,7 @@ public:
     int res_negative_energy(bool intrinsic_only = false) const override;
     bool res_torment() const override;
     int res_acid(bool calc_unid = true) const override;
-    bool res_wind() const override;
+    bool res_tornado() const override;
     bool res_petrify(bool /*temp*/ = true) const override;
     int res_constrict() const override;
     int res_magic(bool calc_unid = true) const override;
@@ -423,6 +424,7 @@ public:
     int silence_radius() const override;
     int liquefying_radius() const override;
     int umbra_radius() const override;
+    int heat_radius() const override;
     bool petrified() const override;
     bool petrifying() const override;
     bool liquefied_ground() const override;

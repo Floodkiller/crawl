@@ -15,7 +15,7 @@ function ($, comm, enums, map_knowledge, messages, options) {
 
     var defense_boosters = {
         "ac": "icy armour|protected from physical damage|sanguine armour|corpse armour|protection aura",
-        "ev": "phasing|agile",
+        "ev": "agile|acrobat",
         "sh": "divine shield|corpse armour",
     }
 
@@ -69,6 +69,29 @@ function ($, comm, enums, map_knowledge, messages, options) {
             .css("width", (change_bar / 100) + "%");
         $("#stats_" + name + "_bar_" + (increase ? "decrease" : "increase"))
             .css("width", 0);
+    }
+
+    function update_bar_contam()
+    {
+        player.contam_max = 16000;
+        update_bar("contam");
+         // Calculate level for the colour
+        var contam_level = 0;
+         if (player.contam > 25000)
+            contam_level = 4;
+        else if (player.contam > 15000)
+            contam_level = 3;
+        else if (player.contam > 5000)
+            contam_level = 2;
+        else if (player.contam > 0)
+            contam_level = 1;
+         $("#stats_contamline").attr("data-contam", contam_level);
+    }
+
+    function update_bar_heat()
+    {
+        player.heat_max = 15; // Value of TEMP_MAX
+        update_bar("heat");
     }
 
     function update_bar_noise()
@@ -327,6 +350,9 @@ function ($, comm, enums, map_knowledge, messages, options) {
         $("#stats_titleline").text(player.name + " " + player.title);
         $("#stats_wizmode").text(player.wizard ? "*WIZARD*" : "");
 
+        var do_temperature = false;
+        var do_contam = false;
+
         // Setup species
         // TODO: Move to a proper initialisation task
         if ($("#stats").attr("data-species") != player.species)
@@ -373,18 +399,47 @@ function ($, comm, enums, map_knowledge, messages, options) {
         for (var i = 0; i < simple_stats.length; ++i)
             $("#stats_" + simple_stats[i]).text(player[simple_stats[i]]);
 
-        $("#stats_hpline > .stats_caption").text(
+        if (player.species == "Djinni")
+        {
+            $("#stats_hpline > .stats_caption").text(
+            (player.real_hp_max != player.hp_max) ? "EP:" : "Essence:");
+            do_contam = true;
+        }
+        else
+        {
+            $("#stats_hpline > .stats_caption").text(
             (player.real_hp_max != player.hp_max) ? "HP:" : "Health:");
+            $("#stats_mpline > .stats_caption").text(
+            (player.real_mp_max != player.mp_max) ? "MP:" : "Magic:");
+        }
+
+        if (player.species == "Lava Orc")
+        {
+            do_temperature = true;
+        }
 
         if (player.real_hp_max != player.hp_max)
             $("#stats_real_hp_max").text("(" + player.real_hp_max + ")");
         else
             $("#stats_real_hp_max").text("");
 
+        if (player.species != "Djinni")
+        {
+            if (player.real_mp_max != player.mp_max)
+                $("#stats_real_mp_max").text("(" + player.real_mp_max + ")");
+            else
+                $("#stats_real_mp_max").text("");
+        }
+
         percentage_color("hp");
         percentage_color("mp");
         update_bar("hp");
-        update_bar("mp");
+        if (do_contam)
+            update_bar_contam();
+        else
+            update_bar("mp");
+        if (do_temperature)
+            update_bar_heat();
 
         update_defense("ac");
         update_defense("ev");
@@ -495,7 +550,7 @@ function ($, comm, enums, map_knowledge, messages, options) {
             $.extend(player, {
                 name: "", god: "", title: "", species: "",
                 hp: 0, hp_max: 0, real_hp_max: 0, poison_survival: 0,
-                mp: 0, mp_max: 0,
+                mp: 0, mp_max: 0, real_mp_max: 0,
                 ac: 0, ev: 0, sh: 0,
                 xl: 0, progress: 0,
                 time: 0, time_delta: 0,
@@ -510,6 +565,7 @@ function ($, comm, enums, map_knowledge, messages, options) {
                 wizard: 0,
                 depth: 0, place: "",
                 contam: 0,
+                heat: 0,
                 noise: 0,
                 adjusted_noise: 0
             });

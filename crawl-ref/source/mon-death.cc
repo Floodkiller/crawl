@@ -133,7 +133,7 @@ static bool _fill_out_corpse(const monster& mons, item_def& corpse)
     if (col == COLOUR_UNDEF)
     {
         // XXX hack to avoid crashing in wiz mode.
-        if (mons_is_ghost_demon(mons.type) && !mons.ghost.get())
+        if (mons_is_ghost_demon(mons.type) && !mons.ghost)
             col = LIGHTRED;
         else
         {
@@ -295,8 +295,7 @@ static void _beogh_spread_experience(int exp)
     for (monster_near_iterator mi(&you); mi; ++mi)
         if (is_orcish_follower(**mi))
         {
-            _give_monster_experience(exp * mi->get_experience_level() / total_hd,
-                                         mi->mindex());
+            _give_monster_experience(exp, mi->mindex());
         }
 }
 
@@ -491,13 +490,16 @@ static void _create_monster_hide(const item_def &corpse, bool silent)
     }
 
     move_item_to_grid(&o, pos);
-    if (you.see_cell(pos) && !silent)
+
+    // Don't display this message if the scales were dropped over
+    // lava/deep water, because then they are hardly intact.
+    if (you.see_cell(pos) && !silent && !feat_eliminates_items(grd(pos)))
     {
         // XXX: tweak for uniques/named monsters, somehow?
         mprf("%s %s intact enough to wear.",
              item.name(DESC_THE).c_str(),
              mons_genus(mtyp) == MONS_DRAGON ? "are"  // scales are
-                                             : "is"); // hide is
+                                             : "is"); // troll armour is
                                                       // XXX: refactor
     }
 
@@ -700,8 +702,9 @@ int exp_rate(int killer)
     if (killer == MHITYOU || killer == YOU_FAULTLESS)
         return 2;
 
+    //TODO: Consolidate all of this later now that it all returns the same
     if (_is_pet_kill(KILL_MON, killer))
-        return 1;
+        return 2;
 
     return 0;
 }
@@ -1838,12 +1841,6 @@ static void _fire_kill_conducts(monster &mons, killer_type killer,
     // Cheibriados hates fast monsters.
     if (cheibriados_thinks_mons_is_fast(mons) && !mons.cannot_move())
         did_kill_conduct(DID_KILL_FAST, mons);
-
-    // Dithmenos hates sources of fire.
-    // (This is *after* the holy so that the right order of
-    //  messages appears.)
-    if (mons_is_fiery(mons))
-        did_kill_conduct(DID_KILL_FIERY, mons);
 }
 
 item_def* monster_die(monster& mons, const actor *killer, bool silent,
@@ -2113,6 +2110,12 @@ item_def* monster_die(monster& mons, killer_type killer,
             silent = true;
         }
     }
+    else if (mons.type == MONS_SINGULARITY && mons.countdown <= 0)
+    {
+        simple_monster_message(mons, " implodes!");
+        invalidate_agrid();
+        silent = true;
+    }
     else if (mons.type == MONS_FIRE_VORTEX
              || mons.type == MONS_SPATIAL_VORTEX
              || mons.type == MONS_TWISTER)
@@ -2254,7 +2257,7 @@ item_def* monster_die(monster& mons, killer_type killer,
 
     // Adjust song of slaying bonus. Kills by relevant avatars are adjusted by
     // now to KILL_YOU and are counted.
-    if (you.duration[DUR_SONG_OF_SLAYING]
+    if (you.permabuffs[MUT_SONG_OF_SLAYING]
         && killer == KILL_YOU
         && gives_player_xp)
     {
@@ -2345,6 +2348,11 @@ item_def* monster_die(monster& mons, killer_type killer,
                     }
                 }
 
+                if (you.species == SP_DJINNI)
+                {
+                    hp_heal = max(hp_heal, mp_heal * 2), mp_heal = 0;
+                }
+
                 if (hp_heal && you.hp < you.hp_max
                     && !you.duration[DUR_DEATHS_DOOR])
                 {
@@ -2364,7 +2372,7 @@ item_def* monster_die(monster& mons, killer_type killer,
                 // perhaps this should go to its own function
                 if (mp_heal
                     && have_passive(passive_t::bottle_mp)
-                    && !you_foodless_normally())
+                    && !you_foodless(false))
                 {
                     simple_god_message(" collects the excess magic power.");
                     you.attribute[ATTR_PAKELLAS_EXTRA_MP] -= mp_heal;
@@ -2602,6 +2610,52 @@ item_def* monster_die(monster& mons, killer_type killer,
     // None of these effects should trigger on illusory copies.
     if (!mons.is_illusion())
     {
+        // TODO: Move the rest of the monster types into this switch
+        if(!in_transit) // Banishment
+        {
+            switch (mons.type)
+            {
+                // TODO: These could probably be parsed from you.kills instead
+                case MONS_DISPATER:
+                    you.props["dispater_dead"] = true;
+                    mpr("You no longer feel the iron fury of Dis assaulting you.");
+                    break;
+
+                case MONS_ASMODEUS:
+                    you.props["asmodeus_dead"] = true;
+                    mpr("You no longer feel the fiery rage of Gehenna assaulting you.");
+                    break;
+
+                case MONS_ANTAEUS:
+                    you.props["antaeus_dead"] = true;
+                    mpr("You no longer feel the icy wrath of Cocytus assaulting you.");
+                    break;
+
+                case MONS_ERESHKIGAL:
+                    you.props["ereshkigal_dead"] = true;
+                    mpr("You no longer feel the haunting ire of Tartarus assaulting you.");
+                    break;
+                
+                case MONS_MNOLEG:
+                    you.props["mnoleg_dead"] = true;
+                    break;
+
+                case MONS_CEREBOV:
+                    you.props["cerebov_dead"] = true;
+                    break;
+
+                case MONS_LOM_LOBON:
+                    you.props["lom_dead"] = true;
+                    break;
+
+                case MONS_GLOORX_VLOQ:
+                    you.props["gloorx_dead"] = true;
+                    break;
+
+                default:
+                    break;
+            }
+        }
         if (mons.type == MONS_BORIS && !in_transit && !mons.pacified())
         {
             // XXX: Actual blood curse effect for Boris? - bwr
@@ -3426,8 +3480,15 @@ void elven_twin_died(monster* twin, bool in_transit, killer_type killer, int kil
 
     // Upgrade the spellbook here, as elven_twin_energize
     // may not be called due to lack of visibility.
-    if (mons_is_mons_class(mons, MONS_DOWAN))
+    if (mons_is_mons_class(mons, MONS_DOWAN)
+                                        && !(mons->flags & MF_POLYMORPHED))
     {
+        // Don't mess with Dowan's spells if he's been polymorphed: most
+        // possible forms have no spells, and the few that do (e.g. boggart)
+        // have way more fun spells than this. If this ever changes, the
+        // following code would need to be rewritten, as it'll crash.
+        // TODO: this is a fairly brittle way of upgrading Dowan...
+        ASSERT(mons->spells.size() >= 5);
         mons->spells[0].spell = SPELL_STONE_ARROW;
         mons->spells[1].spell = SPELL_THROW_ICICLE;
         mons->spells[3].spell = SPELL_BLINK;

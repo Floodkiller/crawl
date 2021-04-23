@@ -356,8 +356,8 @@ static string _get_branches(bool display)
 // iterate through every god and display their altar's discovery state by colour
 static string _get_altars(bool display)
 {
-    // Just wastes space for demigods.
-    if (you.species == SP_DEMIGOD)
+    // Just wastes space for prometheans and Brute Force pledges
+    if (you.species == SP_PROMETHEAN || you.pledge == PLEDGE_BRUTE_FORCE)
         return "";
 
     string disp;
@@ -609,7 +609,6 @@ bool unnotice_feature(const level_pos &pos)
 
 void display_overview()
 {
-    clrscr();
     string disp = overview_description_string(true);
     linebreak_string(disp, get_number_of_cols());
     int flags = MF_ANYPRINTABLE | MF_NOSELECT;

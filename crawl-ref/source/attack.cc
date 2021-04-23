@@ -10,6 +10,7 @@
 #include "attack.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -23,6 +24,7 @@
 #include "exercise.h"
 #include "fight.h"
 #include "fineff.h"
+#include "food.h"
 #include "god-conduct.h"
 #include "god-passive.h" // passive_t::no_haste
 #include "item-name.h"
@@ -185,6 +187,16 @@ int attack::calc_to_hit(bool random)
                                      random);
         }
 
+        {
+            // Pincers give a slight bonus to accuracy when active
+            mhit += (you.get_mutation_level(MUT_PINCERS) > 0
+                     && wpn_skill == SK_UNARMED_COMBAT) ? 4 : 2;
+
+            mhit += maybe_random_div(you.skill(wpn_skill, 100), 100,
+                                     random);
+        }
+
+
         // weapon bonus contribution
         if (using_weapon())
         {
@@ -203,7 +215,7 @@ int attack::calc_to_hit(bool random)
                                          && using_weapon()));
 
         // hunger penalty
-        if (you.hunger_state <= HS_STARVING)
+        if (apply_starvation_penalties())
             mhit -= 3;
 
         // armour penalty
@@ -287,7 +299,7 @@ int attack::calc_to_hit(bool random)
  * Takes into account actor visibility/invisibility and the type of description
  * to be used (capitalization, possessiveness, etc.)
  */
-string attack::actor_name(const actor *a, description_level_type desc,
+string actor_name(const actor *a, description_level_type desc,
                           bool actor_visible)
 {
     return actor_visible ? a->name(desc) : anon_name(desc);
@@ -297,7 +309,7 @@ string attack::actor_name(const actor *a, description_level_type desc,
  *
  * Takes into account actor visibility
  */
-string attack::actor_pronoun(const actor *a, pronoun_type pron,
+string actor_pronoun(const actor *a, pronoun_type pron,
                              bool actor_visible)
 {
     return actor_visible ? a->pronoun(pron) : anon_pronoun(pron);
@@ -308,7 +320,7 @@ string attack::actor_pronoun(const actor *a, pronoun_type pron,
  * Given the actor visible or invisible, returns the
  * appropriate possessive pronoun.
  */
-string attack::anon_name(description_level_type desc)
+string anon_name(description_level_type desc)
 {
     switch (desc)
     {
@@ -330,7 +342,7 @@ string attack::anon_name(description_level_type desc)
  * Given invisibility (whether out of LOS or just invisible), returns the
  * appropriate possessive, inflexive, capitalised pronoun.
  */
-string attack::anon_pronoun(pronoun_type pron)
+string anon_pronoun(pronoun_type pron)
 {
     return decline_pronoun(GENDER_NEUTER, pron);
 }
@@ -979,7 +991,7 @@ string attack::debug_damage_number()
  *
  * Used in player / monster (both primary and aux) attacks
  */
-string attack::attack_strength_punctuation(int dmg)
+string attack_strength_punctuation(int dmg)
 {
     if (dmg < HIT_WEAK)
         return ".";
@@ -988,16 +1000,7 @@ string attack::attack_strength_punctuation(int dmg)
     else if (dmg < HIT_STRONG)
         return "!!";
     else
-    {
-        string ret = "!!!";
-        int tmpdamage = dmg;
-        while (tmpdamage >= 2*HIT_STRONG)
-        {
-            ret += "!";
-            tmpdamage >>= 1;
-        }
-        return ret;
-    }
+        return string(3 + (int) log2(dmg / HIT_STRONG), '!');
 }
 
 /* Returns evasion adverb
@@ -1167,8 +1170,8 @@ int attack::player_apply_misc_modifiers(int damage)
 int attack::get_weapon_plus()
 {
     if (weapon->base_type == OBJ_STAVES
-        || weapon->sub_type == WPN_BLOWGUN
 #if TAG_MAJOR_VERSION == 34
+        || weapon->sub_type == WPN_BLOWGUN
         || weapon->base_type == OBJ_RODS
 #endif
        )
@@ -1230,6 +1233,9 @@ int attack::calc_base_unarmed_damage()
     // Claw damage only applies for bare hands.
     if (you.has_usable_claws())
         damage += you.has_claws() * 2;
+
+    if (you.has_usable_pincers())
+        damage += you.has_pincers() * 2;
 
     if (you.form_uses_xl())
         damage += div_rand_round(you.experience_level, 3);
@@ -1488,7 +1494,6 @@ bool attack::apply_damage_brand(const char *what)
         defender->expose_to_element(BEAM_FIRE, 2);
         if (defender->is_player())
             maybe_melt_player_enchantments(BEAM_FIRE, special_damage);
-        attacker->god_conduct(DID_FIRE, 1);
         break;
 
     case SPWPN_FREEZING:
@@ -1798,7 +1803,15 @@ void attack::player_stab_check()
         return;
     }
 
-    const stab_type st = find_stab_type(&you, *defender);
+    stab_type st = find_stab_type(&you, *defender);
+    // Find stab type is also used for displaying information about monsters,
+    // so we need to upgrade the stab type for the Spriggan's Knife here
+    if (using_weapon()
+        && is_unrandom_artefact(*weapon, UNRAND_SPRIGGANS_KNIFE)
+        && st != STAB_NO_STAB)
+    {
+        st = STAB_SLEEPING;
+    }
     stab_attempt = st != STAB_NO_STAB;
     stab_bonus = stab_bonus_denom(st);
 

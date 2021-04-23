@@ -184,7 +184,6 @@ static bool _blocked_ray(const coord_def &where,
 static bool _is_public_key(string key)
 {
     if (key == "helpless"
-     || key == "wand_known"
      || key == "feat_type"
      || key == "glyph"
      || key == "dbname"
@@ -640,7 +639,7 @@ monster_info::monster_info(const monster* m, int milev)
 
     if (mons_is_pghost(type))
     {
-        ASSERT(m->ghost.get());
+        ASSERT(m->ghost);
         ghost_demon& ghost = *m->ghost;
         i_ghost.species = ghost.species;
         if (species_is_draconian(i_ghost.species) && ghost.xl < 7)
@@ -688,10 +687,6 @@ monster_info::monster_info(const monster* m, int milev)
         else if (i == MSLOT_MISCELLANY)
             ok = false;
         else if (attitude == ATT_FRIENDLY)
-            ok = true;
-        else if (i == MSLOT_WAND)
-            ok = props.exists("wand_known") && props["wand_known"];
-        else if (m->props.exists("ash_id") && item_type_known(mitm[m->inv[i]]))
             ok = true;
         else if (i == MSLOT_ALT_WEAPON)
             ok = wields_two_weapons();
@@ -820,7 +815,7 @@ static string _mutant_beast_facet(int facet)
 
 string monster_info::db_name() const
 {
-    if (type == MONS_DANCING_WEAPON && inv[MSLOT_WEAPON].get())
+    if (type == MONS_DANCING_WEAPON && inv[MSLOT_WEAPON])
     {
         iflags_t ignore_flags = ISFLAG_KNOW_CURSE | ISFLAG_KNOW_PLUSES;
         bool     use_inscrip  = false;
@@ -888,7 +883,7 @@ string monster_info::_core_name() const
 
         case MONS_DANCING_WEAPON:
         case MONS_SPECTRAL_WEAPON:
-            if (inv[MSLOT_WEAPON].get())
+            if (inv[MSLOT_WEAPON])
             {
                 iflags_t ignore_flags = ISFLAG_KNOW_CURSE | ISFLAG_KNOW_PLUSES;
                 bool     use_inscrip  = true;
@@ -1101,10 +1096,15 @@ bool monster_info::less_than_wrapper(const monster_info& m1,
 bool monster_info::less_than(const monster_info& m1, const monster_info& m2,
                              bool zombified, bool fullname)
 {
-    if (mons_is_hepliaklqana_ancestor(m1.type))
-        return true;
-    else if (mons_is_hepliaklqana_ancestor(m2.type))
+    // This awkward ordering (checking m2 before m1) is required to satisfy
+    // std::sort's contract. Specifically, if m1 and m2 are both ancestors
+    // (e.g. through phantom mirror), we want them to compare equal. To signify
+    // "equal", we must say that neither is less than the other, rather than
+    // saying that both are less than each other.
+    if (mons_is_hepliaklqana_ancestor(m2.type))
         return false;
+    else if (mons_is_hepliaklqana_ancestor(m1.type))
+        return true;
 
     if (m1.attitude < m2.attitude)
         return true;

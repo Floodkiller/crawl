@@ -31,9 +31,9 @@ Dithmenos
 
 Dithmenos the Shadowed desires all to be darkness. Followers of Dithmenos gain
 a strange and otherwordly affinity to the shadows of their environment. This
-god despises fire, which long ago freed mortals from the tyranny of shadow; its
-use is forbidden by worshippers. Dithmenos favours those who would instead
-destroy sources of fire.
+god despises the physical world and constantly seeks to encroach on it.
+Dithmenos therefore rewards those who wield death and destruction while
+gradually consuming them with darkness.
 %%%%
 Elyvilon
 
@@ -170,10 +170,10 @@ to Elyvilon or Zin while keeping some piety.
 Trog
 
 Trog is an ancient god of anger and violence. Followers are expected to kill in
-Trog's name, and especially to slay wizards and burn their spellbooks. In
-return, worshippers of Trog gain the ability to go berserk at will in combat,
-and will be granted assistance in the form of powerful weapons and mighty
-allies. Followers are absolutely forbidden the use of spell magic.
+Trog's name, and especially to slay wizards. In return, worshippers of Trog
+gain the ability to go berserk at will in combat, and will be granted
+assistance in the form of powerful weapons and mighty allies. Followers are
+absolutely forbidden the use of spell magic.
 %%%%
 Uskayaw
 
@@ -233,7 +233,11 @@ Followers of Beogh can smite their foes, and will even gain orcish followers of
 their own, who may be blessed by Beogh in battle and can be recalled as needed.
 Eventually, followers will gain the power to walk on water. Beogh will
 sometimes directly intervene to save a follower's life, and the chosen of
-Beogh will eventually be able to resurrect other fallen orcs.
+Beogh will eventually be able to resurrect other fallen orcs. {{
+    if you.race() == "Lava Orc" then
+        return "Beogh suppresses the heat aura of Lava Orc followers."
+    end
+}}
 %%%%
 Cheibriados powers
 
@@ -345,11 +349,11 @@ Followers of Lugonu gain powers to depart the Abyss at will, to bend space
 around themselves, and to banish monsters to the Abyss. Later they will be able
 to corrupt the ordered world, opening a gate for creatures of the Abyss to pass
 through, and to gate themselves directly into this realm of chaos. Lugonu will
-eventually offer to corrupt a follower's weapon, imbuing it with the distorting
-energies of the Abyss, and will protect the follower from the normally harmful
-effects of unwielding such a weapon. Lugonu expects followers to spread
-unceasing chaos in the overworld, and as such does not grant piety to
-worshippers while they remain in the Abyss itself.
+protect followers from the normally harmful effects of weapons imbued with the
+distorting energies of the Abyss, and eventually will offer to corrupt a
+follower's weapon in that way. Lugonu expects followers to spread unceasing
+chaos in the overworld, and as such does not grant piety to worshippers while
+they remain in the Abyss itself.
 %%%%
 Makhleb powers
 
@@ -361,10 +365,11 @@ grant followers renewed health in return for killing beings of all kinds.
 Nemelex Xobeh powers
 
 The Trickster's followers gain various ways to influence fate when playing
-their cards. The effects of the cards will be more powerful with higher piety.
-Later, followers will gain powerful abilities to manipulate the cards, allowing
-them to choose one of three drawn cards, to gain the effects of multiple cards
-at once, and finally to stack decks and re-order their contents.
+their cards. The effects of the cards will be more powerful with higher piety
+and with greater Invocations skill. Later, followers will gain powerful
+abilities to manipulate the cards, allowing them to choose one of three drawn
+cards, to gain the effects of multiple cards at once, and finally to stack
+decks and re-order their contents.
 %%%%
 Okawaru powers
 

@@ -57,11 +57,25 @@ enum status_type
     STATUS_SERPENTS_LASH,
     STATUS_HEAVENLY_STORM,
     STATUS_PLAYING_HARP,
-    STATUS_LAST_STATUS = STATUS_PLAYING_HARP
+    STATUS_TIME_STOP,
+    STATUS_SONG_OF_SLAYING,
+    STATUS_REAP,
+    STATUS_INFUSION,
+    STATUS_FIRE_SHIELD,
+    STATUS_WOUNDS,
+    STATUS_SPECTRAL_WEAPON,
+    STATUS_BATTLESPHERE,
+    STATUS_ICE_ARMOUR,
+    STATUS_CHILL_THREAD,
+    STATUS_LAST_STATUS = STATUS_CHILL_THREAD
 };
 
 struct status_info
 {
+    status_info() : light_colour(0)
+    {
+    };
+
     int light_colour;
     string light_text; // status light
     string short_text; // @: line
@@ -72,7 +86,7 @@ struct status_info
 // *info will be filled in as appropriate for current
 // character state
 // returns true if the status has a description
-bool fill_status_info(int status, status_info* info);
+bool fill_status_info(int status, status_info& info);
 
 const char *duration_name(duration_type dur);
 bool duration_dispellable(duration_type dur);

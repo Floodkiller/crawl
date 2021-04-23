@@ -172,8 +172,28 @@ static bool _stair_moves_pre(dungeon_feature_type stair)
 static void _climb_message(dungeon_feature_type stair, bool going_up,
                            branch_type old_branch)
 {
+    if (stair == DNGN_ABYSS_TO_ZOT)
+    {
+        big_cloud(CLOUD_PURPLE_SMOKE, &you, you.pos(), 20, 7 + random2(7));
+#ifdef USE_TILE_LOCAL
+        tiles.add_overlay(you.pos(), tileidx_zap(MAGENTA));
+        update_screen();
+#else
+        flash_view(UA_BRANCH_ENTRY, MAGENTA);
+#endif
+        mpr("Your senses are dulled as you hear an electric hum and everything flashes purple.");
+        // included in default force_more_message
+    }
+
     if (!is_connected_branch(old_branch))
+    {
         return;
+    }
+        
+    if (stair == DNGN_EXIT_ZOT && runes_in_pack() < 3)
+    {
+        mprf("As you exit, the gate slams shut behind you!");
+    }
 
     if (feat_is_portal(stair))
         mpr("The world spins around you as you enter the gateway.");
@@ -559,6 +579,19 @@ void floor_transition(dungeon_feature_type how,
                       bool forced, bool going_up, bool shaft, bool update_travel_cache)
 {
     const level_id old_level = level_id::current();
+    
+    if (whither.branch == BRANCH_ABYSS)
+    {
+        int old_abyss_depth = you.props[ABYSS_DEPTH_KEY].get_int();
+        you.props[ABYSS_DEPTH_KEY] = max(old_abyss_depth, whither.depth);
+        if (old_abyss_depth < 27 && whither.depth >= 27)
+        {
+            mprf("<magenta>Beware - disturbing the bottom of the Abyss has permanently "
+                 "weakened the barrier between the Abyss and the dungeon.</magenta>");
+            mark_milestone("abyss.corrupt", "entered the bottom of the Abyss, permanently corrupting the dungeon!");
+            take_note(Note(NOTE_MESSAGE, 0, 0, "Entered the bottom of the Abyss, permanently corrupting the dungeon!"), true);
+        }
+    }
 
     // Clean up fake blood.
     heal_flayed_effect(&you, true, true);
@@ -566,7 +599,7 @@ void floor_transition(dungeon_feature_type how,
     // Magical level changes (which currently only exist "downwards") need this.
     clear_trapping_net();
     end_searing_ray();
-    // Assume magical level changes are involuntary, but only display 
+    // Assume magical level changes are involuntary, but only display
     // message if playing harp
     if (you.attribute[ATTR_PLAYING_HARP])
         end_playing_harp(false);
@@ -595,6 +628,10 @@ void floor_transition(dungeon_feature_type how,
         you.banished_by = "";
         you.banished_power = 0;
     }
+    else if (how == DNGN_ABYSS_TO_ZOT)
+    {
+        mark_milestone("abyss.exit", "escaped the Abyss into Zot!");
+    }
 
     // Interlevel travel data.
     const bool collect_travel_data = can_travel_interlevel();
@@ -617,7 +654,8 @@ void floor_transition(dungeon_feature_type how,
         ouch(INSTANT_DEATH, KILLED_BY_LEAVING);
     }
 
-    if (how == DNGN_ENTER_LABYRINTH || how == DNGN_ENTER_ZIGGURAT)
+    // TODO: Make DNGN_EXIT_WIZLAB turn into DNGN_WIZLAB_PORTAL_GONE instead of DNGN_STONE_ARCH
+    if (how == DNGN_ENTER_LABYRINTH || how == DNGN_ENTER_ZIGGURAT || how == DNGN_ENTER_WIZLAB)
         dungeon_terrain_changed(you.pos(), DNGN_STONE_ARCH);
 
     if (how == DNGN_ENTER_PANDEMONIUM
@@ -640,13 +678,15 @@ void floor_transition(dungeon_feature_type how,
 
     if (how == DNGN_EXIT_ABYSS
         || how == DNGN_EXIT_PANDEMONIUM
-        || how == DNGN_EXIT_THROUGH_ABYSS)
+        || how == DNGN_EXIT_THROUGH_ABYSS
+        || how == DNGN_ABYSS_TO_ZOT)
     {
         mpr("You pass through the gate.");
         take_note(Note(NOTE_MESSAGE, 0, 0,
             how == DNGN_EXIT_ABYSS ? "Escaped the Abyss" :
             how == DNGN_EXIT_PANDEMONIUM ? "Escaped Pandemonium" :
             how == DNGN_EXIT_THROUGH_ABYSS ? "Escaped into the Abyss" :
+            how == DNGN_ABYSS_TO_ZOT ? "Escaped the Abyss into Zot" :
             "Buggered into bugdom"), true);
 
         if (!you.wizard || !crawl_state.is_replaying_keys())
@@ -677,6 +717,8 @@ void floor_transition(dungeon_feature_type how,
             mprf(MSGCH_BANISHMENT, "You plunge deeper into the Abyss.");
             if (!you.runes[RUNE_ABYSSAL] && you.depth >= ABYSSAL_RUNE_MIN_LEVEL)
                 mpr("The abyssal rune of Zot can be found at this depth.");
+            if (you.depth == 5)
+                mpr("One-way passage to the Realm of Zot can be found at and below this depth.");
             break;
         }
         if (!forced)
@@ -806,6 +848,11 @@ void floor_transition(dungeon_feature_type how,
         maybe_update_stashes();
 
     request_autopickup();
+    
+    if (you.props[ABYSS_DEPTH_KEY].get_int() >= 27)
+    {
+        lugonu_corrupt_level(300, true);
+    }
 }
 
 /**
@@ -936,6 +983,9 @@ level_id stair_destination(dungeon_feature_type feat, const string &dst,
 
     case DNGN_EXIT_THROUGH_ABYSS:
         return level_id(BRANCH_ABYSS);
+
+    case DNGN_ABYSS_TO_ZOT:
+        return level_id(BRANCH_ZOT, 1);
 
 #if TAG_MAJOR_VERSION == 34
     case DNGN_ENTER_PORTAL_VAULT:

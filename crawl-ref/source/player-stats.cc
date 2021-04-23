@@ -107,7 +107,7 @@ bool attribute_increase()
 {
     const string stat_gain_message = make_stringf("Your experience leads to a%s "
                                                   "increase in your attributes!",
-                                                  you.species == SP_DEMIGOD ?
+                                                  you.species == SP_PROMETHEAN ?
                                                   " dramatic" : "n");
     crawl_state.stat_gain_prompt = true;
 #ifdef TOUCH_UI
@@ -142,7 +142,7 @@ bool attribute_increase()
 #endif
     mouse_control mc(MOUSE_MODE_PROMPT);
 
-    const int statgain = you.species == SP_DEMIGOD ? 2 : 1;
+    const int statgain = 1;
 
     bool tried_lua = false;
     int keyin;
@@ -155,7 +155,7 @@ bool attribute_increase()
         {
             string result;
             clua.fnreturns(">s", &result);
-            keyin = result[0];
+            keyin = toupper(result[0]);
         }
         else
         {
@@ -178,23 +178,26 @@ bool attribute_increase()
                 return false;
             break;
 
-        case 's':
         case 'S':
             for (int i = 0; i < statgain; i++)
                 modify_stat(STAT_STR, 1, false);
             return true;
 
-        case 'i':
         case 'I':
             for (int i = 0; i < statgain; i++)
                 modify_stat(STAT_INT, 1, false);
             return true;
 
-        case 'd':
         case 'D':
             for (int i = 0; i < statgain; i++)
                 modify_stat(STAT_DEX, 1, false);
             return true;
+
+        case 's':
+        case 'i':
+        case 'd':
+            mprf(MSGCH_PROMPT, "Uppercase letters only, please.");
+            break;
 #ifdef TOUCH_UI
         default:
             status->text = "Please choose an option below"; // too naggy?
@@ -626,6 +629,16 @@ static void _handle_stat_change(stat_type stat)
 
     you.redraw_stats[stat] = true;
     _normalize_stat(stat);
+    
+    // Calc MP/HP for new permabuff totals after stat change (depending on species)
+    if (you.species == SP_DJINNI)
+    {
+        calc_hp();
+    }
+    else
+    {
+        calc_mp();
+    }
 
     switch (stat)
     {

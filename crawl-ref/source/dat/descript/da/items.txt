@@ -294,6 +294,12 @@ dire flail
 
 En stridsplejl med lange pigge og et tungere hoved.
 %%%%
+disc of storms
+
+Denne ekstremt kraftulde genstand kan udløse en altødelæggende storm af
+elektricitet. Dens effektivitet er langt større i hænderne på en, som er dygtig
+med magiske anordninger.
+%%%%
 eudemon blade
 
 En hellig klinge, som er frembragt af Himmelens smedjer og beboet af en god
@@ -892,6 +898,14 @@ stone
 
 En lille klump kompakt, men ellers ikke opsigtsvækkende naturligt forekommende
 mineraler. Den kan kastes med hænderne eller affyres med en slynge.
+%%%%
+stone of tremors
+
+En poleret sten, som er beboet af venligtsindede jordånder. Når man løfter den
+over hovedet, sender den voldsomme trykbølger gennem de underjordiske gange,
+mens ånderne søger fast form i klipperne. De, der står tæt på murene, vil blive
+ramt af faldende sten, mens klippevæggen bølger og smuldrer, og andre opsluges
+af revner i selve jorden.
 %%%%
 storm dragon scales
 

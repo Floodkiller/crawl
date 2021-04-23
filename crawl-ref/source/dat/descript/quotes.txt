@@ -2086,6 +2086,15 @@ phase bat
 
 <bat>
 %%%%
+pie
+
+“And from that moment on I could not banish Oedipus's terrible end from my
+ mind: putting his own eyes out with a pin after hearing those fateful words
+ that Tiresias had uttered and being present when his mother hanged herself.”
+    -- Fernando Vidal Olmos, Report on the Blind
+    Ernesto Sabato, On Heroes and Tombs,
+    Translated by Helen R. Lane
+%%%%
 pillar of salt
 
 “Then the LORD rained upon Sodom and upon Gomorrah brimstone and fire from the
@@ -2999,11 +3008,13 @@ against—whom?”
     -Jorge Luis Borges, “Toenails”. 1960.
     trans. Andrew Hurley, 1998.
 %%%%
-tomahawk
+boomerang
 
-“Let them draw the sharpest knife, and whirl the swiftest tomahawk, for their
-bitterest enemy is in their hands.”
-    -James Fenimore Cooper, “The Last of the Mohicans”, 1826.
+“The weapon, thrown at 20 or 30 yards  distance, twirled round in the air with
+astonishing velocity, and alighting on the right arm of one of his opponents,
+actually rebounded to a distance not less than 70 or 80 yards, leaving a
+horrible contusion behind, and exciting universal admiration.”
+    -The Sydney Gazette and New South Wales Advertiser, 23 December 1804
 %%%%
 tormentor
 

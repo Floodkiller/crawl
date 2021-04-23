@@ -4,11 +4,14 @@
 
 #include "ability.h"
 #include "adjust.h"
+#include "artefact.h"
+#include "art-enum.h"
 #include "decks.h"
 #include "dungeon.h"
 #include "end.h"
 #include "files.h"
 #include "food.h"
+#include "god-abil.h"
 #include "god-companions.h"
 #include "hints.h"
 #include "invent.h"
@@ -21,6 +24,7 @@
 #include "ng-init.h"
 #include "ng-wanderer.h"
 #include "options.h"
+#include "pledge.h"
 #include "prompt.h"
 #include "religion.h"
 #if TAG_MAJOR_VERSION == 34
@@ -30,6 +34,7 @@
 #include "spl-book.h"
 #include "spl-util.h"
 #include "state.h"
+#include "tiledef-player.h"
 
 #define MIN_START_STAT       3
 
@@ -216,7 +221,7 @@ static void _give_ammo(weapon_type weapon, int plus)
         if (species_can_throw_large_rocks(you.species))
             newgame_make_item(OBJ_MISSILES, MI_LARGE_ROCK, 4 + plus);
         else if (you.body_size(PSIZE_TORSO) <= SIZE_SMALL)
-            newgame_make_item(OBJ_MISSILES, MI_TOMAHAWK, 8 + 2 * plus);
+            newgame_make_item(OBJ_MISSILES, MI_BOOMERANG, 8 + 2 * plus);
         else
             newgame_make_item(OBJ_MISSILES, MI_JAVELIN, 5 + plus);
         newgame_make_item(OBJ_MISSILES, MI_THROWING_NET, 2);
@@ -235,13 +240,107 @@ static void _give_ammo(weapon_type weapon, int plus)
     }
 }
 
+static skill_type _setup_archaeologist_crate(item_def& crate)
+{
+    item_def unrand;
+    int type;
+    const vector<int> unrands = archaeologist_unrands();
+    
+    do {
+        unrand = item_def();
+        type = unrands[random2(unrands.size())];
+        if (!make_item_unrandart(unrand, type))
+            continue;
+    } 
+    while ((!you.could_wield(unrand) && !can_wear_armour(unrand, false, true)));
+    
+    dprf("Initializing archaeologist crate with %s", 
+         unrand.name(DESC_A).c_str());
+        
+    crate.props[ARCHAEOLOGIST_CRATE_ITEM] = type;
+    
+    // Handle items unlocked through interesting skills.
+    // Jewellery only happens on felids.
+    switch (type)
+    {
+    case UNRAND_PONDERING:
+    case UNRAND_MAJIN:
+    case UNRAND_WUCAD_MU:
+    case UNRAND_ETHERIC_CAGE:
+        return SK_SPELLCASTING;
+    case UNRAND_DRAGONMASK:
+    case UNRAND_WAR:
+    case UNRAND_BEAR_SPIRIT:
+    case UNRAND_BLOODLUST:
+    case UNRAND_ROBUSTNESS:
+    case UNRAND_SHIELDING:
+    case UNRAND_VITALITY:
+        return SK_FIGHTING;
+    case UNRAND_PHASING:
+    case UNRAND_FENCERS:
+        return SK_DODGING;
+    case UNRAND_THIEF:
+    case UNRAND_BOOTS_ASSASSIN:
+    case UNRAND_NIGHT:
+    case UNRAND_SHADOWS:
+        return SK_STEALTH;
+    case UNRAND_ELEMENTAL_STAFF:
+    case UNRAND_OLGREB:
+        return SK_EVOCATIONS;
+    default:
+        break;
+    }
+
+    if (unrand.base_type == OBJ_JEWELLERY)
+        return SK_SPELLCASTING;
+    else if (unrand.base_type == OBJ_WEAPONS)
+        return item_attack_skill(unrand);
+    else if (is_shield(unrand))
+        return SK_SHIELDS;
+    else if (unrand.sub_type == ARM_ROBE || unrand.sub_type == ARM_ANIMAL_SKIN)
+        return coinflip() ? SK_SPELLCASTING : SK_DODGING;
+    else
+        return SK_ARMOUR;
+}
+
+static void _setup_archaeologist()
+{
+    for (uint8_t i = 0; i < ENDOFPACK; i++)
+        if (you.inv[i].defined())
+        {
+            if (you.inv[i].is_type(OBJ_ARMOUR, ARM_ROBE))
+                you.inv[i].props["worn_tile"] = (short)TILEP_BODY_SLIT_BLACK;
+            if (you.inv[i].is_type(OBJ_ARMOUR, ARM_GLOVES))
+                you.inv[i].props["worn_tile"] = (short)TILEP_ARM_GLOVE_BROWN;
+            if (you.inv[i].is_type(OBJ_ARMOUR, ARM_BOOTS))
+                you.inv[i].props["worn_tile"] = (short)TILEP_BOOTS_MESH_BLACK;
+            if (you.inv[i].is_type(OBJ_ARMOUR, ARM_HAT))
+                you.inv[i].props["worn_tile"] = (short)TILEP_HELM_HAT_BLACK;
+        }
+    skill_type manual_skill = SK_NONE;
+    for (uint8_t i = 0; i < ENDOFPACK; i++)
+        if (you.inv[i].defined() 
+            && you.inv[i].is_type(OBJ_MISCELLANY, MISC_ANCIENT_CRATE))
+        
+            manual_skill = _setup_archaeologist_crate(you.inv[i]);
+            
+    for (uint8_t i = 0; i < ENDOFPACK; i++)
+        if (you.inv[i].defined() 
+            && you.inv[i].is_type(OBJ_MISCELLANY, MISC_DUSTY_TOME))
+        
+            you.inv[i].props[ARCHAEOLOGIST_TOME_SKILL] = manual_skill;
+}
+
 static void _give_items_skills(const newgame_def& ng)
 {
     switch (you.char_class)
     {
     case JOB_BERSERKER:
-        you.religion = GOD_TROG;
-        you.piety = 35;
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
+            you.religion = GOD_TROG;
+            you.piety = 35;
+        }
 
         if (you_can_wear(EQ_BODY_ARMOUR))
             you.skills[SK_ARMOUR] += 2;
@@ -254,8 +353,11 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_CHAOS_KNIGHT:
-        you.religion = GOD_XOM;
-        you.piety = 100;
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
+            you.religion = GOD_XOM;
+            you.piety = 100;
+        }
         you.gift_timeout = max(5, random2(40) + random2(40));
 
         if (species_apt(SK_ARMOUR) < species_apt(SK_DODGING))
@@ -265,10 +367,13 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_ABYSSAL_KNIGHT:
-        you.religion = GOD_LUGONU;
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
+            you.religion = GOD_LUGONU;
+            you.piety = 38;
+        }
         if (!crawl_state.game_is_sprint())
             you.chapter = CHAPTER_POCKET_ABYSS;
-        you.piety = 38;
 
         if (species_apt(SK_ARMOUR) < species_apt(SK_DODGING))
             you.skills[SK_DODGING]++;
@@ -277,8 +382,11 @@ static void _give_items_skills(const newgame_def& ng)
         break;
 
     case JOB_DEATH_KNIGHT:
-        you.religion = GOD_YREDELEMNUL;
-        you.piety = 35;
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
+            you.religion = GOD_YREDELEMNUL;
+            you.piety = 35;
+        }
 
         if (species_apt(SK_ARMOUR) < species_apt(SK_DODGING))
             you.skills[SK_DODGING]++;
@@ -286,9 +394,38 @@ static void _give_items_skills(const newgame_def& ng)
             you.skills[SK_ARMOUR]++;
         break;
 
+    case JOB_SLIME_APOSTLE:
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
+            you.religion = GOD_JIYVA;
+            you.piety = 40;
+        }
+        break;
+
     case JOB_PRIEST:
-        you.religion = GOD_ZIN;
-        you.piety = 45;
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
+            you.religion = GOD_ZIN;
+            you.piety = 45;
+        }
+        break;
+    
+    case JOB_HEALER:
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
+            you.religion = GOD_ELYVILON;
+            you.piety = 55;
+        }
+        break;
+
+    case JOB_JESTER:
+        if (you.pledge != PLEDGE_BRUTE_FORCE && you.pledge != PLEDGE_SPITEFUL)
+        {
+            you.religion = GOD_NEMELEX_XOBEH;
+            you.piety = 25;
+        }
+        // Pledges still get Xom penance for picking Jester
+        you.penance[GOD_XOM] = 50;
         break;
 
     case JOB_WANDERER:
@@ -297,6 +434,31 @@ static void _give_items_skills(const newgame_def& ng)
 
     default:
         break;
+    }
+    
+    // Chaos pledge is same as a Chaos Knight start on the religion side
+    // override afterwards to make it easier
+    if (you.pledge == PLEDGE_CHAOS)
+    {
+        you.religion = GOD_XOM;
+        you.piety = 100;
+        you.gift_timeout = max(5, random2(40) + random2(40));
+    }
+    if (you.pledge == PLEDGE_SPITEFUL)
+    {
+        // join_religion breaks WebTiles, so just copying wholesale
+        // from bloatcrawl 2 for proper Ru setup
+        you.religion = GOD_RU;
+        you.piety = 10;
+        you.piety_hysteresis = 0;
+        you.gift_timeout = 0;
+        you.props[RU_SACRIFICE_PROGRESS_KEY] = 9999;
+        {
+            int delay = 50;
+            you.props[RU_SACRIFICE_DELAY_KEY] = delay;
+        }
+        you.props[RU_SACRIFICE_PENALTY_KEY] = 0;
+        join_ru();
     }
 
     if (you.char_class == JOB_ABYSSAL_KNIGHT)
@@ -320,12 +482,23 @@ static void _give_items_skills(const newgame_def& ng)
         you.skills[SK_SHIELDS] = 0;
     }
 
+    if (you.species == SP_FAERIE_DRAGON)
+    {
+        you.attribute[ATTR_PERM_FLIGHT] = true;
+        float_player();
+    }
+
     if (!you_worship(GOD_NO_GOD))
     {
         you.worshipped[you.religion] = 1;
         set_god_ability_slots();
         if (!you_worship(GOD_XOM))
             you.piety_max[you.religion] = you.piety;
+    }
+    
+    if (you.char_class == JOB_ARCHAEOLOGIST)
+    {
+        _setup_archaeologist();
     }
 }
 
@@ -361,7 +534,7 @@ static void _setup_tutorial_miscs()
     you.gold = 0;
 
     // Give them some mana to play around with.
-    you.mp_max_adj += 2;
+    you.mp_max_adj_perm += 2;
 
     newgame_make_item(OBJ_ARMOUR, ARM_ROBE, 1, 0, 0, true);
 
@@ -376,10 +549,6 @@ static void _setup_tutorial_miscs()
 static void _give_basic_knowledge()
 {
     identify_inventory();
-
-    for (const item_def& i : you.inv)
-        if (i.base_type == OBJ_BOOKS)
-            mark_had_book(i);
 
     // Recognisable by appearance.
     you.type_ids[OBJ_POTIONS][POT_BLOOD] = true;
@@ -477,9 +646,14 @@ static void _setup_generic(const newgame_def& ng)
     you.props[REMOVED_DEAD_SHOPS_KEY] = true;
 #endif
 
+    // Needs to happen before we give the player items, so that it's safe to
+    // check whether those items need to be removed from their shopping list.
+    shopping_list.refresh();
+
     you.your_name  = ng.name;
     you.species    = ng.species;
     you.char_class = ng.job;
+    you.pledge     = ng.pledge;
 
     you.chr_class_name = get_job_name(you.char_class);
 
@@ -520,6 +694,9 @@ static void _setup_generic(const newgame_def& ng)
 
     _give_basic_knowledge();
 
+    // Must be after _give_basic_knowledge
+    add_held_books_to_library();
+
     initialise_item_descriptions();
 
     // A first pass to link the items properly.
@@ -556,6 +733,11 @@ static void _setup_generic(const newgame_def& ng)
     request_autoinscribe();
     autoinscribe();
 
+    // Don't adjust for permabuffs at game start
+    // (why is this happening???????)
+    you.mp_max_adj_temp_base = 0;
+    you.mp_max_adj_temp = 0;
+    
     // We calculate hp and mp here; all relevant factors should be
     // finalised by now. (GDL)
     calc_hp();

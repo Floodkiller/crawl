@@ -28,17 +28,6 @@
 #define NO_CUSTOM_ALLOCATOR
 #endif
 
-#define CL_RESETSTACK_RETURN(ls, oldtop, retval) \
-    do \
-    {\
-        if (oldtop != lua_gettop(ls)) \
-        { \
-            lua_settop(ls, oldtop); \
-        } \
-        return retval; \
-    } \
-    while (false)
-
 static int  _clua_panic(lua_State *);
 static void _clua_throttle_hook(lua_State *, lua_Debug *);
 #ifndef NO_CUSTOM_ALLOCATOR
@@ -315,6 +304,9 @@ int CLua::loadfile(lua_State *ls, const char *filename, bool trusted,
     while (!f.eof())
         script += f.get_line() + "\n";
 
+    if (script[0] == 0x1b)
+        abort();
+
     // prefixing with @ stops lua from adding [string "%s"]
     return luaL_loadbuffer(ls, &script[0], script.length(),
                            ("@" + file).c_str());
@@ -326,18 +318,18 @@ int CLua::execfile(const char *filename, bool trusted, bool die_on_fail,
     if (!force && sourced_files.count(filename))
         return 0;
 
-    sourced_files.insert(filename);
-
     lua_State *ls = state();
     int err = loadfile(ls, filename, trusted || !managed_vm, die_on_fail);
     lua_call_throttle strangler(this);
     if (!err)
         err = lua_pcall(ls, 0, 0, 0);
+    if (!err)
+        sourced_files.insert(filename);
     set_error(err);
     if (die_on_fail && !error.empty())
     {
         end(1, false, "Lua execfile error (%s): %s",
-            filename, dlua.error.c_str());
+            filename, error.c_str());
     }
     return err;
 }
@@ -350,17 +342,15 @@ bool CLua::runhook(const char *hook, const char *params, ...)
     if (!ls)
         return false;
 
-    // Remember top of stack, for debugging porpoises
-    int stack_top = lua_gettop(ls);
+    lua_stack_cleaner clean(ls);
+
     pushglobal(hook);
     if (!lua_istable(ls, -1))
-    {
-        lua_pop(ls, 1);
-        CL_RESETSTACK_RETURN(ls, stack_top, false);
-    }
+        return false;
     for (int i = 1; ; ++i)
     {
-        int currtop = lua_gettop(ls);
+        lua_stack_cleaner clean2(ls);
+
         lua_rawgeti(ls, -1, i);
         if (!lua_isfunction(ls, -1))
         {
@@ -373,10 +363,8 @@ bool CLua::runhook(const char *hook, const char *params, ...)
         va_start(args, params);
         calltopfn(ls, params, args);
         va_end(args);
-
-        lua_settop(ls, currtop);
     }
-    CL_RESETSTACK_RETURN(ls, stack_top, true);
+    return true;
 }
 
 void CLua::fnreturns(const char *format, ...)
@@ -416,7 +404,7 @@ void CLua::vfnreturns(const char *format, va_list args)
             break;
         case 'd':
             if (lua_isnumber(ls, sp))
-                *(va_arg(args, int*)) = luaL_checkint(ls, sp);
+                *(va_arg(args, int*)) = luaL_safe_checkint(ls, sp);
             break;
         case 'b':
             *(va_arg(args, bool *)) = lua_toboolean(ls, sp);
@@ -558,21 +546,17 @@ maybe_bool CLua::callmbooleanfn(const char *fn, const char *params,
     if (!ls)
         return MB_MAYBE;
 
-    int stacktop = lua_gettop(ls);
+    lua_stack_cleaner clean(ls);
 
     pushglobal(fn);
     if (!lua_isfunction(ls, -1))
-    {
-        lua_pop(ls, 1);
-        CL_RESETSTACK_RETURN(ls, stacktop, MB_MAYBE);
-    }
+        return MB_MAYBE;
 
     bool ret = calltopfn(ls, params, args, 1);
     if (!ret)
-        CL_RESETSTACK_RETURN(ls, stacktop, MB_MAYBE);
+        return MB_MAYBE;
 
-    maybe_bool r = frombool(lua_toboolean(ls, -1));
-    CL_RESETSTACK_RETURN(ls, stacktop, r);
+    return frombool(lua_toboolean(ls, -1));
 }
 
 maybe_bool CLua::callmbooleanfn(const char *fn, const char *params, ...)
@@ -591,22 +575,17 @@ maybe_bool CLua::callmaybefn(const char *fn, const char *params, va_list args)
     if (!ls)
         return MB_MAYBE;
 
-    int stacktop = lua_gettop(ls);
+    lua_stack_cleaner clean(ls);
 
     pushglobal(fn);
     if (!lua_isfunction(ls, -1))
-    {
-        lua_pop(ls, 1);
-        CL_RESETSTACK_RETURN(ls, stacktop, MB_MAYBE);
-    }
+        return MB_MAYBE;
 
     bool ret = calltopfn(ls, params, args, 1);
     if (!ret)
-        CL_RESETSTACK_RETURN(ls, stacktop, MB_MAYBE);
+        return MB_MAYBE;
 
-    maybe_bool r = lua_isboolean(ls, -1) ? frombool(lua_toboolean(ls, -1))
-                                         : MB_MAYBE;
-    CL_RESETSTACK_RETURN(ls, stacktop, r);
+    return lua_isboolean(ls, -1) ? frombool(lua_toboolean(ls, -1)) : MB_MAYBE;
 }
 
 maybe_bool CLua::callmaybefn(const char *fn, const char *params, ...)
@@ -753,10 +732,73 @@ void CLua::init_lua()
 
     lua_atpanic(_state, _clua_panic);
 
-    luaopen_base(_state);
-    luaopen_string(_state);
-    luaopen_table(_state);
-    luaopen_math(_state);
+#ifdef CLUA_UNRESTRICTED_LIBS
+    // open all libs -- this is not safe for public servers or releases!
+    // Intended for people writing bots and the like.
+    luaL_openlibs(_state);
+#else
+    // Selectively load some, but not all Lua core libraries.
+    //
+    // In Lua 5.1, these library setup calls are not supposed to be called
+    // directly from C. If the lua version changes, this may need to be changed:
+    // recommended practice is (apparently) checking the lua version's linit.cc
+    // and seeing how that does the full library setup.
+    //
+    // This doesn't seem to *obviously* impact the libraries we use by default,
+    // but some of the libraries we don't use will panic if not called
+    // correctly; since someone writing a bot (for example) might want to
+    // expand this, do things "correctly". The core lua libraries in 5.1 we are
+    // not loading are:
+    //
+    // {LUA_LOADLIBNAME, luaopen_package},    // (require etc)
+    // {LUA_IOLIBNAME, luaopen_io},           // 
+    // {LUA_OSLIBNAME, luaopen_os},
+    // {LUA_DBLIBNAME, luaopen_debug},
+    const vector<pair<string, lua_CFunction>> lua_core_libs =
+    {
+        {"", luaopen_base}, // XX: why no name? but this is how linit.cc does it
+        {LUA_TABLIBNAME, luaopen_table},
+        {LUA_STRLIBNAME, luaopen_string},
+        {LUA_MATHLIBNAME, luaopen_math},
+    };
+
+    for (auto l : lua_core_libs)
+    {
+        lua_pushcfunction(_state, l.second);
+        lua_pushstring(_state, l.first.c_str());
+        lua_call(_state, 1, 0);
+    }
+#endif
+
+    lua_pushboolean(_state, managed_vm);
+    setregistry("lua_vm_is_managed");
+
+    lua_pushlightuserdata(_state, this);
+    setregistry("__clua");
+}
+
+static int lua_loadstring(lua_State *ls)
+{
+    const auto lua = luaL_checkstring(ls, 1);
+    if (lua[0] == 0x1b)
+        abort();
+    lua_settop(ls, 0);
+    if (luaL_loadstring(ls, lua))
+    {
+        lua_pushnil(ls);
+        lua_insert(ls, 1);
+    }
+    return lua_gettop(ls);
+}
+
+void CLua::init_libraries()
+{
+    lua_stack_cleaner clean(state());
+
+    lua_pushcfunction(_state, lua_loadstring);
+    lua_setglobal(_state, "loadstring");
+    lua_pushnil(_state);
+    lua_setglobal(_state, "load");
 
     // Open Crawl bindings
     cluaopen_kills(_state);
@@ -773,13 +815,15 @@ void CLua::init_lua()
 
     cluaopen_globals(_state);
 
-    load_cmacro();
-    load_chooks();
+    execfile("dlua/macro.lua", true, true);
+
+    // All hook names must be chk_????
+    execstring("chk_startgame = { }", "base");
 
     lua_register(_state, "loadfile", _clua_loadfile);
     lua_register(_state, "dofile", _clua_dofile);
 
-    lua_register(_state, "require", _clua_require);
+    lua_register(_state, "crawl_require", _clua_require);
 
     execfile("dlua/util.lua", true, true);
     execfile("dlua/iter.lua", true, true);
@@ -792,12 +836,6 @@ void CLua::init_lua()
         execfile("dlua/userbase.lua", true, true);
         execfile("dlua/persist.lua", true, true);
     }
-
-    lua_pushboolean(_state, managed_vm);
-    setregistry("lua_vm_is_managed");
-
-    lua_pushlightuserdata(_state, this);
-    setregistry("__clua");
 }
 
 CLua &CLua::get_vm(lua_State *ls)
@@ -816,20 +854,6 @@ bool CLua::is_managed_vm(lua_State *ls)
     lua_pushstring(ls, "lua_vm_is_managed");
     lua_gettable(ls, LUA_REGISTRYINDEX);
     return lua_toboolean(ls, -1);
-}
-
-void CLua::load_chooks()
-{
-    // All hook names must be chk_????
-    static const char *c_hooks =
-        "chk_startgame = { }"
-        ;
-    execstring(c_hooks, "base");
-}
-
-void CLua::load_cmacro()
-{
-    execfile("dlua/macro.lua", true, true);
 }
 
 void CLua::add_shutdown_listener(lua_shutdown_listener *listener)
@@ -872,7 +896,7 @@ void CLua::print_stack()
     fprintf(stderr, "\n");
 }
 
-////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////
 // lua_text_pattern
 
 // We could simplify this a great deal by just using lex and yacc, but I
@@ -1040,7 +1064,7 @@ bool lua_text_pattern::translate() const
     return translated;
 }
 
-//////////////////////////////////////////////////////////////////////////
+// ////////////////////////////////////////////////////////////////////////
 
 lua_call_throttle::lua_clua_map lua_call_throttle::lua_map;
 
@@ -1174,6 +1198,20 @@ static int _clua_guarded_pcall(lua_State *ls)
     return lua_gettop(ls);
 }
 
+// Document clua globals here, as they're bound by the interpreter object
+
+/*** Pre-defined globals.
+ *
+ * *Note:* this is not a real module. All names described here are defined in
+ * the global clua namespace.
+ * @module Globals
+ */
+
+/*** Load the named lua file as a chunk.
+ * @tparam string filename
+ * @return function chunk or nil,error
+ * @function loadfile
+ */
 static int _clua_loadfile(lua_State *ls)
 {
     const char *file = luaL_checkstring(ls, 1);
@@ -1191,6 +1229,13 @@ static int _clua_loadfile(lua_State *ls)
     return 1;
 }
 
+/*** Load and execute the named lua file.
+ * Differs from @{dofile} in that the file is run for its side effects.
+ * If the execution has an error we raise that error and exit.
+ * @tparam string filename
+ * @treturn boolean|nil
+ * @function require
+ */
 static int _clua_require(lua_State *ls)
 {
     const char *file = luaL_checkstring(ls, 1);
@@ -1205,6 +1250,13 @@ static int _clua_require(lua_State *ls)
     return 1;
 }
 
+/*** Load and execute the named luafile, returning the result.
+ * Differs from @{require} in that the file is run for a result. Errors
+ * come back on the lua stack and can be handled by the caller.
+ * @tparam string filename
+ * @return whatever is left on the lua stack by filename
+ * @function dofile
+ */
 static int _clua_dofile(lua_State *ls)
 {
     const char *file = luaL_checkstring(ls, 1);
@@ -1229,7 +1281,7 @@ static string _get_persist_file()
     return Options.filename + ".persist";
 }
 
-/////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////
 
 lua_shutdown_listener::~lua_shutdown_listener()
 {

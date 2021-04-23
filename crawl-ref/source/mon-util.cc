@@ -2173,9 +2173,9 @@ bool mons_flattens_trees(const monster& mon)
     return mons_base_type(mon) == MONS_LERNAEAN_HYDRA;
 }
 
-bool mons_class_res_wind(monster_type mc)
+bool mons_class_res_tornado(monster_type mc)
 {
-    return get_resist(get_mons_class_resists(mc), MR_RES_WIND);
+    return get_resist(get_mons_class_resists(mc), MR_RES_TORNADO);
 }
 
 /**
@@ -2412,7 +2412,6 @@ int exper_value(const monster& mon, bool real)
             case SPELL_AGONY:
             case SPELL_LRD:
             case SPELL_DIG:
-            case SPELL_CHAIN_OF_CHAOS:
             case SPELL_FAKE_MARA_SUMMON:
                 diff += 10;
                 break;
@@ -3253,7 +3252,7 @@ mon_energy_usage mons_class_energy(monster_type mc)
 mon_energy_usage mons_energy(const monster& mon)
 {
     mon_energy_usage meu = mons_class_energy(mons_base_type(mon));
-    if (mon.ghost.get())
+    if (mon.ghost)
         meu.move = meu.swim = mon.ghost->move_energy;
     return meu;
 }
@@ -3274,7 +3273,7 @@ int mons_class_zombie_base_speed(monster_type zombie_base_mc)
  */
 int mons_base_speed(const monster& mon, bool known)
 {
-    if (mon.ghost.get())
+    if (mon.ghost)
         return mon.ghost->speed;
 
     if (mon.props.exists(MON_SPEED_KEY)
@@ -3850,7 +3849,7 @@ bool mons_has_incapacitating_ranged_attack(const monster& mon, const actor& foe)
 
     if (missile && missile->sub_type == MI_THROWING_NET)
         return true;
-    else if (missile && missile->sub_type == MI_NEEDLE)
+    else if (missile && missile->sub_type == MI_DART)
     {
         switch (get_ammo_brand(*missile))
         {
@@ -3861,13 +3860,11 @@ bool mons_has_incapacitating_ranged_attack(const monster& mon, const actor& foe)
                 return true;
             break;
 
-        case SPMSL_SLEEP:
-            if (foe.can_sleep())
-                return true;
-            break;
-
+        case SPMSL_BLINDING:
+#if TAG_MAJOR_VERSION == 34
         case SPMSL_CONFUSION:
         case SPMSL_PARALYSIS:
+#endif
             return true;
 
         default:
@@ -3970,6 +3967,7 @@ static const spell_type smitey_spells[] = {
     SPELL_OZOCUBUS_REFRIGERATION,
     SPELL_MASS_CONFUSION,
     SPELL_ENTROPIC_WEAVE,
+    SPELL_INNER_FLAME,
 };
 
 /**
@@ -5490,14 +5488,6 @@ bool mons_is_notable(const monster& mons)
     return false;
 }
 
-bool god_hates_beast_facet(god_type god, beast_facet facet)
-{
-    ASSERT_RANGE(facet, BF_FIRST, BF_LAST+1);
-
-    // Only one so far.
-    return god == GOD_DITHMENOS && facet == BF_FIRE;
-}
-
 /**
  * Set up fields for mutant beasts that vary by tier & facets (that is, that
  * vary between individual beasts).
@@ -5506,11 +5496,8 @@ bool god_hates_beast_facet(god_type god, beast_facet facet)
  * @param HD            The beast's HD. If 0, default to mon-data's version.
  * @param beast_facets  The beast's facets (e.g. fire, bat).
  *                      If empty, chooses two distinct facets at random.
- * @param avoid_facets  A set of facets to avoid when randomly generating
- *                      beasts. Irrelevant if beast_facets is non-empty.
  */
-void init_mutant_beast(monster &mons, short HD, vector<int> beast_facets,
-                       set<int> avoid_facets)
+void init_mutant_beast(monster &mons, short HD, vector<int> beast_facets)
 {
     if (!HD)
         HD = mons.get_experience_level();
@@ -5522,8 +5509,7 @@ void init_mutant_beast(monster &mons, short HD, vector<int> beast_facets,
     {
         vector<int> available_facets;
         for (int f = BF_FIRST; f <= BF_LAST; ++f)
-            if (avoid_facets.count(f) == 0)
-                available_facets.insert(available_facets.end(), f);
+            available_facets.insert(available_facets.end(), f);
 
         ASSERT(available_facets.size() >= 2);
 
@@ -5734,7 +5720,8 @@ static bool _apply_to_monsters(monster_func f, radius_iterator&& ri)
 bool apply_monsters_around_square(monster_func f, const coord_def& where,
                                   int radius)
 {
-    return _apply_to_monsters(f, radius_iterator(where, radius, C_SQUARE, true));
+    return _apply_to_monsters(f, radius_iterator(where, radius, C_SQUARE,
+                                                 LOS_NO_TRANS, true));
 }
 
 bool apply_visible_monsters(monster_func f, const coord_def& where, los_type los)

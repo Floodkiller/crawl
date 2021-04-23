@@ -35,6 +35,7 @@
 #include "mon-place.h"
 #include "mon-project.h"
 #include "mutation.h"
+#include "nearby-danger.h"
 #include "player.h"
 #include "player-stats.h"
 #include "random.h"
@@ -80,9 +81,7 @@ static void _random_hell_miscast()
     const spschool_flag_type which_miscast
         = random_choose_weighted(8, SPTYP_NECROMANCY,
                                  4, SPTYP_SUMMONING,
-                                 2, SPTYP_CONJURATION,
-                                 1, SPTYP_CHARMS,
-                                 1, SPTYP_HEXES);
+                                 4, SPTYP_CONJURATION);
 
     MiscastEffect(&you, nullptr, HELL_EFFECT_MISCAST, which_miscast,
                   4 + random2(6), random2avg(97, 3),
@@ -133,26 +132,26 @@ static map<branch_type, hell_effect_spec> hell_effects_by_branch =
  *
  * 40% chance of fiend, 60% chance of miscast.
  */
-static void _themed_hell_summon_or_miscast()
+static void _themed_hell_summon_or_miscast(bool mons_in_sight)
 {
     const hell_effect_spec *spec = map_find(hell_effects_by_branch,
                                             you.where_are_you);
     if (!spec)
         die("Attempting to call down a hell effect in a non-hellish branch.");
 
-    if (x_chance_in_y(2, 5))
+    if (x_chance_in_y(3, 5) && mons_in_sight)
+    {
+        MiscastEffect(&you, nullptr, HELL_EFFECT_MISCAST, spec->miscast_type,
+                      4 + random2(6), random2avg(97, 3),
+                      "the effects of Hell");
+    }
+    else
     {
         const monster_type fiend
             = spec->fiend_types[random2(spec->fiend_types.size())];
         create_monster(
                        mgen_data::hostile_at(fiend, true, you.pos())
                        .set_non_actor_summoner("the effects of Hell"));
-    }
-    else
-    {
-        MiscastEffect(&you, nullptr, HELL_EFFECT_MISCAST, spec->miscast_type,
-                      4 + random2(6), random2avg(97, 3),
-                      "the effects of Hell");
     }
 }
 
@@ -197,6 +196,14 @@ static void _hell_effects(int /*time_delta*/)
     if (!player_in_hell())
         return;
 
+    // Don't trigger Hell effects when the Hell lord is dead
+    // TODO: Better method than props?
+    if (you.props["dispater_dead"] && you.where_are_you == BRANCH_DIS
+        || you.props["asmodeus_dead"] && you.where_are_you == BRANCH_GEHENNA
+        || you.props["antaeus_dead"] && you.where_are_you == BRANCH_COCYTUS
+        || you.props["ereshkigal_dead"] && you.where_are_you == BRANCH_TARTARUS)
+        return;
+
     // 50% chance at max piety
     if (have_passive(passive_t::resist_hell_effects)
         && x_chance_in_y(you.piety, MAX_PIETY * 2) || is_sanctuary(you.pos()))
@@ -206,11 +213,13 @@ static void _hell_effects(int /*time_delta*/)
     }
 
     _hell_effect_noise();
+    // Don't roll on the miscast table if there is no monster in view (too boring)
+    bool mons_in_sight = !i_feel_safe(false, false, true);
 
-    if (one_chance_in(3))
+    if (one_chance_in(3) && mons_in_sight)
         _random_hell_miscast();
     else if (x_chance_in_y(5, 9))
-        _themed_hell_summon_or_miscast();
+        _themed_hell_summon_or_miscast(mons_in_sight);
 
     if (one_chance_in(3))   // NB: No "else"
         _minor_hell_summons();
@@ -714,18 +723,22 @@ static void _handle_magic_contamination()
     // every turn instead of every 20 turns, so everything has been multiplied
     // by 50 and scaled to you.time_taken.
 
-    //Increase contamination each turn while invisible
     if (you.duration[DUR_INVIS])
         added_contamination += INVIS_CONTAM_PER_TURN;
-    //If not invisible, normal dissipation
-    else
-        added_contamination -= 25;
+    if (you.duration[DUR_HASTE])
+        added_contamination += INVIS_CONTAM_PER_TURN;
+    if (you.duration[DUR_REGENERATION] && you.species == SP_DJINNI)
+        added_contamination += 20;
 
     // The Orb halves dissipation (well a bit more, I had to round it),
     // but won't cause glow on its own -- otherwise it'd spam the player
     // with messages about contamination oscillating near zero.
     if (you.magic_contamination && player_has_orb())
         added_contamination += 13;
+
+    // Normal dissipation
+    if (!you.duration[DUR_INVIS] && !you.duration[DUR_HASTE])
+        added_contamination -= 25;
 
     // Scaling to turn length
     added_contamination = div_rand_round(added_contamination * you.time_taken,
@@ -763,7 +776,9 @@ static void _magic_contamination_effects()
         beam.explode();
     }
 
-    const mutation_permanence_class mutclass = MUTCLASS_NORMAL;
+    const mutation_permanence_class mutclass = you.species == SP_DJINNI
+        ? MUTCLASS_TEMPORARY
+        : MUTCLASS_NORMAL;
 
     // We want to warp the player, not do good stuff!
     mutate(one_chance_in(5) ? RANDOM_MUTATION : RANDOM_BAD_MUTATION,
@@ -868,11 +883,9 @@ static void _jiyva_effects(int /*time_delta*/)
         }
     }
 
-    // Gnolls can't shift stats
     if (have_passive(passive_t::fluid_stats)
         && x_chance_in_y(you.piety / 4, MAX_PIETY)
-        && !player_under_penance() && one_chance_in(4)
-        && you.species != SP_GNOLL)
+        && !player_under_penance() && one_chance_in(4))
     {
         jiyva_stat_action();
     }
@@ -1758,7 +1771,8 @@ void run_environment_effects()
         }
     }
 
-    run_corruption_effects(you.time_taken);
+    run_corruption_effects(you.time_taken, false);
+    run_corruption_effects(you.time_taken, true);
     shoals_apply_tides(div_rand_round(you.time_taken, BASELINE_DELAY),
                        false, true);
     timeout_tombs(you.time_taken);

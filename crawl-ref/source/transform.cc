@@ -33,6 +33,7 @@
 #include "prompt.h"
 #include "religion.h"
 #include "spl-cast.h"
+#include "spl-selfench.h"
 #include "state.h"
 #include "stringutil.h"
 #include "terrain.h"
@@ -74,6 +75,71 @@ static const FormAttackVerbs ANIMAL_VERBS = FormAttackVerbs("hit", "bite",
 static const FormDuration DEFAULT_DURATION = FormDuration(20, PS_DOUBLE, 100);
 static const FormDuration BAD_DURATION = FormDuration(15, PS_ONE_AND_A_HALF,
                                                       100);
+
+// Permabuffs go here
+static const transformation _all_permatrans[] =
+{
+    transformation::appendage,            transformation::dragon,
+    transformation::spider,               transformation::hydra,
+    transformation::ice_beast,            transformation::blade_hands,
+    transformation::statue,               transformation::lich,
+};
+
+static bool _is_permatrans(transformation trans)
+{
+    return any_of(begin(_all_permatrans), end(_all_permatrans), 
+                  [=](const transformation &i){return i == trans;});
+}
+
+static int _form_reserve_amount(transformation which_trans)
+{
+    switch(which_trans)
+    {
+        case transformation::appendage:
+            return 1;
+        case transformation::spider:
+            return 3;
+        case transformation::ice_beast:
+            return 4;
+        case transformation::statue:
+            return 6;
+        case transformation::lich:
+            return 8;
+        case transformation::blade_hands:
+            return 5;
+        case transformation::dragon:
+            return 7;
+        case transformation::hydra:
+            return 6;
+        default:
+            return 0; // Went here by mistake, don't make MP changes
+    }
+}
+
+static spell_type _form_to_spell(transformation which_trans)
+{
+    switch(which_trans)
+    {
+        case transformation::appendage:
+            return SPELL_BEASTLY_APPENDAGE;
+        case transformation::spider:
+            return SPELL_SPIDER_FORM;
+        case transformation::ice_beast:
+            return SPELL_ICE_FORM;
+        case transformation::statue:
+            return SPELL_STATUE_FORM;
+        case transformation::lich:
+            return SPELL_NECROMUTATION;
+        case transformation::blade_hands:
+            return SPELL_BLADE_HANDS;
+        case transformation::dragon:
+            return SPELL_DRAGON_FORM;
+        case transformation::hydra:
+            return SPELL_HYDRA_FORM;
+        default:
+            return SPELL_NO_SPELL; // Went here by mistake, fail out
+    }
+}
 
 // Class form_entry and the formdata array
 #include "form-data.h"
@@ -579,9 +645,20 @@ public:
     string get_untransform_message() const override
     {
         // This only handles lava orcs going statue -> stoneskin.
-        if (you.species == SP_GARGOYLE)
+        // This also isn't actually used because Stoneskin doesn't exist,
+        // but I'll leave it here anyway in case it does get re-added.
+        if (you.species == SP_LAVA_ORC && temperature_effect(LORC_STONESKIN)
+            || you.species == SP_GARGOYLE)
+        {
             return "You revert to a slightly less stony form.";
-        return "You revert to your normal fleshy form.";
+        }
+
+        if (you.species != SP_LAVA_ORC)
+        {
+            return "You revert to your normal fleshy form.";
+        }
+
+        return Form::get_untransform_message();
     }
 
     /**
@@ -612,7 +689,10 @@ public:
      */
     string get_untransform_message() const override
     {
-        return "You warm up again.";
+        if (you.species == SP_LAVA_ORC && !temperature_effect(LORC_STONESKIN))
+            return "Your icy form melts away into molten rock.";
+        else
+            return "You warm up again.";
     }
 
     /**
@@ -1088,6 +1168,16 @@ bool form_likes_water(transformation form)
     return form_can_swim(form);
 }
 
+bool form_likes_lava(transformation form)
+{
+    // Lava orcs can only swim in non-phys-change forms.
+    // However, ice beast & statue form will melt back to lava, so they're OK
+    return you.species == SP_LAVA_ORC
+           && (!form_changed_physiology(form)
+               || form == transformation::ice_beast
+               || form == transformation::statue);
+}
+
 // Used to mark transformations which override species intrinsics.
 bool form_changed_physiology(transformation form)
 {
@@ -1105,11 +1195,6 @@ bool form_changed_physiology(transformation form)
 bool form_can_bleed(transformation form)
 {
     return get_form(form)->can_bleed != FC_FORBID;
-}
-
-bool form_can_use_wand(transformation form)
-{
-    return form_can_wield(form) || form == transformation::dragon;
 }
 
 // Used to mark forms which keep most form-based mutations.
@@ -1303,6 +1388,8 @@ string blade_parts(bool terse)
         str = terse ? "paw" : "front paw";
     else if (you.species == SP_OCTOPODE)
         str = "tentacle";
+    else if (you.species == SP_HERMIT_CRAB)
+        str = "claw";
     else
         str = "hand";
 
@@ -1373,7 +1460,7 @@ bool feat_dangerous_for_form(transformation which_trans,
         return false;
 
     if (feat == DNGN_LAVA)
-        return true;
+        return !form_likes_lava(which_trans);
 
     if (feat == DNGN_DEEP_WATER)
         return !you.can_water_walk() && !form_likes_water(which_trans);
@@ -1433,6 +1520,9 @@ static bool _transformation_is_safe(transformation which_trans,
                                     dungeon_feature_type feat,
                                     string *fail_reason)
 {
+    if (which_trans == transformation::ice_beast && you.species == SP_DJINNI)
+        return false; // melting is fatal...
+
     if (!feat_dangerous_for_form(which_trans, feat))
         return true;
 
@@ -1452,9 +1542,10 @@ static bool _transformation_is_safe(transformation which_trans,
  * May prompt the player.
  *
  * @param new_form  The form to check the safety of.
+ * @param quiet     Whether to prompt the player.
  * @return          Whether it's okay to go ahead with the transformation.
  */
-bool check_form_stat_safety(transformation new_form)
+bool check_form_stat_safety(transformation new_form, bool quiet)
 {
     const int str_mod = get_form(new_form)->str_mod - get_form()->str_mod;
     const int dex_mod = get_form(new_form)->dex_mod - get_form()->dex_mod;
@@ -1463,6 +1554,8 @@ bool check_form_stat_safety(transformation new_form)
     const bool bad_dex = you.dex() > 0 && dex_mod + you.dex() <= 0;
     if (!bad_str && !bad_dex)
         return true;
+    if (quiet)
+        return false;
 
     string prompt = make_stringf("%s will reduce your %s to zero. Continue?",
                                  new_form == transformation::none
@@ -1628,7 +1721,14 @@ bool transform(int pow, transformation which_trans, bool involuntary,
         if (just_check)
             return true;
 
-        // update power
+        // If casting a permabuff again, turn off form through untransform
+        if (you.permabuffs[MUT_TRANSFORMATION] && _is_permatrans(previous_trans) 
+            && !involuntary)
+        {
+            untransform(true);
+            return true;
+        }
+        // If the form is temporary, update power
         if (which_trans != transformation::none)
         {
             you.props[TRANSFORM_POW_KEY] = pow;
@@ -1669,9 +1769,18 @@ bool transform(int pow, transformation which_trans, bool involuntary,
         msg = "You cannot become a lich while in Death's Door.";
         success = false;
     }
+    else if (you.species == SP_LAVA_ORC && !temperature_effect(LORC_STONESKIN)
+             && (which_trans == transformation::ice_beast
+                 || which_trans == transformation::statue))
+    {
+        msg =  "Your temperature is too high to benefit from that spell.";
+        success = false;
+    }
 
     if (!just_check && previous_trans != transformation::none)
+    {
         untransform(true);
+    }
 
     set<equipment_type> rem_stuff = _init_equipment_removal(which_trans);
 
@@ -1728,6 +1837,12 @@ bool transform(int pow, transformation which_trans, bool involuntary,
     if (which_trans == transformation::hydra)
         set_hydra_form_heads(div_rand_round(pow, 10));
 
+    if (!involuntary && _is_permatrans(which_trans))
+    {
+        spell_add_permabuff(_form_to_spell(which_trans), 
+            _form_reserve_amount(which_trans));
+    }
+
     // Give the transformation message.
     mpr(get_form(which_trans)->transform_message(previous_trans));
 
@@ -1761,10 +1876,10 @@ bool transform(int pow, transformation which_trans, bool involuntary,
     switch (which_trans)
     {
     case transformation::statue:
-        if (you.duration[DUR_ICY_ARMOUR])
+        if (you.permabuffs[MUT_OZOCUBUS_ARMOUR])
         {
             mprf(MSGCH_DURATION, "Your new body cracks your icy armour.");
-            you.duration[DUR_ICY_ARMOUR] = 0;
+            spell_remove_permabuff(SPELL_OZOCUBUS_ARMOUR, 3);
         }
         break;
 
@@ -1804,10 +1919,10 @@ bool transform(int pow, transformation which_trans, bool involuntary,
 
     case transformation::lich:
         // undead cannot regenerate -- bwr
-        if (you.duration[DUR_REGENERATION])
+        if (you.permabuffs[MUT_REGEN_SPELL])
         {
-            mprf(MSGCH_DURATION, "You stop regenerating.");
-            you.duration[DUR_REGENERATION] = 0;
+            mpr("You stop regenerating.");
+            spell_remove_permabuff(SPELL_REGENERATION, 3);
         }
 
         you.hunger_state = HS_SATIATED;  // no hunger effects while transformed
@@ -1920,6 +2035,13 @@ void untransform(bool skip_move)
     // We may have to unmeld a couple of equipment types.
     set<equipment_type> melded = _init_equipment_removal(old_form);
 
+    // If spell was a permabuff, unreserve MP based on form
+    // (can't refund transforms if player cancels by cast this way, sorry)
+    if (you.permabuffs[MUT_TRANSFORMATION] && _is_permatrans(old_form))
+    {
+        spell_remove_permabuff(_form_to_spell(old_form), 
+            _form_reserve_amount(old_form));
+    }
     you.form = transformation::none;
     you.duration[DUR_TRANSFORMATION] = 0;
     update_player_symbol();
@@ -1997,10 +2119,11 @@ void untransform(bool skip_move)
     }
 
     // End Ozocubu's Icy Armour if you unmelded wearing heavy armour
-    if (you.duration[DUR_ICY_ARMOUR]
+    // (should get dropped with other permabuffs anyway, but whatever)
+    if (you.permabuffs[MUT_OZOCUBUS_ARMOUR]
         && !player_effectively_in_light_armour())
     {
-        you.duration[DUR_ICY_ARMOUR] = 0;
+        spell_remove_permabuff(SPELL_OZOCUBUS_ARMOUR, 3);
 
         const item_def *armour = you.slot_item(EQ_BODY_ARMOUR, false);
         mprf(MSGCH_DURATION, "%s cracks your icy armour.",

@@ -226,15 +226,15 @@ tutorial2 newlevel
 Remember: You can reread old messages with
 <input>$cmd[CMD_REPLAY_MESSAGES]</input>.
 %%%%
-tutorial2 tomahawks
+tutorial2 boomerangs
 
-Now, for ranged combat! Pick up these tomahawks with
+Now, for ranged combat! Pick up these boomerangs with
 <input>$cmd[CMD_PICKUP]</input> or <input>g</input><localtiles>, or by
 <input>mouseclick</input>,</localtiles> and continue.
 %%%%
 tutorial2 throwing
 
-You can fire your tomahawks at a monster with <input>$cmd[CMD_FIRE]</input>
+You can fire your boomerangs at a monster with <input>$cmd[CMD_FIRE]</input>
 <localtiles> or by <input>clicking</input> on them in the inventory
 panel</localtiles>. To confirm the auto-targeted monster, press
 <input>$cmd[CMD_TARGET_SELECT]</input> or <input>Enter</input>.
@@ -247,7 +247,7 @@ Pick up this shortbow and wield it with <input>$cmd[CMD_WIELD_WEAPON]</input>
 tutorial2 firing
 
 # FIXME: Lengthy because of the hint for choosing target.
-Firing arrows from your wielded shortbow works exactly the same as throwing tomahawks:
+Firing arrows from your wielded shortbow works exactly the same as throwing boomerangs:
 via <input>$cmd[CMD_FIRE]</input><localtiles> or <input>mouseclick</input>
 </localtiles>. You can change the targeted monster by pressing
 <input>$cmd[CMD_TARGET_CYCLE_FORWARD]</input> while in target mode. The worm is
@@ -639,7 +639,7 @@ tutorial4 exit
   You can also learn new spells via the <w>memorisation tab</w>.
   You can cast memorised spells via <input>leftclick</input>, and read their descriptions and check your spell proficiency by <input>mouseover</input> or <input>rightclick</input></localtiles>
 
-  <input>$cmd[CMD_READ]</input>  read a book, for descriptions or to forget a spell
+  <input>$cmd[CMD_READ]</input>  read a book to see spell descriptions
   <input>$cmd[CMD_REST]</input>  rest up to 100 turns to regain magic points and health
   <input>$cmd[CMD_SHOUT]</input>  order allies
   <input>$cmd[CMD_REMOVE_ARMOUR]</input>  take off armour
@@ -685,14 +685,6 @@ tutorial5 piety_on_kill
 
 Some gods really like it if you kill monsters in their name. Let the slaughter
 begin!
-%%%%
-tutorial5 burn_book
-
-Trog will like it if you burn that book (with
-<input>$cmd[CMD_USE_ABILITY]</input><localtiles> or via the <w>command
-panel</w></localtiles>). Sometimes, you might want to wait (with
-<input>$cmd[CMD_WAIT]</input>) for a monster to step on it before doing
-so.
 %%%%
 tutorial5 berserk
 

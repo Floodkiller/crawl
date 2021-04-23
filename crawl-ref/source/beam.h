@@ -62,6 +62,7 @@ struct bolt
     item_def*   item = nullptr;        // item to drop
     coord_def   source = {0,0};           // beam origin
     coord_def   target = {0,0};           // intended target
+    coord_def   explosion_source = {0,0}; // explosion origin
     dice_def    damage = dice_def(0,0);
     int         ench_power = 0, hit = 0;
     killer_type thrower = KILL_MISC;   // what kind of thing threw this?
@@ -180,9 +181,10 @@ public:
     bool visible() const;
 
     bool can_affect_actor(const actor *act) const;
-    bool can_affect_wall(const coord_def& p) const;
+    bool can_affect_wall(const coord_def& p, bool map_knowledge = false) const;
     bool ignores_monster(const monster* mon) const;
-    bool can_knockback(const actor *act = nullptr, int dam = -1) const;
+    bool can_knockback(const actor &act, int dam = -1) const;
+    bool can_pull(const actor &act, int dam = -1) const;
     bool god_cares() const; // Will the god be unforgiving about this beam?
     bool is_harmless(const monster* mon) const;
     bool nasty_to(const monster* mon) const;
@@ -245,6 +247,7 @@ private:
     void affect_wall();
     void digging_wall_effect();
     void burn_wall_effect();
+    void destroy_wall_effect();
     void affect_ground();
     void affect_place_clouds();
     void affect_place_explosion_clouds();
@@ -279,6 +282,7 @@ private:
     void internal_ouch(int dam);
     // for both
     void knockback_actor(actor *act, int dam);
+    void pull_actor(actor *act, int dam);
 
     // tracers
     void tracer_affect_player();

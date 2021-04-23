@@ -38,6 +38,7 @@
 #include "directn.h"
 #include "dungeon.h"
 #include "env.h"
+#include "evoke.h"
 #include "food.h"
 #include "god-passive.h"
 #include "god-prayer.h"
@@ -55,6 +56,7 @@
 #include "makeitem.h"
 #include "message.h"
 #include "mon-ench.h"
+#include "mon-place.h"
 #include "nearby-danger.h"
 #include "notes.h"
 #include "options.h"
@@ -952,7 +954,6 @@ static bool _id_floor_item(item_def &item)
         if (item_needs_autopickup(item))
             item.props["needs_autopickup"] = true;
         set_ident_flags(item, ISFLAG_IDENT_MASK);
-        mark_had_book(item);
         return true;
     }
     else if (item.base_type == OBJ_WANDS)
@@ -1028,7 +1029,11 @@ void pickup_menu(int item_link)
                 if (!move_item_to_inv(j, num_to_take))
                 {
                     n_tried_pickup++;
-                    pickup_warning = "You can't carry that many items.";
+                    item_def &item = mitm[j];
+                    if(!(item_is_orb(item)))
+                    {
+                        pickup_warning = "You can't carry that many items.";
+                    }
                     if (mitm[j].defined())
                         mitm[j].flags = oldflags;
                 }
@@ -1365,8 +1370,12 @@ bool pickup_single_item(int link, int qty)
 
     if (!pickup_succ)
     {
-        mpr("You can't carry that many items.");
-        learned_something_new(HINT_FULL_INVENTORY);
+        item_def &orbcheck = mitm[link];
+        if(!(item_is_orb(orbcheck)))
+        {
+            mpr("You can't carry that many items.");
+            learned_something_new(HINT_FULL_INVENTORY);
+        }
         return false;
     }
     return true;
@@ -1474,7 +1483,11 @@ void pickup(bool partial_quantity)
                 // attempt to actually pick up the object.
                 if (!move_item_to_inv(o, num_to_take))
                 {
-                    pickup_warning = "You can't carry that many items.";
+                    item_def &item = mitm[o];
+                    if(!(item_is_orb(item)))
+                    {
+                        pickup_warning = "You can't carry that many items.";
+                    }
                     mitm[o].flags = old_flags;
                 }
             }
@@ -1767,12 +1780,10 @@ static bool _put_item_in_inv(item_def& it, int quant_got, bool quiet, bool& put_
 
         // cleanup items that ended up in an inventory slot (not gold, etc)
         if (inv_slot != -1)
-        {
             _got_item(you.inv[inv_slot]);
-            _check_note_item(you.inv[inv_slot]);
-        }
-        else
-            _check_note_item(it);
+        else if (it.base_type == OBJ_BOOKS)
+            _got_item(it);
+        _check_note_item(inv_slot == -1 ? it : you.inv[inv_slot]);
         return true;
     }
 
@@ -1803,6 +1814,12 @@ bool move_item_to_inv(int obj, int quant_got, bool quiet)
 {
     item_def &it = mitm[obj];
     const coord_def old_item_pos = it.pos;
+    
+    if (you.props.exists(ARCHAEOLOGIST_TRIGGER_TOME_ON_PICKUP) && it.props.exists(ARCHAEOLOGIST_TOME_SKILL))
+        archaeologist_read_tome(it);
+    
+    if (you.props.exists(ARCHAEOLOGIST_TRIGGER_CRATE_ON_PICKUP) && it.props.exists(ARCHAEOLOGIST_CRATE_ITEM))
+        archaeologist_open_crate(it);
 
     bool actually_went_in = false;
     const bool keep_going = _put_item_in_inv(it, quant_got, quiet, actually_went_in);
@@ -1826,6 +1843,61 @@ bool move_item_to_inv(int obj, int quant_got, bool quiet)
     }
 
     return keep_going;
+}
+
+static void _get_book(const item_def& it, bool quiet, bool allow_auto_hide, bool new_game_init)
+{
+    vector<spell_type> spells;
+    if (!quiet)
+        mprf("You pick up %s and begin reading...", it.name(DESC_A).c_str());
+    for (spell_type st : spells_in_book(it))
+    {
+        if (!you.spell_library[st])
+        {
+            you.spell_library.set(st, true);
+            bool memorise = you_can_memorise(st);
+            if (memorise)
+                spells.push_back(st);
+            if (!memorise || (Options.auto_hide_spells && allow_auto_hide))
+                you.hidden_spells.set(st, true);
+        }
+    }
+    if (!quiet)
+    {
+        if (!spells.empty())
+        {
+            vector<string> spellnames(spells.size());
+            transform(spells.begin(), spells.end(), spellnames.begin(), spell_title);
+            mprf("You add the spell%s %s to your library.",
+                 spellnames.size() > 1 ? "s" : "",
+                 comma_separated_line(spellnames.begin(),
+                                      spellnames.end()).c_str());
+        }
+        else
+            mpr("Unfortunately, it added no spells to the library.");
+    }
+    if (x_chance_in_y(6, 10) && !new_game_init)
+    {
+        mpr("A scroll of amnesia falls out of the book!");
+        int amnesia = items(false, OBJ_SCROLLS, SCR_AMNESIA, 1);
+        move_item_to_grid(&amnesia, you.pos());
+    }
+    shopping_list.spells_added_to_library(spells, quiet);
+}
+
+// Adds all books in the player's inventory to library.
+// Declared here for use by tags to load old saves.
+// Outside of loading old saves, only used at character creation.
+void add_held_books_to_library()
+{
+    for (item_def& it : you.inv)
+    {
+        if (it.base_type == OBJ_BOOKS && it.sub_type != BOOK_MANUAL)
+        {
+            _get_book(it, true, false, true);
+            destroy_item(it);
+        }
+    }
 }
 
 /**
@@ -1861,6 +1933,33 @@ static void _get_rune(const item_def& it, bool quiet)
 
     if (it.sub_type == RUNE_ABYSSAL)
         mpr("You feel the abyssal rune guiding you out of this place.");
+    
+    if (you.pledge == PLEDGE_HERETIC)
+    {
+        bool valid_god = false;
+        god_type random_god_wrath;
+        while (!valid_god)
+        {
+            // Exclude GOD_NO_GOD at 0, NUM_GODS from random results
+            random_god_wrath = static_cast<god_type>(random2(static_cast<int>(NUM_GODS) - 2) + 1);
+            // Ru's 'wrath' is boring
+            if (random_god_wrath == GOD_RU)
+                continue;
+            if (is_good_god(you.religion))
+            {
+                if (!is_good_god(random_god_wrath))
+                    valid_god = true;
+            }
+            else
+            {
+                if (you.religion != random_god_wrath)
+                    valid_god = true;
+            }
+        }
+        ASSERT(random_god_wrath != GOD_NO_GOD && random_god_wrath < NUM_GODS);
+        you.penance[random_god_wrath] = 50;
+        mprf("Your pledge invites the wrath of %s!", god_name(random_god_wrath).c_str());
+    }
 }
 
 /**
@@ -1878,8 +1977,16 @@ static void _get_orb(const item_def &it, bool quiet)
     env.orb_pos = you.pos(); // can be wrong in wizmode
     orb_pickup_noise(you.pos(), 30);
 
-    start_orb_run(CHAPTER_ESCAPING, "Now all you have to do is get back out "
+    if(you.pledge == PLEDGE_NATURES_ALLY)
+    {
+        start_orb_run(CHAPTER_ESCAPING, "Now all you have to do is get the golden rune "
+            "of Zot and then escape the dungeon! Easy, right?");
+    }
+    else
+    {
+        start_orb_run(CHAPTER_ESCAPING, "Now all you have to do is get back out "
                                     "of the dungeon!");
+    }
 }
 
 /**
@@ -2064,10 +2171,7 @@ static int _place_item_in_free_slot(item_def &it, int quant_got,
 
     maybe_identify_base_type(item);
     if (item.base_type == OBJ_BOOKS)
-    {
         set_ident_flags(item, ISFLAG_IDENT_MASK);
-        mark_had_book(item);
-    }
 
     // Normalize ration tile in inventory
     if (item.base_type == OBJ_FOOD && item.sub_type == FOOD_RATION)
@@ -2133,7 +2237,11 @@ static bool _merge_items_into_inv(item_def &it, int quant_got,
         get_gold(it, quant_got, quiet);
         return true;
     }
-
+    if (it.base_type == OBJ_BOOKS && it.sub_type != BOOK_MANUAL)
+    {
+        _get_book(it, quiet, true, false);
+        return true;
+    }
     // Runes are also massless.
     if (it.base_type == OBJ_RUNES)
     {
@@ -2143,8 +2251,72 @@ static bool _merge_items_into_inv(item_def &it, int quant_got,
     // The Orb is also handled specially.
     if (item_is_orb(it))
     {
+        // Check pledges first before allowing orb to be picked up
+        switch(you.pledge)
+        {
+            case PLEDGE_EXPLORER:
+                if (runes_in_pack() < 15)
+                {
+                    mpr("You haven't collected enough runes to complete your pledge.");
+                    return false;
+                }
+                break;
+
+            case PLEDGE_DESCENT_INTO_MADNESS:
+                if (you.zigs_completed < 1)
+                {
+                    mpr("You haven't finished a ziggurat to complete your pledge.");
+                    return false;
+                }
+                break;
+
+            case PLEDGE_ANGEL_OF_JUSTICE:
+                // Check if any of the Pan or Hell unique lords are still alive
+                // Being in the Abyss still counts as alive (have fun!)
+                monster_type mon;
+                
+                // Hell lords are always in levels that don't disappear
+                // force players to do them the hard way
+                if(!you.props["dispater_dead"] || !you.props["asmodeus_dead"]
+                   || !you.props["antaeus_dead"] || !you.props["ereshkigal_dead"])
+                {
+                    mpr("You have not yet completed your pledge! A challenger from Hell is still alive!");
+                    return false;
+                }   
+                
+                // Allow spawning of Pan lords if not spawned (in case player leaves their realm)
+                // but at least summon their bands with them since this could be a shortcut
+                for (int i = 0; i < 4; i++)
+                {
+                    if (!you.unique_creatures[MONS_MNOLEG + i])
+                    {
+                        mon = static_cast<monster_type>(MONS_MNOLEG + i);
+                        mgen_data mg(mon, BEH_HOSTILE, you.pos(), MHITYOU, MG_PERMIT_BANDS);
+                        create_monster(mg);
+                        mpr("You have not yet completed your pledge!" 
+                            "A challenger for the Orb has been summoned from Pandemonium!");
+                        return false;
+                    }
+                }
+                
+                // If all the Pan lords are spawned, then they are either in Zot or Abyss
+                // Force the player to hunt them down themselves at this point
+                if (!you.props["mnoleg_dead"] || !you.props["cerebov_dead"]
+                   || !you.props["lom_dead"] || !you.props["gloorx_dead"])
+                {
+                    mpr("You have not yet completed your pledge! A challenger from Pandemonium is still alive!");
+                    return false;
+                }
+                break;
+
+            default:
+                break;
+        }
+        
+        // If through the switch statement alive, pick up the orb
         _get_orb(it, quiet);
         return true;
+       
     }
 
     // attempt to merge into an existing stack, if possible
@@ -3458,16 +3630,16 @@ colour_t item_def::missile_colour() const
     {
         case MI_STONE:
             return BROWN;
-#if TAG_MAJOR_VERSION == 34
-        case MI_DART:
-#endif
         case MI_SLING_BULLET:
             return CYAN;
         case MI_LARGE_ROCK:
             return LIGHTGREY;
         case MI_ARROW:
             return BLUE;
+#if TAG_MAJOR_VERSION == 34
         case MI_NEEDLE:
+#endif
+        case MI_DART:
             return WHITE;
         case MI_BOLT:
             return LIGHTBLUE;
@@ -3475,10 +3647,11 @@ colour_t item_def::missile_colour() const
             return RED;
         case MI_THROWING_NET:
             return MAGENTA;
-        case MI_TOMAHAWK:
+        case MI_PIE:
+            return YELLOW;
+        case MI_BOOMERANG:
             return GREEN;
         case NUM_SPECIAL_MISSILES:
-        case NUM_REAL_SPECIAL_MISSILES:
         default:
             die("invalid missile type");
     }
@@ -3509,9 +3682,7 @@ colour_t item_def::armour_colour() const
             return GREEN;
         case ARM_ROBE:
             return RED;
-#if TAG_MAJOR_VERSION == 34
         case ARM_CAP:
-#endif
         case ARM_HAT:
         case ARM_HELMET:
             return MAGENTA;
@@ -3866,12 +4037,12 @@ colour_t item_def::miscellany_colour() const
 #endif
         case MISC_PHANTOM_MIRROR:
             return RED;
-#if TAG_MAJOR_VERSION == 34
         case MISC_STONE_OF_TREMORS:
             return BROWN;
-#endif
         case MISC_LIGHTNING_ROD:
             return LIGHTGREY;
+        case MISC_DISC_OF_STORMS:
+            return LIGHTGREY; // I really need to look up the alternative colors
         case MISC_PHIAL_OF_FLOODS:
             return LIGHTBLUE;
         case MISC_BOX_OF_BEASTS:
@@ -3898,6 +4069,12 @@ colour_t item_def::miscellany_colour() const
             return ETC_DARK;
         case MISC_ZIGGURAT:
             return _zigfig_colour();
+        case MISC_WIZARD_KEY:
+            return ETC_CRYSTAL;
+        case MISC_ANCIENT_CRATE:
+            return BROWN;
+        case MISC_DUSTY_TOME:
+            return BROWN;
         default:
             return LIGHTGREEN;
     }
@@ -4782,38 +4959,12 @@ item_info get_item_info(const item_def& item)
 
         if (is_deck(item))
         {
+            // All cards are passed through, whether seen or not, as
+            // _describe_deck() needs to check card flags anyway.
             ii.deck_rarity = item.deck_rarity;
-
-            const int num_cards = cards_in_deck(item);
-            CrawlVector info_cards (SV_BYTE);
-            CrawlVector info_card_flags (SV_BYTE);
-
-            // TODO: this leaks both whether the seen cards are still there
-            // and their order: the representation needs to be fixed
-
-            // The above comment seems obsolete now that Mark Four is gone.
-
-            // I don't think so... Stack Five has a quite similar effect
-            // if you abanadon Nemelex and get the card shuffled.
-            for (int i = 0; i < num_cards; ++i)
-            {
-                uint8_t flags;
-                const card_type card = get_card_and_flags(item, -i-1, flags);
-                if (flags & CFLAG_SEEN)
-                {
-                    info_cards.push_back((char)card);
-                    info_card_flags.push_back((char)flags);
-                }
-            }
-
-            if (info_cards.empty())
-            {
-                // An empty deck would display as BUGGY, so fake a card.
-                info_cards.push_back((char) 0);
-                info_card_flags.push_back((char) 0);
-            }
-            ii.props[CARD_KEY] = info_cards;
-            ii.props[CARD_FLAG_KEY] = info_card_flags;
+            ii.props[CARD_KEY] = item.props[CARD_KEY];
+            ii.props[CARD_FLAG_KEY] = item.props[CARD_FLAG_KEY];
+            ii.used_count = item.used_count;
         }
         break;
     case OBJ_GOLD:

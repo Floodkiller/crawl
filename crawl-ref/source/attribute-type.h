@@ -33,7 +33,7 @@ enum attribute_type
 #endif
     ATTR_FLIGHT_UNCANCELLABLE, // Potion of flight is in effect.
     ATTR_INVIS_UNCANCELLABLE,  // Spell/potion of invis is in effect.
-    ATTR_PERM_FLIGHT,          // Tengu flight or boots of flying are on.
+    ATTR_PERM_FLIGHT,          // Tengu and Faerie Dragon flight or boots of flying are on.
     ATTR_SEEN_INVIS_TURN,      // Last turn you saw something invisible.
     ATTR_SEEN_INVIS_SEED,      // Random seed for invis monster positions.
     ATTR_APPENDAGE,            // eq slot of Beastly Appendage
@@ -63,8 +63,8 @@ enum attribute_type
     ATTR_BARBS_POW,            // How badly we are currently skewered
 #if TAG_MAJOR_VERSION == 34
     ATTR_REPEL_MISSILES,       // Repel missiles active
-#endif
     ATTR_DEFLECT_MISSILES,     // Deflect missiles active
+#endif
     ATTR_PORTAL_PROJECTILE,    // Accuracy bonus during portal projectile
     ATTR_GOD_WRATH_XP,         // How much XP before our next god wrath check?
     ATTR_GOD_WRATH_COUNT,      // Number of stored retributions
@@ -95,5 +95,8 @@ enum attribute_type
     ATTR_HEAVENLY_STORM,       // Strength of Heavenly Storm slaying.
     ATTR_WALL_JUMP_READY,      // Ready to perform a wall jump.
     ATTR_PLAYING_HARP,         // Playing the harp of healing
+    ATTR_TIME_STOP,            // How many turns of Time Stop are left.
+    ATTR_REAPING,              // Skeleton reaping.
+    ATTR_SPITEFUL,             // Abandoned Ru at least once under Spiteful pledge
     NUM_ATTRIBUTES
 };

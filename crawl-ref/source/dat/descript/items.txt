@@ -60,6 +60,17 @@ An amulet that allows its wearer to eat fresh raw meat when not hungry, and
 drastically increases nutrition gained from them. These effects on the wearer's
 digestion are cumulative over time and are initially small.
 %%%%
+amulet of the acrobat
+
+An amulet that allows the user to tumble and roll to evade the blows of their
+enemies, but only while moving and waiting. While taking other actions the
+amulet conveys no benefits. In order to function, it must first attune itself to the wearer's body at full health.
+%%%%
+ancient crate
+
+A mysterious crate unearthed during an exotic excavation. No mundane methods have
+proven capable of opening it. Exploring the dungeon may help reveal its secrets.
+%%%%
 animal skin
 
 A large piece of thick skin covered in fur, cut from the corpse of an animal
@@ -84,10 +95,10 @@ battleaxe
 
 A large war axe with a formidable double-sided head.
 %%%%
-blowgun
+blowgun	
 
-A long, light tube, open at both ends, through which various types of needles
-are propelled by puffs of breath at enemies. It makes very little noise.
+A long, light tube, open at both ends, through which various types of needles	
+are propelled by puffs of breath at enemies. It makes very little noise.	
 %%%%
 bolt
 
@@ -232,6 +243,10 @@ book of power
 A book of powerful magic spells, crackling and shuddering with barely-contained
 energies.
 %%%%
+book of reaving
+
+A book of reaving, focused on battle magic related to melee and ranged.
+%%%%
 book of spatial translocations
 
 A basic spellbook on the magical field of Translocations.
@@ -300,6 +315,10 @@ A small piece of wood and metal, to be strapped on one arm for defence. It is
 cumbersome to wear, and impedes the evasion, spellcasting ability, and attack
 speed of an unskilled wearer.
 %%%%
+cap
+
+A cloth or leather cap.
+%%%%
 centaur barding
 
 An armour made for centaurs, to wear over their equine half.
@@ -342,6 +361,13 @@ dagger
 
 A double-edged fighting knife with a sharp point.
 %%%%
+dart
+
+A thin piece of metal, typically coated in some harmful substance. When
+thrown with skill it can deliver its toxins into the bloodstream of a
+living or demonic being. In addition to throwing skill, stealth skill improves
+the chance for a dart to affect its target.
+%%%%
 decaying skeleton
 
 A decaying skeleton.
@@ -379,9 +405,19 @@ dire flail
 
 A flail with long spikes and a heavy head.
 %%%%
+disc of storms
+
+A crackling disc which can unleash a destructive storm of electricity. Its
+effectiveness greatly improves in the hands of one skilled in Evocations.
+%%%%
 double sword
 
 A magical weapon with two razor-sharp blades.
+%%%%
+dusty tome
+
+A manuscript written in an undecipherable language. It was found buried, together 
+with an equally mystifying crate.
 %%%%
 eggplant
 
@@ -494,9 +530,9 @@ and fire.
 harp of healing
 
 A mystical instrument infused with restorative power. Evoking it allows the wielder
-to start playing the harp, healing them over time to full HP based on their 
+to start playing the harp, healing them over time to full HP based on their
 Evocations skill so long as they maintain focus on playing. The harp's music is not
-strong enough to cure rotted flesh. 
+strong enough to cure rotted flesh.
 %%%%
 hat
 
@@ -616,12 +652,6 @@ An extremely rare book, powerful and sinister. Many foolhardy magicians have
 tried to study this tome, only to find themselves entangled within necromantic
 forces they could not hope to control.
 %%%%
-needle
-
-A thin piece of metal, typically coated in some harmful substance. When
-launched from a blowgun it can deliver its toxins into the bloodstream of a
-living or demonic being.
-%%%%
 orb of zot
 
 An invaluable artefact. Once you have escaped to the surface with it, your
@@ -655,6 +685,10 @@ An enchanted vessel brimming over with elemental water. Removing the stopper
 unleashes a torrent of water from the phial and sets free the water elementals
 that dwell within it.
 %%%%
+pie
+
+A custard pie. It appears anachronistically dangerous.
+%%%%
 plate armour
 
 A full suit of solid metal plate: cuirass, pauldrons, vambraces, waist plate
@@ -670,6 +704,10 @@ potion of ambrosia
 A strange substance, produced by ghost moths. Consuming it causes regeneration
 of health and magic, along with total befuddlement. The two effects are
 fundamentally linked – the regeneration ends the moment the confusion does.
+%%%%
+potion of beneficial mutation
+
+A potion which grants a supposedly good mutation.
 %%%%
 potion of berserk rage
 
@@ -688,6 +726,10 @@ potion of cancellation
 
 A potion which ends most magical effects, good or bad, affecting one who drinks
 it. It also reduces magical contamination.
+%%%%
+potion of cure mutation
+
+A potion which removes a number of mutations when consumed.
 %%%%
 potion of curing
 
@@ -1139,6 +1181,14 @@ stone
 A small chunk of dense but otherwise unremarkable natural mineral. It can be
 thrown by hand or launched with a sling.
 %%%%
+stone of tremors
+
+A polished stone inhabited by benevolent earth spirits. Raising it aloft will
+send powerful shockwaves through the dungeon as the spirits seek solid form
+within its rock. Those creatures standing near to walls will be pelted with
+falling rubble as the rocky surface heaves and crumbles, while others may be
+swallowed up by cracks in the earth itself.
+%%%%
 shadow dragon scales
 
 The scales of a great umbral dragon. It is heavier than most dragon scale
@@ -1160,9 +1210,9 @@ A mesh of ropes knotted together with weights around the edge, used to entangle
 and entrap targets. Struggling victims can eventually destroy the net and break
 free, if they live long enough.
 %%%%
-tomahawk
+boomerang
 
-A small axe, designed for throwing.
+A curved, flat, throwing baton designed to return to its user.
 %%%%
 trident
 
@@ -1208,8 +1258,9 @@ A magical device which drills tunnels through unworked rock.
 %%%%
 wand of disintegration
 
-A magical device which disrupts the physical structure of a target creature,
-dealing heavy damage and bypassing armour.
+A magical device which disrupts the physical structure of anything but the
+hardest walls — even granite statues, to say nothing of flesh.
+If used on a creature, it deals heavy damage, bypassing armour.
 %%%%
 wand of enslavement
 
@@ -1256,6 +1307,11 @@ whip
 A long plaited strip of leather. Originally developed for use in disagreements
 with cattle, this simple weapon is now widely used to settle differences
 between all sorts of creatures.
+%%%%
+wizard's key
+
+A magical key belonging to an unknown wizard. It vibrates with a desire to open
+an unseen door.
 %%%%
 young poisoner's handbook
 

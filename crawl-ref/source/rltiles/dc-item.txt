@@ -209,7 +209,7 @@ i-confusion BRAND_REACHING
 i-returning BRAND_RETURNING
 i-chaos BRAND_CHAOS
 i-evasion BRAND_EVASION
-# Move i-confusion down to missile-only brands when TAG_MAJOR_VERSION > 34
+# Remove confusion down when TAG_MAJOR_VERSION > 34
 i-confusion BRAND_CONFUSION
 i-penetration BRAND_PENETRATION
 i-reaping BRAND_REAPING BRAND_WEP_LAST
@@ -219,12 +219,13 @@ i-explosion BRAND_EXPLOSION
 i-venom BRAND_POISONED
 i-curare BRAND_CURARE
 i-electrocution BRAND_ELECTRIC
-# Remove sickness and slowing when TAG_MAJOR_VERSION > 34
+# Remove sickness, slowingr, paralysis, and sleep when TAG_MAJOR_VERSION > 34
 i-sickness BRAND_SICKNESS
 i-slowing BRAND_SLOWING
 i-paralysis BRAND_PARALYSIS
 i-frenzy BRAND_FRENZY
 i-sleep BRAND_SLEEP
+i-blinding BRAND_BLINDING
 %rim 1
 %sdir item/weapon/ranged
 
@@ -280,34 +281,29 @@ effect/bolt6 MI_BOLT6
 effect/bolt7 MI_BOLT7
 
 %rim 0
-tomahawk1 MI_TOMAHAWK
-tomahawk2
-steel_tomahawk MI_TOMAHAWK_STEEL
-silver_tomahawk MI_TOMAHAWK_SILVER
-# flying tomahawks
-effect/tomahawk0 MI_TOMAHAWK0
-effect/tomahawk1 MI_TOMAHAWK1
-effect/tomahawk2 MI_TOMAHAWK2
-effect/tomahawk3 MI_TOMAHAWK3
-effect/tomahawk4 MI_TOMAHAWK4
-effect/tomahawk5 MI_TOMAHAWK5
-effect/tomahawk6 MI_TOMAHAWK6
-effect/tomahawk7 MI_TOMAHAWK7
+boomerang1 MI_BOOMERANG
+boomerang2
+silver_boomerang MI_BOOMERANG_SILVER
+# flying boomerangs
+effect/boomerang0 MI_BOOMERANG0
+effect/boomerang1 MI_BOOMERANG1
+effect/boomerang2 MI_BOOMERANG2
+effect/boomerang3 MI_BOOMERANG3
 
 %rim 1
-needle1 MI_NEEDLE
-needle2
-needle-p MI_NEEDLE_P
-needle-c MI_NEEDLE_CURARE
+dart1 MI_DART
+dart2
+dart-p MI_DART_P
+dart-c MI_DART_CURARE
 # flying needles
-effect/needle0 MI_NEEDLE0
-effect/needle1 MI_NEEDLE1
-effect/needle2 MI_NEEDLE2
-effect/needle3 MI_NEEDLE3
-effect/needle4 MI_NEEDLE4
-effect/needle5 MI_NEEDLE5
-effect/needle6 MI_NEEDLE6
-effect/needle7 MI_NEEDLE7
+effect/needle0 MI_DART0
+effect/needle1 MI_DART1
+effect/needle2 MI_DART2
+effect/needle3 MI_DART3
+effect/needle4 MI_DART4
+effect/needle5 MI_DART5
+effect/needle6 MI_DART6
+effect/needle7 MI_DART7
 
 %rim 0
 javelin1 MI_JAVELIN
@@ -337,6 +333,17 @@ effect/throwing_net4 MI_THROWING_NET4
 effect/throwing_net5 MI_THROWING_NET5
 effect/throwing_net6 MI_THROWING_NET6
 effect/throwing_net7 MI_THROWING_NET7
+
+pie MI_PIE
+# flying pies
+effect/pie0 MI_PIE0
+effect/pie1 MI_PIE1
+effect/pie2 MI_PIE2
+effect/pie3 MI_PIE3
+effect/pie4 MI_PIE4
+effect/pie5 MI_PIE5
+effect/pie6 MI_PIE6
+effect/pie7 MI_PIE7
 
 %rim 0
 rock MI_LARGE_ROCK
@@ -559,7 +566,7 @@ i-scattershot WAND_SCATTERSHOT WAND_ID_LAST
 bread_ration FOOD_RATION UNSEEN_FOOD FOOD_RATION_FIRST FOOD_RATION_INVENTORY
 meat_ration
 cheese
-honeycomb
+honeycomb FOOD_HONEYCOMB
 sausage
 pizza FOOD_PIZZA
 beef_jerky
@@ -787,7 +794,7 @@ sun
 # remove REMOVEMEs when TAG_MAJOR_VERSION > 34
 i-rage AMU_RAGE AMU_ID_FIRST
 i-harm AMU_HARM
-i-dismissal AMU_DISMISSAL
+i-acrobat AMU_ACROBAT
 i-m-regeneration AMU_MANA_REGENERATION
 i-gourmand AMU_THE_GOURMAND
 i-rage AMU_REMOVEME1
@@ -856,15 +863,13 @@ i-restore-abilities POT_RESTORE_ABILITIES
 # please remove when TAG_MAJOR_VERSION is bumped
 i-strong-poison POT_STRONG_POISON
 i-berserk-rage POT_BERSERK_RAGE
-# please remove POT_CURE_MUTATION when TAG_MAJOR_VERSION is bumped
-i-cure-mutation POT_REMOVEME8
+i-cure-mutation POT_CURE_MUTATION
 i-mutation POT_MUTATION
 i-resistance POT_RESISTANCE
 i-blood POT_BLOOD
 i-coagulated-blood POT_BLOOD_COAGULATED
 i-lignify POT_LIGNIFY
-# please remove POT_BENEFICIAL_MUTATION when TAG_MAJOR_VERSION is bumped
-i-good-mutation POT_REMOVEME9 POT_ID_LAST
+i-good-mutation POT_BENEFICIAL_MUTATION POT_ID_LAST
 %back none
 %rim 1
 
@@ -985,7 +990,6 @@ misc_fan MISC_FAN_OF_GALES
 misc_fan_inert MISC_FAN_OF_GALES_INERT
 misc_lamp MISC_LAMP_OF_FIRE
 misc_lamp_inert MISC_LAMP_OF_FIRE_INERT
-# Remove stone when TAG_MAJOR_VERSION > 34
 misc_stone MISC_STONE_OF_TREMORS
 misc_stone_inert MISC_STONE_OF_TREMORS_INERT
 misc_phial MISC_PHIAL_OF_FLOODS
@@ -993,10 +997,11 @@ misc_phial_inert MISC_PHIAL_OF_FLOODS_INERT
 misc_lightning_rod MISC_LIGHTNING_ROD
 misc_lightning_rod_inert MISC_LIGHTNING_ROD_INERT
 %rim 1
-# Remove when TAG_MAJOR_VERSION > 34
 misc_lantern MISC_LANTERN_OF_SHADOWS
 misc_horn MISC_HORN_OF_GERYON
 misc_box MISC_BOX_OF_BEASTS
+misc_ancient_crate MISC_ANCIENT_CRATE
+misc_dusty_tome MISC_DUSTY_TOME
 %rim 0
 misc_sack MISC_SACK_OF_SPIDERS
 misc_phantom_mirror MISC_PHANTOM_MIRROR
@@ -1004,7 +1009,9 @@ misc_shard_of_zot MISC_SHARD_OF_ZOT
 misc_shard_of_zot_inert MISC_SHARD_OF_ZOT_INERT
 misc_harp_of_healing MISC_HARP_OF_HEALING
 misc_harp_of_healing_inert MISC_HARP_OF_HEALING_INERT
+misc_disc MISC_DISC_OF_STORMS
 misc_zigfig MISC_ZIGGURAT
+misc_wizard_key MISC_WIZARD_KEY
 misc_deck MISC_DECK
 %start
 %compose misc_deck

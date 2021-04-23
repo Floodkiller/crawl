@@ -15,6 +15,7 @@
 #include <sstream>
 
 #include "ability.h"
+#include "clua.h"
 #include "describe-god.h"
 #include "evoke.h"
 #include "exercise.h"
@@ -185,7 +186,7 @@ int skill_cost_baseline()
  */
 int one_level_cost(skill_type sk)
 {
-    if (you.skills[sk] >= MAX_SKILL_LEVEL)
+    if (you.skills[sk] >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         return 0;
     return skill_exp_needed(you.skills[sk] + 1, sk)
            - skill_exp_needed(you.skills[sk], sk);
@@ -200,7 +201,7 @@ int one_level_cost(skill_type sk)
  */
 float scaled_skill_cost(skill_type sk)
 {
-    if (you.skills[sk] == MAX_SKILL_LEVEL || is_useless_skill(sk))
+    if (you.skills[sk] == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL) || is_useless_skill(sk))
         return 0;
     int baseline = skill_cost_baseline();
     int next_level = one_level_cost(sk);
@@ -279,7 +280,7 @@ static void _change_skill_level(skill_type exsk, int n)
 
     // are you drained/crosstrained/ash'd in the relevant skill?
     const bool specify_base = you.skill(exsk, 1) != you.skill(exsk, 1, true);
-    if (you.skills[exsk] == MAX_SKILL_LEVEL)
+    if (you.skills[exsk] == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         mprf(MSGCH_INTRINSIC_GAIN, "You have mastered %s!", skill_name(exsk));
     else if (abs(n) == 1 && you.num_turns)
     {
@@ -304,7 +305,7 @@ static void _change_skill_level(skill_type exsk, int n)
     if (n > 0 && you.num_turns)
         learned_something_new(HINT_SKILL_RAISE);
 
-    if (you.skills[exsk] - n == MAX_SKILL_LEVEL)
+    if (you.skills[exsk] - n == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
     {
         you.train[exsk] = TRAINING_ENABLED;
         need_reset = true;
@@ -371,7 +372,7 @@ int calc_skill_level_change(skill_type sk, int starting_level, int sk_points)
     int new_level = starting_level;
     while (1)
     {
-        if (new_level < MAX_SKILL_LEVEL
+        if (new_level < ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL)
             && sk_points >= (int) skill_exp_needed(new_level + 1, sk))
         {
             ++new_level;
@@ -705,52 +706,53 @@ void init_training()
     reset_training();
 }
 
-// Make sure at least one skill is selected.
-// If not, go to the skill menu and return true.
-bool check_selected_skills()
+bool skills_being_trained()
 {
-    bool trainable_skill = false;
-    bool could_train = false;
     for (int i = 0; i < NUM_SKILLS; ++i)
     {
         skill_type sk = static_cast<skill_type>(i);
         if (skill_trained(sk))
-            return false;
-        if (is_useless_skill(sk) || is_harmful_skill(sk)
-            || you.skill_points[sk] >= skill_exp_needed(MAX_SKILL_LEVEL, sk))
-        {
-            continue;
-        }
-        if (!you.can_train[sk])
-        {
-            could_train = true;
-            continue;
-        }
-        else
-            trainable_skill = true;
+            return true;
     }
-
-    if (trainable_skill)
-    {
-        mpr("You need to enable at least one skill for training.");
-        // Training will be fixed up on load if this ASSERT triggers.
-        ASSERT(you.species != SP_GNOLL);
-        more();
-        reset_training();
-        skill_menu();
-        redraw_screen();
-        return true;
-    }
-
-    if (could_train && !you.received_noskill_warning)
-    {
-        you.received_noskill_warning = true;
-        mpr("You cannot train any new skill.");
-    }
-
     return false;
-    // It's possible to have no selectable skills, if they are all untrainable
-    // or level 27, so we don't assert.
+}
+
+// Make sure at least one skill is selected.
+// If not, go to the skill menu and return true.
+bool check_selected_skills()
+{
+    if (skills_being_trained())
+        return false;
+    if (!trainable_skills())
+    {
+        if (!you.received_noskill_warning)
+        {
+            you.received_noskill_warning = true;
+            mpr("You cannot train any new skills!");
+        }
+        // It's possible to have no selectable skills, if they are all
+        // untrainable or level 27, so we don't assert.
+        return false;
+    }
+
+    // Calling a user lua function here to allow enabling skills without user
+    // prompt (much like the callback auto_experience for the case of potion of
+    // experience).
+    if (clua.callbooleanfn(false, "skill_training_needed", nullptr))
+    {
+        // did the callback do anything?
+        if (skills_being_trained())
+            return true;
+    }
+
+    mpr("You need to enable at least one skill for training.");
+    // Training will be fixed up on load if this ASSERT triggers.
+    ASSERT(you.species != SP_GNOLL);
+    more();
+    reset_training();
+    skill_menu();
+    redraw_screen();
+    return true;
 }
 
 /**
@@ -837,7 +839,7 @@ void reset_training()
 
 void exercise(skill_type exsk, int deg)
 {
-    if (you.skills[exsk] >= MAX_SKILL_LEVEL)
+    if (you.skills[exsk] >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         return;
 
     dprf(DIAG_SKILLS, "Exercise %s by %d.", skill_name(exsk), deg);
@@ -861,8 +863,9 @@ void exercise(skill_type exsk, int deg)
 // We look at skill points because actual level up comes later.
 static bool _level_up_check(skill_type sk, bool simu)
 {
+    
     // Don't train past level 27.
-    if (you.skill_points[sk] >= skill_exp_needed(MAX_SKILL_LEVEL, sk))
+    if (you.skill_points[sk] >= skill_exp_needed(((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL), sk))
     {
         you.training[sk] = 0;
         if (!simu)
@@ -1324,9 +1327,9 @@ skill_diff skill_level_to_diffs(skill_type skill, double amount,
     // TODO: can `amount` be converted to fixed point?
     double level;
     double fractional = modf(amount, &level);
-    if (level >= MAX_SKILL_LEVEL)
+    if (level >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
     {
-        level = MAX_SKILL_LEVEL;
+        level = ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL);
         fractional = 0;
     }
 
@@ -1451,7 +1454,7 @@ void set_skill_level(skill_type skill, double amount)
 
 int get_skill_progress(skill_type sk, int level, int points, int scale)
 {
-    if (level >= MAX_SKILL_LEVEL)
+    if (level >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         return 0;
 
     const int needed = skill_exp_needed(level + 1, sk);
@@ -1487,7 +1490,7 @@ int get_skill_percentage(const skill_type x)
  */
 int player::get_training_target(const skill_type sk) const
 {
-    ASSERT_RANGE(training_targets[sk], 0, 271);
+    ASSERT_LESS(training_targets[sk], 271);
     return training_targets[sk];
 }
 
@@ -1670,6 +1673,13 @@ string skill_title_by_rank(skill_type best_skill, uint8_t skill_rank,
                 result = "Blood Saint";
                 break;
             }
+            else if (species == SP_TENGU
+                     && skill_rank == 5
+                     && god == GOD_SHINING_ONE)
+            {
+                result = "TSO's General";
+                break;
+            }
             else if (god != GOD_NO_GOD)
                 result = god_title(god, species, piety);
             break;
@@ -1711,8 +1721,7 @@ string skill_title_by_rank(skill_type best_skill, uint8_t skill_rank,
         { "Adj", species_name(species, SPNAME_ADJ) },
         { "Genus", species_name(species, SPNAME_GENUS) },
         { "genus", lowercase_string(species_name(species, SPNAME_GENUS)) },
-        { "Genus_Short", species == SP_DEMIGOD ? "God" :
-                           species_name(species, SPNAME_GENUS) },
+        { "Genus_Short", species_name(species, SPNAME_GENUS) },
         { "Walker", species_walking_verb(species) + "er" },
         { "Weight", _stk_weight(species) },
     };
@@ -1730,7 +1739,8 @@ string player_title(bool the)
     const skill_type best = best_skill(SK_FIRST_SKILL, SK_LAST_SKILL);
     const string title =
             skill_title_by_rank(best, get_skill_rank(you.skills[best]));
-    const string article = !the ? "" : title == "Petite Mort" ? "La " : "the ";
+    const string article = !the ? "" : title == "Petite Mort" ? "La " :
+          title == "TSO's General" ? ", " : "the ";
     return article + title;
 }
 
@@ -1857,23 +1867,22 @@ bool is_harmful_skill(skill_type skill)
 }
 
 /**
- * Has the player maxed out all skills?
+ * Does the player have trainable skills?
  *
- * @param really_all If true, also consider skills that are harmful and/or
+ * @param check_all If true, also consider skills that are harmful and/or
  *        currently untrainable. Useless skills are never considered.
+ *        Defaults to false.
  */
-bool all_skills_maxed(bool really_all)
+bool trainable_skills(bool check_all)
 {
     for (skill_type i = SK_FIRST_SKILL; i < NUM_SKILLS; ++i)
     {
-        if (you.skills[i] < MAX_SKILL_LEVEL && !is_useless_skill(i)
-            && (really_all || you.can_train[i] && !is_harmful_skill(i)))
-        {
-            return false;
-        }
+        skill_type sk = static_cast<skill_type>(i);
+        if (can_enable_skill(sk, check_all))
+            return true;
     }
 
-    return true;
+    return false;
 }
 
 int skill_bump(skill_type skill, int scale)
@@ -1966,7 +1975,7 @@ int get_crosstrain_points(skill_type sk)
 {
     int points = 0;
     for (skill_type cross : get_crosstrain_skills(sk))
-        points += you.skill_points[cross] * 2 / 5;
+        points += you.skill_points[cross] * 3 / 5;
     return points;
 
 }
@@ -2123,7 +2132,7 @@ int transfer_skill_points(skill_type fsk, skill_type tsk, int skp_max,
         if (fsk != tsk)
         {
             change_skill_points(tsk, skp_gained, false);
-            if (you.skills[tsk] == MAX_SKILL_LEVEL)
+            if (you.skills[tsk] == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
                 break;
         }
     }
@@ -2161,7 +2170,7 @@ int transfer_skill_points(skill_type fsk, skill_type tsk, int skp_max,
         }
 
         if (you.transfer_skill_points == 0
-            || you.skills[tsk] == MAX_SKILL_LEVEL)
+            || you.skills[tsk] == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         {
             ashenzari_end_transfer(true);
         }
@@ -2212,7 +2221,7 @@ void skill_state::restore_training()
 {
     for (skill_type sk = SK_FIRST_SKILL; sk < NUM_SKILLS; ++sk)
     {
-        if (you.skills[sk] < MAX_SKILL_LEVEL)
+        if (you.skills[sk] < ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
             you.train[sk] = train[sk];
     }
 
@@ -2240,8 +2249,9 @@ void fixup_skills()
         }
         else if (is_gnoll)
             you.train[sk] = TRAINING_ENABLED;
+        
         you.skill_points[sk] = min(you.skill_points[sk],
-                                   skill_exp_needed(MAX_SKILL_LEVEL, sk));
+                                   skill_exp_needed(((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL), sk));
         check_skill_level_change(sk);
     }
     init_can_train();
@@ -2256,9 +2266,15 @@ void fixup_skills()
 /** Can the player enable training for this skill?
  *
  * @param sk The skill to check.
+ * @param override if true, don't consider whether the skill is currently
+ *                 untrainable / harmful.
  * @returns True if the skill can be enabled for training, false otherwise.
  */
-bool can_enable_skill(skill_type sk)
+bool can_enable_skill(skill_type sk, bool override)
 {
-    return you.species != SP_GNOLL && you.can_train[sk];
+    // TODO: should this check you.skill_points or you.skills?
+    return you.species != SP_GNOLL
+       && you.skills[sk] < ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL)
+       && !is_useless_skill(sk)
+       && (override || (you.can_train[sk] && !is_harmful_skill(sk)));
 }

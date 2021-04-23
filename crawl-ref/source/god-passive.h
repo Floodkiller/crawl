@@ -256,6 +256,9 @@ enum class passive_t
     wu_jian_lunge,
     wu_jian_whirlwind,
     wu_jian_wall_jump,
+
+    // Okawaru's all ammo returns + ammo mulch protection
+    protected_ammo,
 };
 
 enum ru_interference
@@ -274,7 +277,6 @@ void ash_init_bondage(player *y);
 void ash_check_bondage(bool msg = true);
 string ash_describe_bondage(int flags, bool level);
 bool god_id_item(item_def& item, bool silent = true);
-void ash_id_monster_equipment(monster* mon);
 int ash_detect_portals(bool all);
 monster_type ash_monster_tier(const monster *mon);
 unsigned int ash_skill_point_boost(skill_type sk, int scaled_skill);
@@ -299,7 +301,7 @@ void uskayaw_bonds_audience();
 void wu_jian_wall_jump_effects(const coord_def& old_pos);
 bool wu_jian_has_momentum(wu_jian_attack_type);
 void wu_jian_heaven_tick();
-void wu_jian_post_move_effects(bool did_wall_jump,
+bool wu_jian_post_move_effects(bool did_wall_jump,
                                const coord_def& initial_position);
 void wu_jian_end_of_turn_effects();
 void end_heavenly_storm();

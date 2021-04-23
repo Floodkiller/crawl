@@ -32,6 +32,7 @@
 #include "notes.h"
 #include "options.h"
 #include "player.h"
+#include "player-equip.h"
 #include "religion.h"
 #include "skills.h"
 #include "state.h"
@@ -510,7 +511,8 @@ void TilesFramework::_send_layout()
     tiles.json_open_object();
     tiles.json_write_string("msg", "layout");
     tiles.json_open_object("message_pane");
-    tiles.json_write_int("height", crawl_view.msgsz.y);
+    tiles.json_write_int("height",
+                        max(Options.msg_webtiles_height, crawl_view.msgsz.y));
     tiles.json_write_bool("small_more", Options.small_more);
     tiles.json_close_object();
     tiles.json_close_object();
@@ -563,6 +565,10 @@ void TilesFramework::close_all_menus()
 {
     while (m_menu_stack.size())
         pop_menu();
+    // This is a bit of a hack, in case the client-side menu stack ever gets
+    // out of sync with m_menu_stack. (This can maybe happen for reasons that I
+    // don't fully understand, on spectator join.)
+    send_message("{\"msg\":\"close_all_menus\"}");
 }
 
 static void _send_text_cursor(bool enabled)
@@ -645,23 +651,34 @@ static bool _update_statuses(player_info& c)
     {
         if (status == DUR_DIVINE_SHIELD)
         {
+            inf = status_info();
             if (!you.duration[status])
                 continue;
             inf.short_text = "divine shield";
         }
         else if (status == DUR_ICEMAIL_DEPLETED)
         {
+            inf = status_info();
             if (you.duration[status] <= ICEMAIL_TIME / ICEMAIL_MAX)
                 continue;
             inf.short_text = "icemail depleted";
         }
-        else if (!fill_status_info(status, &inf))
+
+        else if (status == DUR_ACROBAT)
+        {
+            if (acrobat_boost_visible())
+                inf.short_text = "acrobat";
+        }
+
+        else if (!fill_status_info(status, inf)) // this will reset inf itself
             continue;
 
         if (!inf.light_text.empty() || !inf.short_text.empty())
         {
             if (!changed)
             {
+                // up until now, c.status has not changed. Does this dur differ
+                // from the counter-th element in c.status?
                 if (counter >= c.status.size()
                     || inf.light_text != c.status[counter].light_text
                     || inf.light_colour != c.status[counter].light_colour
@@ -673,6 +690,8 @@ static bool _update_statuses(player_info& c)
 
             if (changed)
             {
+                // c.status has changed at some point before counter, so all
+                // bets are off for any future statuses.
                 c.status.resize(counter + 1);
                 c.status[counter] = inf;
             }
@@ -682,6 +701,7 @@ static bool _update_statuses(player_info& c)
     }
     if (c.status.size() != counter)
     {
+        // the only thing that has happened is that some durations are removed
         ASSERT(!changed);
         changed = true;
         c.status.resize(counter);
@@ -729,7 +749,7 @@ void TilesFramework::_send_player(bool force_full)
     uint8_t prank = 0;
     if (!you_worship(GOD_NO_GOD))
         prank = max(0, piety_rank());
-    else if (you.char_class == JOB_MONK && you.species != SP_DEMIGOD
+    else if (you.char_class == JOB_MONK && you.species != SP_PROMETHEAN
              && !had_gods())
     {
         prank = 2;
@@ -741,13 +761,35 @@ void TilesFramework::_send_player(bool force_full)
     _update_int(force_full, c.hp, you.hp, "hp");
     _update_int(force_full, c.hp_max, you.hp_max, "hp_max");
     int max_max_hp = get_real_hp(true, true);
+    if (you.species == SP_DJINNI)
+        max_max_hp += get_real_mp(true, true); // compare _print_stats_hp
 
     _update_int(force_full, c.real_hp_max, max_max_hp, "real_hp_max");
-    _update_int(force_full, c.mp, you.magic_points, "mp");
-    _update_int(force_full, c.mp_max, you.max_magic_points, "mp_max");
+
+    if (you.species != SP_DJINNI)
+    {
+        int max_max_mp = get_real_mp(true, false);
+        _update_int(force_full, c.mp, you.magic_points, "mp");
+        _update_int(force_full, c.mp_max, you.max_magic_points, "mp_max");
+        _update_int(force_full, c.real_mp_max, max_max_mp, "real_mp_max");
+    }
+    if (you.species == SP_DJINNI)
+    {
+        // Don't send more information than can be seen from the console HUD.
+        // Compare _print_stats_contam and get_contamination_level
+        int contam = you.magic_contamination;
+        if (contam >= 26000)
+            contam = 26000;
+        else if (contam >= 16000)
+            contam = 16000;
+        _update_int(force_full, c.contam, contam, "contam");
+    }
 
     _update_int(force_full, c.poison_survival, max(0, poison_survival()),
                 "poison_survival");
+
+    if (you.species == SP_LAVA_ORC)
+        _update_int(force_full, c.heat, temperature(), "heat");
 
     _update_int(force_full, c.armour_class, you.armour_class(), "ac");
     _update_int(force_full, c.evasion, you.evasion(), "ev");
@@ -1104,7 +1146,7 @@ void TilesFramework::_send_cell(const coord_def &gc,
     else if (current_mc.monsterinfo())
         json_write_null("mon");
 
-    map_feature mf = get_cell_map_feature(next_mc);
+    map_feature mf = get_cell_map_feature(gc);
     if (get_cell_map_feature(current_mc) != mf)
         json_write_int("mf", mf);
 
@@ -1201,6 +1243,9 @@ void TilesFramework::_send_cell(const coord_def &gc,
 
         if (next_pc.travel_trail != current_pc.travel_trail)
             json_write_int("travel_trail", next_pc.travel_trail);
+
+        if (next_pc.heat_aura != current_pc.heat_aura)
+            json_write_int("heat_aura", next_pc.heat_aura);
 
         if (_needs_flavour(next_pc) &&
             (next_pc.flv.floor != current_pc.flv.floor

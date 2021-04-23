@@ -12,7 +12,7 @@
 ###############################################################################
 
 lua {{
-require('dlua/vault.lua')
+crawl_require('dlua/vault.lua')
 
 MAX_RANDOM_SHOPS = 5
 
@@ -62,12 +62,13 @@ end
 # Gozag code uses it to find out where shops can normally place.
 NAME: serial_shops
 TAGS: allow_dup extra luniq
-DEPTH: D:4-, Depths, Orc, Elf, Shoals, Snake, Vaults
+DEPTH: D:4-, Depths, Orc, Elf, Shoals, Snake, Vaults, Pan
 CHANCE: 20% (D)
 CHANCE: 20% (Depths)
 CHANCE: 30% (Orc)
 CHANCE: 40% (Elf, Vaults)
 CHANCE: 20% (Shoals, Snake)
+CHANCE: 20% (Pan)
 {{
 hook("post_place", function()
     local num = num_shops()
@@ -306,8 +307,7 @@ TAGS:    no_monster_gen
 DEPTH:   D:4-, Depths
 MONS:    ball python w:5 / adder / water moccasin, place:Snake:1
 KFEAT:   v = general shop type:Serpentskin suffix:Sales count:7 ; \
-         w:8 blowgun | w:8 needle ego:poisoned | w:4 needle ego:curare | \
-         w:14 tomahawk ego:poisoned | \
+         w:8 dart ego:poisoned | w:4 dart ego:curare | \
          w:3 ring of poison resistance | w:6 randbook disc:poison | \
          w:2 staff of poison | w:4 any weapon ego:venom | \
          w:4 any armour ego:poison_resistance | w:1 swamp dragon scales
@@ -335,6 +335,7 @@ ITEM:    stone
 KFEAT:   v = general shop type:Pet suffix:Rocks count:7 ; \
          w:15 stone | w:15 large rock | w:8 hunting sling | w:1 fustibalus | \
          w:8 sling bullet | w:7 crystal ball of energy | \
+         w:4 stone of tremors | \
          w:8 wand of digging | w:5 randbook disc:earth | \
          w:2 book of the earth | w:2 book of geomancy | w:4 staff of earth | \
          w:1 crystal plate armour
@@ -410,8 +411,8 @@ DEPTH: D:6-, Depths
 TAGS: no_monster_gen no_trap_gen
 SHUFFLE: _s
 KFEAT: s = general shop type:Hallowed suffix:Reliquary ; \
-   potion of heal wounds | potion of curing | potion of restore abilities | \
-   tomahawk ego:silver w:2 | javelin ego:silver w:2 | \
+   potion of heal wounds | potion of curing | \
+   boomerang ego:silver w:2 | javelin ego:silver w:2 | \
    any weapon ego:holy_wrath | scroll of holy word |\
    amulet of faith w:2 | ring of positive energy w:5 |\
    any armour ego:positive_energy w:5
@@ -464,9 +465,9 @@ KFEAT: s = general shop type:Demolitions suffix:Depot ; \
    randbook disc:conjuration | book of the tempests | book of clouds | \
    wand of iceblast | wand of flame | wand of disintegration | \
    wand of clouds | wand of scattershot | staff of conjuration | \
-   large rock ego:exploding | javelin ego:exploding | wand of acid | \
-   tomahawk ego:exploding | fan of gales | lightning rod | lamp of fire | \
+   wand of acid | fan of gales | lightning rod | lamp of fire | \
    phial of floods | scroll of immolation | book of flames | book of fire | \
+   stone of tremors | disc of storms | \
    book of air | manual of conjurations | manual of evocations
 FTILE: ' = floor_rough_red
 COLOUR: ' = red
@@ -494,9 +495,8 @@ MARKER: a = lua:fog_machine { cloud_type = "thin mist", \
             pow_min = 100, pow_max = 100, delay = 1, \
             size = 1, walk_dist = 0, start_clouds = 1 }
 {{
--- No earth-themed evoker, so just include another wand type.
   local evocables = {"lamp of fire","phial of floods",
-                     "fan of gales","wand of scattershot"}
+                     "fan of gales","stone of tremors"}
   local staffs    = {"staff of fire","staff of cold",
                      "staff of air","staff of earth"}
   local randbooks = {"randbook disc:fire","randbook disc:ice",

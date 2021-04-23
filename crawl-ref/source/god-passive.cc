@@ -211,7 +211,8 @@ static const vector<god_passive> god_passives[] =
 
     // Okawaru
     {
-        // None
+        {  3, passive_t::protected_ammo,
+              "GOD NOW returns your ammunition and protects it from destruction" },
     },
 
     // Makhleb
@@ -572,21 +573,21 @@ void ash_check_bondage(bool msg)
         else if (i <= EQ_MAX_ARMOUR)
             s = ET_ARMOUR;
         // Missing hands mean fewer rings
-        else if (you.species != SP_OCTOPODE && i == EQ_LEFT_RING
+        else if ((you.species != SP_OCTOPODE || you.species != SP_ABOMINATION) && i == EQ_LEFT_RING
                  && you.get_mutation_level(MUT_MISSING_HAND))
         {
             continue;
         }
-        // Octopodes don't count these slots:
-        else if (you.species == SP_OCTOPODE
+        // Octopodes and abominations don't count these slots:
+        else if ((you.species == SP_OCTOPODE || you.species == SP_ABOMINATION )
                  && ((i == EQ_LEFT_RING || i == EQ_RIGHT_RING)
                      || (i == EQ_RING_EIGHT
                          && you.get_mutation_level(MUT_MISSING_HAND))))
         {
             continue;
         }
-        // *Only* octopodes count these slots:
-        else if (you.species != SP_OCTOPODE
+        // *Only* octopodes and abominations count these slots:
+        else if ((you.species != SP_OCTOPODE || you.species != SP_ABOMINATION )
                  && i >= EQ_RING_ONE && i <= EQ_RING_EIGHT)
         {
             continue;
@@ -849,40 +850,6 @@ bool god_id_item(item_def& item, bool silent)
     return false;
 }
 
-void ash_id_monster_equipment(monster* mon)
-{
-    if (!have_passive(passive_t::identify_items))
-        return;
-
-    bool id = false;
-
-    for (unsigned int i = 0; i <= MSLOT_LAST_VISIBLE_SLOT; ++i)
-    {
-        if (mon->inv[i] == NON_ITEM)
-            continue;
-
-        item_def &item = mitm[mon->inv[i]];
-        if ((i != MSLOT_WAND || !is_offensive_wand(item))
-            && !item_is_branded(item))
-        {
-            continue;
-        }
-
-        if (i == MSLOT_WAND)
-        {
-            set_ident_type(OBJ_WANDS, item.sub_type, true);
-            mon->props["wand_known"] = true;
-        }
-        else
-            set_ident_flags(item, ISFLAG_KNOW_TYPE);
-
-        id = true;
-    }
-
-    if (id)
-        mon->props["ash_id"] = true;
-}
-
 static bool is_ash_portal(dungeon_feature_type feat)
 {
     if (feat_is_portal_entrance(feat))
@@ -893,6 +860,7 @@ static bool is_ash_portal(dungeon_feature_type feat)
     case DNGN_ENTER_ABYSS: // for completeness
     case DNGN_EXIT_THROUGH_ABYSS:
     case DNGN_EXIT_ABYSS:
+    case DNGN_ABYSS_TO_ZOT:
     case DNGN_ENTER_PANDEMONIUM:
     case DNGN_EXIT_PANDEMONIUM:
     // DNGN_TRANSIT_PANDEMONIUM is too mundane
@@ -1622,14 +1590,14 @@ static int _wu_jian_number_of_attacks(bool wall_jump)
                           attack_delay * BASELINE_DELAY);
 }
 
-static void _wu_jian_lunge(const coord_def& old_pos)
+static bool _wu_jian_lunge(const coord_def& old_pos)
 {
     coord_def lunge_direction = (you.pos() - old_pos).sgn();
     coord_def potential_target = you.pos() + lunge_direction;
     monster* mons = monster_at(potential_target);
 
     if (!mons || !_can_attack_martial(mons) || !mons->alive())
-        return;
+        return false;
 
     if (you.attribute[ATTR_HEAVENLY_STORM] > 0)
         you.attribute[ATTR_HEAVENLY_STORM] += 2;
@@ -1642,7 +1610,7 @@ static void _wu_jian_lunge(const coord_def& old_pos)
     {
         mprf("You lunge at %s, but your attack speed is too slow for a blow "
              "to land.", mons->name(DESC_THE).c_str());
-        return;
+        return false;
     }
     else
     {
@@ -1663,6 +1631,8 @@ static void _wu_jian_lunge(const coord_def& old_pos)
         lunge.wu_jian_attack = WU_JIAN_ATTACK_LUNGE;
         lunge.attack();
     }
+
+    return true;
 }
 
 // Monsters adjacent to the given pos that are valid targets for whirlwind.
@@ -1676,11 +1646,13 @@ static vector<monster*> _get_whirlwind_targets(coord_def pos)
     return targets;
 }
 
-static void _wu_jian_whirlwind(const coord_def& old_pos)
+static bool _wu_jian_whirlwind(const coord_def& old_pos)
 {
+    bool did_at_least_one_attack = false;
+
     const vector<monster*> targets = _get_whirlwind_targets(you.pos());
     if (targets.empty())
-        return;
+        return did_at_least_one_attack;
 
     const vector<monster*> old_targets = _get_whirlwind_targets(old_pos);
     vector<monster*> common_targets;
@@ -1732,20 +1704,28 @@ static void _wu_jian_whirlwind(const coord_def& old_pos)
             whirlwind.wu_jian_attack = WU_JIAN_ATTACK_WHIRLWIND;
             whirlwind.wu_jian_number_of_targets = common_targets.size();
             whirlwind.attack();
+            if (!did_at_least_one_attack)
+              did_at_least_one_attack = true;
         }
     }
+
+    return did_at_least_one_attack;
 }
 
-static void _wu_jian_trigger_martial_arts(const coord_def& old_pos)
+static bool _wu_jian_trigger_martial_arts(const coord_def& old_pos)
 {
+    bool did_wu_jian_attacks = false;
+
     if (you.pos() == old_pos || you.duration[DUR_CONF])
-        return;
+        return did_wu_jian_attacks;
 
     if (have_passive(passive_t::wu_jian_lunge))
-        _wu_jian_lunge(old_pos);
+        did_wu_jian_attacks = _wu_jian_lunge(old_pos);
 
     if (have_passive(passive_t::wu_jian_whirlwind))
-        _wu_jian_whirlwind(old_pos);
+        did_wu_jian_attacks |= _wu_jian_whirlwind(old_pos);
+
+    return did_wu_jian_attacks;
 }
 
 void wu_jian_wall_jump_effects(const coord_def& old_pos)
@@ -1815,14 +1795,18 @@ void wu_jian_end_of_turn_effects()
     you.attribute[ATTR_WALL_JUMP_READY] = 0;
 }
 
-void wu_jian_post_move_effects(bool did_wall_jump,
+bool wu_jian_post_move_effects(bool did_wall_jump,
                                const coord_def& initial_position)
 {
+    bool did_wu_jian_attacks = false;
+
     if (!did_wall_jump)
-        _wu_jian_trigger_martial_arts(initial_position);
+        did_wu_jian_attacks = _wu_jian_trigger_martial_arts(initial_position);
 
     if (you.turn_is_over)
         _wu_jian_trigger_serpents_lash(initial_position, did_wall_jump);
+
+    return did_wu_jian_attacks;
 }
 
 /**

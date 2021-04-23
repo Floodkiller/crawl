@@ -28,6 +28,7 @@
 #include "prompt.h"
 #include "random-pick.h"
 #include "shout.h"
+#include "spl-selfench.h"
 #include "spl-util.h"
 #include "target.h"
 #include "terrain.h"
@@ -83,9 +84,6 @@ spret_type conjure_flame(const actor *agent, int pow, const coord_def& where,
     }
 
     fail_check();
-
-    if (agent->is_player())
-        did_god_conduct(DID_FIRE, min(5 + pow/2, 23));
 
     if (cloud)
     {
@@ -253,29 +251,42 @@ void big_cloud(cloud_type cl_type, const actor *agent,
 spret_type cast_ring_of_flames(int power, bool fail)
 {
     fail_check();
-    did_god_conduct(DID_FIRE, min(5 + power/5, 50));
-    you.increase_duration(DUR_FIRE_SHIELD,
-                          6 + (power / 10) + (random2(power) / 5), 50,
-                          "The air around you leaps into flame!");
-    manage_fire_shield(1);
-    return SPRET_SUCCESS;
+    if(!you.permabuffs[MUT_RING_OF_FLAMES])
+    {
+        if(spell_add_permabuff(SPELL_RING_OF_FLAMES, 7))
+        {
+            manage_fire_shield(1);
+            return SPRET_SUCCESS;
+        }
+        else
+        {
+            return SPRET_ABORT;
+        }
+    }
+    else
+    {
+        // Don't have the player pay MP to remove their permabuff
+        spell_remove_permabuff(SPELL_RING_OF_FLAMES, 7);
+        return SPRET_ABORT;
+    }
+    
 }
 
 void manage_fire_shield(int delay)
 {
-    ASSERT(you.duration[DUR_FIRE_SHIELD]);
+    ASSERT(you.permabuffs[MUT_RING_OF_FLAMES]);
 
     // Melt ice armour entirely.
     maybe_melt_player_enchantments(BEAM_FIRE, 100);
 
-    // Remove fire clouds on top of you
-    if (cloud_at(you.pos()) && cloud_at(you.pos())->type == CLOUD_FIRE)
+    // Remove clouds on top of you
+    if (cloud_at(you.pos()))
         delete_cloud(you.pos());
 
-    // Place fire clouds all around you
-    for (adjacent_iterator ai(you.pos()); ai; ++ai)
-        if (!cell_is_solid(*ai) && !cloud_at(*ai))
-            place_cloud(CLOUD_FIRE, *ai, 1 + random2(6), &you);
+    // Place fire clouds all around you, radius 2
+    for (radius_iterator ri(you.pos(), 2, C_SQUARE, LOS_SOLID); ri; ++ri)
+        if (!cell_is_solid(*ri) && *ri != you.pos())
+            place_cloud(CLOUD_FIRE, *ri, 1 + random2(6), &you);
 }
 
 spret_type cast_corpse_rot(bool fail)
@@ -424,8 +435,72 @@ spret_type cast_cloud_cone(const actor *caster, int pow, const coord_def &pos,
          caster->conj_verb("create").c_str(),
          cloud_type_name(cloud).c_str());
 
-    if (cloud == CLOUD_FIRE && caster->is_player())
-        did_god_conduct(DID_FIRE, min(5 + pow/2, 23));
-
     return SPRET_SUCCESS;
+}
+
+static coord_def find_distortion_location(const actor* caster)
+{
+    vector<coord_def> points;
+    
+    for (coord_def delta : Compass)
+    {
+        coord_def test = coord_def(-1, -1);
+
+        test = caster->pos() + delta;
+        if (!in_bounds(test) || cell_is_solid(test))
+        {
+            continue;
+        }
+        cloud_struct* cloud = cloud_at(test);
+        if (cloud && cloud->type == CLOUD_DISTORTION)
+        {
+            continue;
+        }
+        actor* victim = actor_at(test);
+        if (victim)
+        {
+            continue;
+        }
+
+        points.push_back(test);
+    }
+
+    if (points.empty())
+        return coord_def(0, 0);
+
+    return points[random2(points.size())];
+}
+
+
+spret_type conjure_distortion(const actor *agent, int pow, bool fail)
+{
+    coord_def point = find_distortion_location(agent);
+    bool success = (point != coord_def(0, 0));
+    
+    bool is_player = (agent->is_player());
+
+    if (success)
+    {
+        const int durat = min(5 + (random2(pow)/2) + (random2(pow)/2), 23);
+        place_cloud(CLOUD_DISTORTION, point, durat, agent);
+        if (you.see_cell(point))
+        {
+            if (agent->is_player())
+                mpr("A spatial distortion forms next to you!");
+            else
+                mpr("A spatial distortion forms!");
+        }
+        noisy(spell_effect_noise(SPELL_CONJURE_DISTORTION), point);
+        
+        return SPRET_SUCCESS;
+    }
+    else
+    {
+        if (is_player)
+        {
+            mpr("There is no place adjacent to you for a distortion cloud!");
+        }
+    }
+    
+    return SPRET_ABORT;
 }

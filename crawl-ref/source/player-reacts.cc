@@ -30,6 +30,7 @@
 #include "abyss.h" // abyss_maybe_spawn_xp_exit
 #include "act-iter.h"
 #include "areas.h"
+#include "art-enum.h"
 #include "beam.h"
 #include "cio.h"
 #include "cloud.h"
@@ -460,7 +461,7 @@ void player_reacts_to_monsters()
     if (!you_are_delayed())
         update_can_train();
 
-    if (you.duration[DUR_FIRE_SHIELD] > 0)
+    if (you.permabuffs[MUT_RING_OF_FLAMES])
         manage_fire_shield(you.time_taken);
 
     check_monster_detect();
@@ -626,11 +627,14 @@ static void _decrement_durations()
             // Disable emergency flight if it was active
             you.props.erase(EMERGENCY_FLIGHT_KEY);
         }
-
-        if (_decrement_a_duration(DUR_TRANSFORMATION, delay, nullptr, random2(3),
-                                  "Your transformation is almost over."))
+        // Don't decrement the duration of forms for permabuffs
+        if(!you.permabuffs[MUT_TRANSFORMATION])
         {
-            untransform();
+            if (_decrement_a_duration(DUR_TRANSFORMATION, delay, nullptr, random2(3),
+                                      "Your transformation is almost over."))
+            {
+                untransform();
+            }
         }
     }
 
@@ -819,7 +823,7 @@ static void _decrement_durations()
     dec_elixir_player(delay);
 
     you.maybe_degrade_bone_armour(delay);
-    
+
     extract_manticore_spikes("You carefully extract the barbed spikes from "
                              "your body.");
 
@@ -851,28 +855,6 @@ static void _decrement_durations()
             _decrement_simple_duration((duration_type) i, delay);
 }
 
-
-// For worn items; weapons do this on melee attacks.
-static void _check_equipment_conducts()
-{
-    if (you_worship(GOD_DITHMENOS) && one_chance_in(10))
-    {
-        bool fiery = false;
-        const item_def* item;
-        for (int i = EQ_MIN_ARMOUR; i < NUM_EQUIP; i++)
-        {
-            item = you.slot_item(static_cast<equipment_type>(i));
-            if (item && is_fiery_item(*item))
-            {
-                fiery = true;
-                break;
-            }
-        }
-        if (fiery)
-            did_god_conduct(DID_FIRE, 1, true);
-    }
-}
-
 /**
  * Handles player ghoul rotting over time.
  */
@@ -884,7 +866,6 @@ static void _rot_ghoul_players()
     int resilience = 400;
     if (have_passive(passive_t::slow_metabolism))
         resilience = resilience * 3 / 2;
-
 
     // Faster rotting when hungry.
     if (you.hunger_state < HS_SATIATED)
@@ -949,7 +930,7 @@ static void _regenerate_hp_and_mp(int delay)
 
     ASSERT_RANGE(you.hit_points_regeneration, 0, 100);
 
-    update_regen_amulet_attunement();
+    update_amulet_attunement_by_health();
 
     // MP Regeneration
     if (!player_regenerates_mp())
@@ -984,27 +965,91 @@ void player_reacts()
     // Too annoying for regular diagnostics.
     mprf(MSGCH_DIAGNOSTICS, "stealth: %d", stealth);
 #endif
+    if (you.species == SP_LAVA_ORC)
+        temperature_check();
 
     if (you.has_mutation(MUT_DEMONIC_GUARDIAN))
         check_demonic_guardian();
 
-    _check_equipment_conducts();
+    // check to spawn rat from ratskin cloak
+    if (player_equip_unrand(UNRAND_RATSKIN_CLOAK)
+             && random2(200) < 4)
+    {
+        monster_type mon = coinflip() ? MONS_HELL_RAT : MONS_RIVER_RAT;
+        mgen_data mg(mon, BEH_FRIENDLY, you.pos());
+        mg.set_summoned(&you, 2, 0, you.religion);
+        create_monster(mg);
+        mprf(MSGCH_WARN, "Your ratskin cloak shivers and a rat drops out!");
+        // random messages for hell rat
+        if (mon = MONS_HELL_RAT) 
+        {
+            // random chance to show maessage based on the # of cases / this number
+            switch (random2(30))
+            {
+            case 0: mpr("The hell rat solemnly chants \"I, Ratzekiel, stand ready to serve!\"");break;
+            case 1: mpr("The hell rat proudly shouts \"Tremble before the great Rodenteus!\"");break;
+            case 2: mpr("Flexing his rat pecs the hell rat cries \"Prepare for battle!\"");break;
+            case 3: mpr("The hell rat says \"Yes, it's me, Ratelzebub.  Want to fight about it?\"");break;
+            case 4: mpr("The hell rat burps a small puff of fire. \"Pardon me\"");break;
+            case 5: mpr("The hell rat shivers in the dungeon, missing his lava pit.");break;
+            case 6: mpr("The hell rat cries \"Ratzuzu has arrived, master!\"");break;
+            case 7: mpr("The hell rat shouts \"It is I, Ratspater the Unvanquished!\"");break;
+            case 8: mpr("The hell rat says nothing but furrows his brow meaningfully at you.");break;
+            case 9: mpr("The hell rats says, \"I knew the Sword of the Zealot back when he was just called Jared.\"");break;
+
+            // remainder are no extra statement
+            default: break;
+            }
+        }
+        else 
+        // random messages for river rat
+        {
+            // random chance to show maessage based on the # of cases / this number
+            switch (random2(30))
+            {
+            case 0: mpr("The river rat squeeks \"Pardon me guv, could I get back in that there cloak?\"");break;
+            case 1: mpr("The river rat bares its tiny fangs!");break;
+            case 2: mpr("Unfurling a velvet cloak, the river rat shouts \"Have at you, miscreants!\"");break;
+            case 3: mpr("The river rat tosses aside a rat-chicken leg and stands ready to fight.");break;
+            case 4: mpr("The rat says \"I'm just a river rat, but I will do my bestest!\"");break;
+            case 5: mpr("The river rat jumps onto your shoulder hissing wildly!");break;
+            case 6: mpr("The river rat grudgingly turns from its magazine to help out.");break;
+            case 7: mpr("The river rat says \"I demand to be paid in pandemonium pizza\"");break;
+            case 8: mpr("The river rat dusts itself off and pretends it meant to do that.");break;
+            // remainder are no extra statement
+            default: break;
+            }
+        }
+    }
 
     if (you.unrand_reacts.any())
         unrand_reacts();
 
+    // Permabuff song of slaying loses slaying bonus over time based on spellpower
+    if (you.permabuffs[MUT_SONG_OF_SLAYING]
+        && x_chance_in_y(you.time_taken * 50, 
+           (50 + calc_spell_power(SPELL_SONG_OF_SLAYING, true)) * 10 * BASELINE_DELAY))
+   {
+       const int sos_bonus = you.props[SONG_OF_SLAYING_KEY];
+       // Bonus cannot go below 0 (no negative slaying)
+       if (sos_bonus > 0)
+       {
+           you.props[SONG_OF_SLAYING_KEY] = sos_bonus - 1;
+       }
+   }
+
     // Handle sound-dependent effects that are silenced
     if (silenced(you.pos()))
     {
-        if (you.duration[DUR_SONG_OF_SLAYING])
+        if (you.permabuffs[MUT_SONG_OF_SLAYING])
         {
             mpr("The silence causes your song to end.");
-            _decrement_a_duration(DUR_SONG_OF_SLAYING, you.duration[DUR_SONG_OF_SLAYING]);
+            spell_remove_permabuff(SPELL_SONG_OF_SLAYING, 2);
         }
     }
 
     // Singing makes a continuous noise
-    if (you.duration[DUR_SONG_OF_SLAYING])
+    if (you.permabuffs[MUT_SONG_OF_SLAYING])
         noisy(spell_effect_noise(SPELL_SONG_OF_SLAYING), you.pos());
 
     if (x_chance_in_y(you.time_taken, 10 * BASELINE_DELAY))

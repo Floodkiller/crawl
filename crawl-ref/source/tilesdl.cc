@@ -372,8 +372,8 @@ int TilesFramework::draw_popup(Popup *popup)
     int col = 0;
     while (MenuEntry *me = popup->next_entry())
     {
-        col++;
         reg.set_entry(col, me->get_text(true), me->colour, me, false);
+        col++;
     }
     // fetch a return value
     use_control_region(&reg, false);
@@ -789,13 +789,6 @@ int TilesFramework::getch_ck()
 
             case WME_KEYUP:
                 m_key_mod &= ~event.key.keysym.key_mod;
-                m_last_tick_moved = UINT_MAX;
-                break;
-
-            case WME_KEYPRESS:
-                key = event.key.keysym.sym;
-                m_region_tile->place_cursor(CURSOR_MOUSE, NO_CURSOR);
-
                 m_last_tick_moved = UINT_MAX;
                 break;
 
@@ -1413,6 +1406,10 @@ void TilesFramework::layout_statcol()
 
         m_statcol_bottom = m_region_tab->sy - m_tab_margin;
 
+        // Lava orc temperature bar
+        if (you.species == SP_LAVA_ORC)
+            ++crawl_view.hudsz.y;
+
         m_region_stat->resize(m_region_stat->mx, crawl_view.hudsz.y);
         m_statcol_top += m_region_stat->dy;
 
@@ -1477,6 +1474,25 @@ int TilesFramework::get_number_of_cols()
 
 void TilesFramework::cgotoxy(int x, int y, GotoRegion region)
 {
+    set_cursor_region(region);
+    TextRegion::cgotoxy(x, y);
+}
+
+GotoRegion TilesFramework::get_cursor_region() const
+{
+    if (TextRegion::text_mode == m_region_crt)
+        return GOTO_CRT;
+    if (TextRegion::text_mode == m_region_msg)
+        return GOTO_MSG;
+    if (TextRegion::text_mode == m_region_stat)
+        return GOTO_STAT;
+
+    die("Bogus region");
+    return GOTO_CRT;
+}
+
+void TilesFramework::set_cursor_region(GotoRegion region)
+{
     switch (region)
     {
     case GOTO_CRT:
@@ -1495,21 +1511,6 @@ void TilesFramework::cgotoxy(int x, int y, GotoRegion region)
         die("invalid cgotoxy region in tiles: %d", region);
         break;
     }
-
-    TextRegion::cgotoxy(x, y);
-}
-
-GotoRegion TilesFramework::get_cursor_region() const
-{
-    if (TextRegion::text_mode == m_region_crt)
-        return GOTO_CRT;
-    if (TextRegion::text_mode == m_region_msg)
-        return GOTO_MSG;
-    if (TextRegion::text_mode == m_region_stat)
-        return GOTO_STAT;
-
-    die("Bogus region");
-    return GOTO_CRT;
 }
 
 // #define DEBUG_TILES_REDRAW
@@ -1546,7 +1547,7 @@ void TilesFramework::redraw()
 
 void TilesFramework::update_minimap(const coord_def& gc)
 {
-    if (!m_region_map)
+    if (!m_region_map || !map_bounds(gc))
         return;
 
     map_feature mf;
@@ -1554,7 +1555,7 @@ void TilesFramework::update_minimap(const coord_def& gc)
     if (!crawl_state.game_is_arena() && gc == you.pos() && you.on_current_level)
         mf = MF_PLAYER;
     else
-        mf = get_cell_map_feature(env.map_knowledge(gc));
+        mf = get_cell_map_feature(gc);
 
     // XXX: map_cell show have exclusion info
     if (mf == MF_FLOOR || mf == MF_MAP_FLOOR || mf == MF_WATER

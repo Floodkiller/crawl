@@ -20,6 +20,26 @@
 static const map<species_type, species_def> species_data =
 {
 
+{ SP_ABOMINATION, {
+    "Ab",
+    "Abomination", nullptr, nullptr,
+    SPF_NONE,
+    1, 1, 1, 0,
+    MONS_ABOMINATION_SMALL,
+    HT_WATER, US_ALIVE, SIZE_MEDIUM,
+    10, 5, 4, // 19
+    { STAT_STR, STAT_DEX }, 5,
+    { { MUT_HEAT_VULNERABILITY, 2, 1 }, { MUT_REGENERATION, 1, 1 }, },
+    { "You have a mass of tentacles for a left arm.", "You have two strong right arms.", "Your body has no innate resistence to magic.", },
+    { "tentacle arms", "two strong arms", "no magic resistence", },
+    { JOB_FIGHTER, JOB_HUNTER,
+      JOB_BERSERKER, JOB_ABYSSAL_KNIGHT,
+      JOB_ARCANE_MARKSMAN,
+      JOB_NECROMANCER, JOB_AIR_ELEMENTALIST },
+    { SK_AXES, SK_LONG_BLADES, SK_STAVES,
+      SK_CROSSBOWS },
+} },
+
 { SP_BARACHI, {
     "Ba",
     "Barachi", "Barachian", "Frog",
@@ -35,6 +55,25 @@ static const map<species_type, species_def> species_data =
     { JOB_FIGHTER, JOB_BERSERKER, JOB_SKALD, JOB_SUMMONER, JOB_ICE_ELEMENTALIST },
     { SK_MACES_FLAILS, SK_AXES, SK_POLEARMS, SK_LONG_BLADES, SK_STAVES,
       SK_BOWS, SK_CROSSBOWS, SK_SLINGS },
+} },
+
+{ SP_FAERIE_DRAGON, {
+    "FD",
+    "Faerie Dragon", "Faerie", "Faerie",
+    SPF_NO_HAIR,
+    0, -1, 0, 4,
+    MONS_DRACONIAN,
+    HT_LAND, US_ALIVE, SIZE_SMALL,
+    6, 11, 7, // 24
+    { STAT_INT, STAT_DEX }, 4,
+    { { MUT_MAGIC_ATTUNEMENT, 1, 1 }, { MUT_SHIMMERING_SCALES, 1, 1 },
+      { MUT_FAERIE_DRAGON_FLIGHT, 1, 1 }, },
+    { "You cannot fit into any form of body armour." },
+    { "unfitting armour" },
+    { JOB_AIR_ELEMENTALIST, JOB_FIRE_ELEMENTALIST, JOB_ICE_ELEMENTALIST,
+      JOB_CONJURER, JOB_EARTH_ELEMENTALIST, JOB_VENOM_MAGE, JOB_WIZARD,
+      JOB_NECROMANCER },
+    { SK_SHORT_BLADES, SK_MACES_FLAILS, SK_SLINGS },
 } },
 
 { SP_GNOLL, {
@@ -111,15 +150,15 @@ static const map<species_type, species_def> species_data =
     { SK_SHORT_BLADES, SK_STAVES, SK_BOWS },
 } },
 
-{ SP_DEMIGOD, {
-    "Dg",
-    "Demigod", "Divine", nullptr,
+{ SP_PROMETHEAN, {
+    "Pr",
+    "Promethean", nullptr, nullptr,
     SPF_NONE,
-    -2, 1, 2, 4,
-    MONS_DEMIGOD,
+    -1, 1, 2, 4,
+    MONS_PROMETHEAN,
     HT_LAND, US_ALIVE, SIZE_MEDIUM,
     11, 12, 11, // 34
-    set<stat_type>(), 28, // No natural stat gain (double chosen instead)
+    { STAT_STR, STAT_INT, STAT_DEX }, 1,
     { {MUT_HIGH_MAGIC, 1, 1} },
     {},
     {},
@@ -143,7 +182,7 @@ static const map<species_type, species_def> species_data =
     {},
     { JOB_BERSERKER, JOB_TRANSMUTER, JOB_CONJURER, JOB_FIRE_ELEMENTALIST,
       JOB_ICE_ELEMENTALIST, JOB_AIR_ELEMENTALIST, JOB_EARTH_ELEMENTALIST,
-      JOB_VENOM_MAGE },
+      JOB_VENOM_MAGE, JOB_REAVER },
     { SK_MACES_FLAILS, SK_AXES, SK_POLEARMS, SK_LONG_BLADES, SK_STAVES,
       SK_BOWS, SK_CROSSBOWS, SK_SLINGS },
 } },
@@ -375,8 +414,30 @@ static const map<species_type, species_def> species_data =
     {},
     { JOB_FIGHTER, JOB_GLADIATOR, JOB_MONK, JOB_BERSERKER,
       JOB_FIRE_ELEMENTALIST, JOB_ICE_ELEMENTALIST, JOB_EARTH_ELEMENTALIST,
-      JOB_VENOM_MAGE },
+      JOB_VENOM_MAGE, JOB_REAVER },
     { SK_MACES_FLAILS, SK_STAVES, SK_BOWS, SK_CROSSBOWS },
+} },
+
+{ SP_SKELETON, {
+    "Sk",
+    "Skeleton", "Skeletal", "Skeleton",
+    SPF_NONE,
+    -1, -1, 0, 6,
+    MONS_SKELETON,
+    HT_LAND, US_UNDEAD, SIZE_MEDIUM,
+    10, 7, 7, // 24
+    { STAT_STR, STAT_INT, STAT_DEX }, 4,
+    { { MUT_NEGATIVE_ENERGY_RESISTANCE, 3, 1 }, 
+      { MUT_TORMENT_RESISTANCE, 1, 1 },
+      { MUT_UNBREATHING, 1, 1 },
+      { MUT_FRAIL, 2, 1 } },
+    { "You do not eat or drink.",
+      "You can enter a trance state until all enemies are dead."},
+    { "no food or potions", "skeletal body", },
+    { JOB_FIGHTER, JOB_GLADIATOR,  JOB_CONJURER, JOB_FIRE_ELEMENTALIST, JOB_HUNTER,
+      JOB_ICE_ELEMENTALIST, JOB_EARTH_ELEMENTALIST, JOB_AIR_ELEMENTALIST, JOB_VENOM_MAGE },
+    { SK_MACES_FLAILS, SK_AXES, SK_POLEARMS, SK_LONG_BLADES,
+      SK_BOWS, SK_CROSSBOWS},
 } },
 
 { SP_GHOUL, {
@@ -416,6 +477,22 @@ static const map<species_type, species_def> species_data =
     { SK_SHORT_BLADES, SK_LONG_BLADES, SK_AXES, SK_SLINGS },
 } },
 
+{ SP_HERMIT_CRAB, {
+    "HC",
+    "Hermit Crab", "Decapodian", "Crab",
+    SPF_NO_HAIR,
+    0, 0, 1, 4,
+    MONS_FIRE_CRAB,
+    HT_WATER, US_ALIVE, SIZE_MEDIUM,
+    8, 10, 6, // 24
+    { STAT_STR, STAT_INT }, 4,
+    { { MUT_STURDY_FRAME, 3, 1 },  { MUT_PINCERS, 1, 1 }, },
+    { "Your physical structure is perfection and can not be permanently altered." },
+    { },
+    { JOB_WIZARD, JOB_CONJURER, JOB_SUMMONER, JOB_NECROMANCER, JOB_FIRE_ELEMENTALIST, JOB_ICE_ELEMENTALIST, JOB_AIR_ELEMENTALIST, JOB_EARTH_ELEMENTALIST, JOB_VENOM_MAGE },
+    { SK_UNARMED_COMBAT },
+} },
+
 { SP_HIGH_ELF, {
     "HE",
     "High Elf", "Elven", "Elf",
@@ -429,7 +506,7 @@ static const map<species_type, species_def> species_data =
     {},
     {},
     { JOB_HUNTER, JOB_SKALD, JOB_WIZARD, JOB_CONJURER, JOB_FIRE_ELEMENTALIST,
-      JOB_ICE_ELEMENTALIST, JOB_AIR_ELEMENTALIST },
+      JOB_ICE_ELEMENTALIST, JOB_AIR_ELEMENTALIST, JOB_REAVER },
     { SK_SHORT_BLADES, SK_LONG_BLADES, SK_STAVES, SK_BOWS },
 } },
 
@@ -577,8 +654,8 @@ static const map<species_type, species_def> species_data =
     {},
     {},
     { JOB_HUNTER, JOB_BERSERKER, JOB_ARCANE_MARKSMAN, JOB_WIZARD,
-      JOB_FIRE_ELEMENTALIST },
-    { SK_MACES_FLAILS, SK_POLEARMS, SK_STAVES },
+      JOB_FIRE_ELEMENTALIST, JOB_REAVER },
+    { SK_MACES_FLAILS, SK_POLEARMS, SK_STAVES, SK_AXES },
 } },
 
 { SP_OCTOPODE, {
@@ -633,7 +710,7 @@ static const map<species_type, species_def> species_data =
     {},
     {},
     { JOB_BERSERKER, JOB_WIZARD, JOB_CONJURER, JOB_SUMMONER,
-      JOB_FIRE_ELEMENTALIST, JOB_AIR_ELEMENTALIST, JOB_VENOM_MAGE },
+      JOB_FIRE_ELEMENTALIST, JOB_AIR_ELEMENTALIST, JOB_VENOM_MAGE, JOB_REAVER },
     { SK_MACES_FLAILS, SK_AXES, SK_POLEARMS, SK_LONG_BLADES, SK_STAVES,
       SK_BOWS, SK_CROSSBOWS },
 } },
@@ -713,21 +790,22 @@ static const map<species_type, species_def> species_data =
       JOB_EARTH_ELEMENTALIST, JOB_ICE_ELEMENTALIST },
     { SK_UNARMED_COMBAT, SK_STAVES },
 } },
-#if TAG_MAJOR_VERSION == 34
+
 { SP_LAVA_ORC, {
     "LO",
     "Lava Orc", "Orcish", "Orc",
     SPF_ORCISH | SPF_NO_HAIR,
     -1, 1, 0, 3,
-    MONS_LAVA_ORC,
+    MONS_ORC,
     HT_AMPHIBIOUS_LAVA, US_ALIVE, SIZE_MEDIUM,
     10, 8, 6, // 24
     { STAT_INT, STAT_DEX }, 5,
     {},
     {},
     {},
-    {}, // not a starting race
-    {}, // not a starting race
+    { JOB_FIGHTER, JOB_MONK, JOB_BERSERKER, JOB_ABYSSAL_KNIGHT,
+      JOB_FIRE_ELEMENTALIST, JOB_EARTH_ELEMENTALIST },
+    { SK_MACES_FLAILS, SK_AXES, SK_POLEARMS, SK_LONG_BLADES },
 } },
 
 { SP_DJINNI, {
@@ -735,17 +813,39 @@ static const map<species_type, species_def> species_data =
     "Djinni", "Djinn", nullptr,
     SPF_NONE,
     -1, -1, 0, 3,
-    MONS_DJINNI,
+    MONS_EFREET,
     HT_LAND, US_ALIVE, SIZE_MEDIUM,
     8, 8, 8, // 24
     { STAT_STR, STAT_INT, STAT_DEX }, 4,
-    {},
-    {},
-    {},
-    {}, // not a starting race
-    {}, // not a starting race
+    { { MUT_NEGATIVE_ENERGY_RESISTANCE, 3, 1 }, },
+    { "You are immune to all types of fire, even holy.",
+      "You are vulnerable to cold.",
+      "You need no food.",
+      "You have no legs." },
+    { "fire immunity", "cold vulnerability" },
+    { JOB_FIGHTER, JOB_ENCHANTER, JOB_CONJURER, JOB_AIR_ELEMENTALIST, 
+      JOB_FIRE_ELEMENTALIST, JOB_ARTIFICER },
+    { SK_LONG_BLADES, SK_MACES_FLAILS, SK_POLEARMS, SK_STAVES, SK_CROSSBOWS },
 } },
-#endif
+
+{ SP_GREY_ELF, {
+    "GE",
+    "Grey Elf", "Elven", "Elf",
+    SPF_ELVEN,
+    0, -1, 1, 4,
+    MONS_ELF,
+    HT_LAND, US_ALIVE, SIZE_MEDIUM,
+    8, 9, 10, // 27
+    { STAT_INT, STAT_DEX }, 4,
+    {},
+    {},
+    {},
+    { JOB_GLADIATOR, JOB_HUNTER, JOB_ASSASSIN, JOB_WIZARD, JOB_CONJURER,
+      JOB_SUMMONER, JOB_NECROMANCER, JOB_FIRE_ELEMENTALIST, JOB_ICE_ELEMENTALIST,
+      JOB_AIR_ELEMENTALIST, JOB_EARTH_ELEMENTALIST, JOB_VENOM_MAGE },
+    { SK_SHORT_BLADES, SK_STAVES, SK_BOWS },
+} },
+
 // Ideally this wouldn't be necessary...
 { SP_UNKNOWN, { // Line 1: enum
     "??", // Line 2: abbrev

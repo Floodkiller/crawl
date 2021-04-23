@@ -42,9 +42,12 @@
 #include "libutil.h"
 #include "macro.h"
 #include "message.h"
+#include "mon-act.h"
 #include "mon-behv.h"
+#include "mon-gear.h"
 #include "mon-tentacle.h"
 #include "mon-util.h"
+#include "mutation.h"
 #include "nearby-danger.h"
 #include "notes.h"
 #include "options.h"
@@ -728,7 +731,7 @@ void JewelleryOnDelay::finish()
 #ifdef USE_SOUND
     parse_sound(WEAR_JEWELLERY_SOUND);
 #endif
-    puton_ring(jewellery.link, false);
+    puton_ring(jewellery.link, false, false);
 }
 
 void ArmourOnDelay::finish()
@@ -748,7 +751,7 @@ void ArmourOnDelay::finish()
 
     if (eq_slot == EQ_BODY_ARMOUR)
     {
-        if (you.duration[DUR_ICY_ARMOUR] != 0
+        if (you.permabuffs[MUT_OZOCUBUS_ARMOUR] != 0
             && !is_effectively_light_armour(&armour))
         {
             remove_ice_armour();
@@ -758,6 +761,11 @@ void ArmourOnDelay::finish()
     equip_item(eq_slot, armour.link);
 
     check_item_hint(armour, old_talents);
+}
+
+bool ArmourOffDelay::invalidated()
+{
+    return !armour.defined();
 }
 
 void ArmourOffDelay::finish()
@@ -1117,8 +1125,7 @@ static inline bool _monster_warning(activity_interrupt_type ai,
         return false;
     else
     {
-        ash_id_monster_equipment(mon);
-        mark_mon_equipment_seen(mon);
+        view_monster_equipment(mon);
 
         string text = getMiscString(mon->name(DESC_DBNAME) + " title");
         if (text.empty())
@@ -1164,7 +1171,6 @@ static inline bool _monster_warning(activity_interrupt_type ai,
         else
             text += " comes into view.";
 
-        bool ash_id = mon->props.exists("ash_id") && mon->props["ash_id"];
         bool zin_id = false;
         string god_warning;
 
@@ -1172,7 +1178,6 @@ static inline bool _monster_warning(activity_interrupt_type ai,
             && mon->is_shapeshifter()
             && !(mon->flags & MF_KNOWN_SHIFTER))
         {
-            ASSERT(!ash_id);
             zin_id = true;
             mon->props["zin_id"] = true;
             discover_shifter(*mon);
@@ -1187,22 +1192,13 @@ static inline bool _monster_warning(activity_interrupt_type ai,
 
         monster_info mi(mon);
 
-        const string mweap = get_monster_equipment_desc(mi,
-                                                        ash_id ? DESC_IDENTIFIED
-                                                               : DESC_WEAPON,
+        const string mweap = get_monster_equipment_desc(mi, DESC_IDENTIFIED,
                                                         DESC_NONE);
 
         if (!mweap.empty())
         {
-            if (ash_id)
-            {
-                god_warning = uppercase_first(god_name(you.religion))
-                              + " warns you:";
-            }
-
-            (ash_id ? god_warning : text) +=
-                " " + uppercase_first(mon->pronoun(PRONOUN_SUBJECTIVE)) + " is"
-                + (ash_id ? " " : "")
+            text += " " + uppercase_first(mon->pronoun(PRONOUN_SUBJECTIVE)) + " is"
+                + (mweap[0] != ' ' ? " " : "")
                 + mweap + ".";
         }
 
@@ -1211,7 +1207,7 @@ static inline bool _monster_warning(activity_interrupt_type ai,
         else
         {
             mprf(MSGCH_MONSTER_WARNING, "%s", text.c_str());
-            if (ash_id || zin_id)
+            if (zin_id)
                 mprf(MSGCH_GOD, "%s", god_warning.c_str());
 #ifndef USE_TILE_LOCAL
             if (zin_id)
@@ -1238,7 +1234,7 @@ static inline bool _monster_warning(activity_interrupt_type ai,
         {
             yell(mon);
         }
-        mon->seen_context = SC_JUST_SEEN;
+        mons_set_just_seen(mon);
     }
 
     if (crawl_state.game_is_hints())
@@ -1319,7 +1315,9 @@ bool interrupt_activity(activity_interrupt_type ai,
     if (ai == AI_FULL_HP && !you.running.notified_hp_full)
     {
         you.running.notified_hp_full = true;
-        mpr("HP restored.");
+        mprf("%s restored.",
+                you.species == SP_DJINNI ? "EP" :
+                "HP");
     }
     else if (ai == AI_FULL_MP && !you.running.notified_mp_full)
     {

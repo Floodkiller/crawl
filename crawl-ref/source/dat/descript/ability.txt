@@ -3,6 +3,11 @@ No ability ability
 
 If you get this description, it is a bug.
 %%%%
+Release Permanent Buffs ability
+
+Releases control of all permanently sustained buffs, releasing your reserved
+power.
+%%%%
 Spit Poison ability
 
 Spits poison at a targeted creature.
@@ -86,6 +91,10 @@ Heal Wounds ability
 
 Heals the user significantly, with a chance of permanently reducing the user's
 maximum magic capacity by one.
+%%%%
+Device Recharging ability
+
+Recharges a wand, at the permanent cost of one magic point.
 %%%%
 Dig ability
 
@@ -314,13 +323,6 @@ Forget Spell ability
 Removes a known spell from memory, so as to free memory to learn others.
 %%%%
 # Trog
-Burn Spellbooks ability
-
-Sets all spellbooks within your field of vision on fire. The fire is fuelled by
-Trog's hatred, and it burns hotter than mere parchment would — which can be
-useful if you throw the book under someone's feet first. Trog greatly
-appreciates the burning of spellbooks.
-%%%%
 Berserk ability
 
 Sends the user into a berserk rage. Going berserk temporarily increases health,
@@ -567,7 +569,7 @@ Aborts an ongoing skill transfer.
 Shadow Step ability
 
 Allows you to step into the shadow of any hostile creature within your umbra,
-as long as they are immobile or asleep, landing adjacent to the target.
+landing on a random spot adjacent to the target.
 %%%%
 Shadow Form ability
 
@@ -762,8 +764,8 @@ Accepting a sacrifice will reset the timer to the standard length.
 Stomp ability
 
 Stomps down in time with the rhythm of the dance, sending a shockwave through
-all adjacent creatures. The shockwave damages each creature by a percentage of
-its maximum health, with the percentage increasing with Invocations skill.
+all adjacent creatures. The shockwave damages each creature by a fraction of
+its current health, plus damage increasing with Invocations skill.
 %%%%
 Line Pass ability
 
@@ -869,3 +871,10 @@ Hop ability
 Hops toward a chosen destination, landing somewhere nearby. After using this
 ability, you will be unable to hop again until you have spent some time not
 moving. (Other actions, such as casting spells and attacking, are fine.)
+%%%%
+Reap ability
+
+Enters a magically induced trance with a single purpose: Destroy all sentient
+life. Your combat ability is increased and you become able to ignore some 
+incoming damage, but you are forced to fight until no living being remains 
+nearby.

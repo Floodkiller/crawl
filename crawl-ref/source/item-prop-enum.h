@@ -28,9 +28,7 @@ enum armour_type
     ARM_SCARF,
 #endif
 
-#if TAG_MAJOR_VERSION == 34
     ARM_CAP,
-#endif
     ARM_HAT,
     ARM_HELMET,
 
@@ -227,9 +225,7 @@ enum jewellery_type
     AMU_RAGE = 35,
     AMU_FIRST_AMULET = AMU_RAGE,
     AMU_HARM,
-#if TAG_MAJOR_VERSION == 34
-    AMU_DISMISSAL,
-#endif
+    AMU_ACROBAT,
     AMU_MANA_REGENERATION,
     AMU_THE_GOURMAND,
 #if TAG_MAJOR_VERSION == 34
@@ -261,8 +257,8 @@ enum misc_item_type
 #endif
     MISC_FAN_OF_GALES,
     MISC_LAMP_OF_FIRE,
-#if TAG_MAJOR_VERSION == 34
     MISC_STONE_OF_TREMORS,
+#if TAG_MAJOR_VERSION == 34
     MISC_BUGGY_LANTERN_OF_SHADOWS,
 #endif
     MISC_HORN_OF_GERYON,
@@ -271,6 +267,7 @@ enum misc_item_type
 #if TAG_MAJOR_VERSION == 34
     MISC_BUGGY_EBONY_CASKET,
 #endif
+    MISC_DISC_OF_STORMS,
     MISC_LIGHTNING_ROD,
 
     MISC_DECK_OF_ESCAPE,
@@ -310,6 +307,12 @@ enum misc_item_type
     MISC_XOMS_CHESSBOARD,
 #endif
 
+    // Archaeologist
+    MISC_ANCIENT_CRATE,
+    MISC_DUSTY_TOME,
+    
+    MISC_WIZARD_KEY,
+
     NUM_MISCELLANY,
     MISC_DECK_UNKNOWN = NUM_MISCELLANY,
 };
@@ -330,29 +333,31 @@ const vector<misc_item_type> deck_types =
 // in no particular order (but we need *a* fixed order for dbg-scan)
 const vector<misc_item_type> misc_types =
 {
-    MISC_FAN_OF_GALES, MISC_LAMP_OF_FIRE,
+    MISC_FAN_OF_GALES, MISC_LAMP_OF_FIRE, MISC_STONE_OF_TREMORS,
 #if TAG_MAJOR_VERSION == 34
-    MISC_STONE_OF_TREMORS,
     MISC_BUGGY_LANTERN_OF_SHADOWS,
 #endif
     MISC_HORN_OF_GERYON, MISC_BOX_OF_BEASTS,
     MISC_CRYSTAL_BALL_OF_ENERGY, MISC_LIGHTNING_ROD, MISC_PHIAL_OF_FLOODS,
-    MISC_QUAD_DAMAGE, MISC_SACK_OF_SPIDERS, MISC_PHANTOM_MIRROR,
+    MISC_QUAD_DAMAGE, MISC_SACK_OF_SPIDERS, MISC_PHANTOM_MIRROR, MISC_DISC_OF_STORMS,
 #if TAG_MAJOR_VERSION == 34
     MISC_XOMS_CHESSBOARD,
 #endif
     MISC_ZIGGURAT,
 #if TAG_MAJOR_VERSION == 34
-    MISC_BOTTLED_EFREET, MISC_BUGGY_EBONY_CASKET
+    MISC_BOTTLED_EFREET, MISC_BUGGY_EBONY_CASKET,
 #endif
+    MISC_ANCIENT_CRATE,
+    MISC_DUSTY_TOME,
+    MISC_WIZARD_KEY
 };
 
 enum missile_type
 {
-#if TAG_MAJOR_VERSION == 34
     MI_DART,
-#endif
+#if TAG_MAJOR_VERSION == 34
     MI_NEEDLE,
+#endif
     MI_ARROW,
     MI_BOLT,
     MI_JAVELIN,
@@ -361,8 +366,9 @@ enum missile_type
     MI_LARGE_ROCK,
     MI_SLING_BULLET,
     MI_THROWING_NET,
-    MI_TOMAHAWK,
-
+    MI_PIE,
+    MI_BOOMERANG,
+    
     NUM_MISSILES,
     MI_NONE             // was MI_EGGPLANT... used for launch type detection
 };
@@ -484,26 +490,30 @@ enum special_missile_type // to separate from weapons in general {dlb}
     SPMSL_FROST,
     SPMSL_POISONED,
     SPMSL_CURARE,                      // Needle-only brand
+#if TAG_MAJOR_VERSION == 34
     SPMSL_RETURNING,
+#endif
     SPMSL_CHAOS,
+#if TAG_MAJOR_VERSION == 34
     SPMSL_PENETRATION,
+#endif
     SPMSL_DISPERSAL,
+#if TAG_MAJOR_VERSION == 34
     SPMSL_EXPLODING,
     SPMSL_STEEL,
-    SPMSL_SILVER,
-    SPMSL_PARALYSIS,                   // needle only from here on
-#if TAG_MAJOR_VERSION == 34
-    SPMSL_SLOW,
 #endif
+    SPMSL_SILVER,
+#if TAG_MAJOR_VERSION == 34
+    SPMSL_PARALYSIS,                   // dart only from here on
+    SPMSL_SLOW,
     SPMSL_SLEEP,
     SPMSL_CONFUSION,
-#if TAG_MAJOR_VERSION == 34
     SPMSL_SICKNESS,
 #endif
     SPMSL_FRENZY,
-    NUM_REAL_SPECIAL_MISSILES,
     SPMSL_BLINDING,
-    NUM_SPECIAL_MISSILES,
+    NUM_REAL_SPECIAL_MISSILES,
+    NUM_SPECIAL_MISSILES = NUM_REAL_SPECIAL_MISSILES,
 };
 
 enum special_ring_type // jewellery mitm[].special values
@@ -588,7 +598,9 @@ enum weapon_type
     WPN_GLAIVE,
     WPN_BARDICHE,
 
+#if TAG_MAJOR_VERSION == 34
     WPN_BLOWGUN,
+#endif
 
 #if TAG_MAJOR_VERSION > 34
     WPN_HAND_CROSSBOW,
@@ -653,7 +665,7 @@ enum weapon_type
     WPN_RANDOM,
     WPN_VIABLE,
 
-// thrown weapons (for hunter weapon selection) - rocks, javelins, tomahawks
+// thrown weapons (for hunter weapon selection) - rocks, javelins, boomerangs
     WPN_THROWN,
 };
 

@@ -15,6 +15,7 @@
 
 #include "art-enum.h"
 #include "cloud.h"
+#include "coord.h"
 #include "coordit.h"
 #include "delay.h"
 #include "english.h"
@@ -412,6 +413,13 @@ stab_type find_stab_type(const actor *attacker,
     {
         return STAB_DISTRACTED;
     }
+    
+    // stopped time makes everything a little stabbable
+    // realistically it should be stab denominator 1 not 4, but that might be too broken?
+    if (you.attribute[ATTR_TIME_STOP])
+    {
+        return STAB_TIME_STOP;
+    }
 
     return STAB_NO_STAB;
 }
@@ -755,7 +763,8 @@ void attack_cleave_targets(actor &attacker, list<actor*> &targets,
     while (attacker.alive() && !targets.empty())
     {
         actor* def = targets.front();
-        if (def && def->alive() && !_dont_harm(attacker, *def))
+
+        if (def && def->alive() && !_dont_harm(attacker, *def) && adjacent(attacker.pos(), def->pos()))
         {
             melee_attack attck(&attacker, def, attack_number,
                                ++effective_attack_number, true);
@@ -1006,7 +1015,8 @@ bool stop_attack_prompt(const monster* mon, bool beam_attack,
 }
 
 bool stop_attack_prompt(targeter &hitfunc, const char* verb,
-                        bool (*affects)(const actor *victim), bool *prompted)
+                        function<bool(const actor *victim)> affects,
+                        bool *prompted)
 {
     if (crawl_state.disables[DIS_CONFIRMATIONS])
         return false;

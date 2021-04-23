@@ -36,6 +36,7 @@
 #include "misc.h"
 #include "mutation.h"
 #include "notes.h"
+#include "player-equip.h"
 #include "player-stats.h"
 #include "prompt.h"
 #include "religion.h"
@@ -325,7 +326,7 @@ public:
                && you.num_turns >= m_request_redraw_after;
     }
 
-    void draw(int ox, int oy, int val, int max_val, int sub_val = 0)
+    void draw(int ox, int oy, int val, int max_val, bool temp = false, int sub_val = 0)
     {
         ASSERT(val <= max_val);
         if (max_val <= 0)
@@ -333,6 +334,7 @@ public:
             m_old_disp = -1;
             return;
         }
+        const colour_t temp_colour = temperature_colour(temperature());
         const int width = (horiz_bar_width != -1) ?
                                   horiz_bar_width :
                                   crawl_view.hudsz.x - (ox - 1);
@@ -355,7 +357,7 @@ public:
             textcolour(BLACK + m_empty * 16);
 
             if (cx < disp)
-                textcolour(BLACK + m_default * 16);
+                textcolour(BLACK + (temp) ? temp_colour * 16 : m_default * 16);
             else if (cx < sub_disp)
                 textcolour(BLACK + YELLOW * 16);
             else if (old_disp >= sub_disp && cx < old_disp)
@@ -364,7 +366,7 @@ public:
 #else
             if (cx < disp && cx < old_disp)
             {
-                textcolour(m_default);
+                textcolour((temp) ? temp_colour : m_default);
                 putwch('=');
             }
             else if (cx < disp)
@@ -461,12 +463,16 @@ public:
 };
 
 static colour_bar HP_Bar(LIGHTGREEN, GREEN, RED, DARKGREY);
+static colour_bar EP_Bar(LIGHTMAGENTA, MAGENTA, BLUE, DARKGREY);
 
 #ifdef USE_TILE_LOCAL
 static colour_bar MP_Bar(BLUE, BLUE, LIGHTBLUE, DARKGREY);
 #else
 static colour_bar MP_Bar(LIGHTBLUE, BLUE, MAGENTA, DARKGREY);
 #endif
+
+colour_bar Contam_Bar(DARKGREY, DARKGREY, DARKGREY, DARKGREY);
+colour_bar Temp_Bar(RED, LIGHTRED, LIGHTBLUE, DARKGREY);
 
 #ifdef USE_TILE_LOCAL
 static colour_bar Noise_Bar(WHITE, LIGHTGREY, LIGHTGREY, DARKGREY);
@@ -504,7 +510,8 @@ static bool _boosted_ac()
 static bool _boosted_ev()
 {
     return you.duration[DUR_AGILITY]
-           || you.duration[DUR_PHASE_SHIFT];
+           || you.duration[DUR_PHASE_SHIFT]
+           || acrobat_boost_visible();
 }
 
 static bool _boosted_sh()
@@ -544,7 +551,8 @@ void update_turn_count()
         return;
     }
 
-    CGOTOXY(19+6, 9, GOTO_STAT);
+    const int yhack = 0 + (you.species == SP_LAVA_ORC);
+    CGOTOXY(19+6, 9 + yhack, GOTO_STAT);
 
     // Show the turn count starting from 1. You can still quit on turn 0.
     textcolour(HUD_VALUE_COLOUR);
@@ -571,6 +579,14 @@ static int _count_digits(int val)
     return 1;
 }
 
+static void _print_stats_temperature(int x, int y)
+{
+    cgotoxy(x, y, GOTO_STAT);
+    textcolour(HUD_CAPTION_COLOUR);
+    cprintf("Temperature: ");
+    Temp_Bar.draw(19, y, temperature(), TEMP_MAX, true);
+}
+
 static const equipment_type e_order[] =
 {
     EQ_WEAPON, EQ_SHIELD, EQ_BODY_ARMOUR, EQ_HELMET, EQ_CLOAK,
@@ -584,7 +600,7 @@ static void _print_stats_equip(int x, int y)
 {
     CGOTOXY(x, y, GOTO_STAT);
     textcolour(HUD_CAPTION_COLOUR);
-    cprintf((you.species == SP_OCTOPODE) ? "Eq: " : "Equip: ");
+    cprintf((you.species == SP_OCTOPODE || you.species == SP_ABOMINATION) ? "Eq: " : "Equip: ");
     textcolour(LIGHTGREY);
     for (equipment_type eqslot : e_order)
     {
@@ -707,6 +723,11 @@ static void _print_stats_gold(int x, int y, colour_t colour)
 
 static void _print_stats_mp(int x, int y)
 {
+    if (you.species == SP_DJINNI)
+        return;
+
+    int max_max_mp = get_real_mp(true, true);
+
     // Calculate colour
     short mp_colour = HUD_VALUE_COLOUR;
 
@@ -733,6 +754,8 @@ static void _print_stats_mp(int x, int y)
     if (!boosted)
         textcolour(HUD_VALUE_COLOUR);
     CPRINTF("/%d", you.max_magic_points);
+    if (max_max_mp != you.max_magic_points)
+        CPRINTF(" (%d)", max_max_mp);
     if (boosted)
         textcolour(HUD_VALUE_COLOUR);
 
@@ -749,9 +772,56 @@ static void _print_stats_mp(int x, int y)
     MP_Bar.draw(19, y, you.magic_points, you.max_magic_points);
 }
 
+static void _print_stats_contam(int x, int y)
+{
+    if (you.species != SP_DJINNI)
+        return;
+     const int max_contam = 8000;
+    int contam = min(you.magic_contamination, max_contam);
+     // Calculate colour
+    if (you.magic_contamination > 15000)
+    {
+        Contam_Bar.m_default = RED;
+        Contam_Bar.m_change_pos = Contam_Bar.m_change_neg = RED;
+    }
+    else if (you.magic_contamination > 5000) // harmful
+    {
+        Contam_Bar.m_default = LIGHTRED;
+        Contam_Bar.m_change_pos = Contam_Bar.m_change_neg = RED;
+    }
+    else if (you.magic_contamination > 3333)
+    {
+        Contam_Bar.m_default = YELLOW;
+        Contam_Bar.m_change_pos = Contam_Bar.m_change_neg = BROWN;
+    }
+    else if (you.magic_contamination > 1666)
+    {
+        Contam_Bar.m_default = LIGHTGREY;
+        Contam_Bar.m_change_pos = Contam_Bar.m_change_neg = DARKGREY;
+    }
+    else
+    {
+#ifdef USE_TILE_LOCAL
+        Contam_Bar.m_default = LIGHTGREY;
+#else
+        Contam_Bar.m_default = DARKGREY;
+#endif
+        Contam_Bar.m_change_pos = Contam_Bar.m_change_neg = DARKGREY;
+    }
+ #ifdef TOUCH_UI
+    if (tiles.is_using_small_layout())
+        Contam_Bar.vdraw(6, 10, contam, max_contam);
+    else
+#endif
+    Contam_Bar.draw(19, y, contam, max_contam);
+}
+
 static void _print_stats_hp(int x, int y)
 {
     int max_max_hp = get_real_hp(true, true);
+
+    if (you.species == SP_DJINNI)
+        max_max_hp += get_real_mp(true, true);
 
     // Calculate colour
     short hp_colour = HUD_VALUE_COLOUR;
@@ -774,7 +844,14 @@ static void _print_stats_hp(int x, int y)
     // Health: xxx/yyy (zzz)
     CGOTOXY(x, y, GOTO_STAT);
     textcolour(HUD_CAPTION_COLOUR);
-    CPRINTF(player_rotted() ? "HP: " : "Health: ");
+    if (you.species == SP_DJINNI)
+    {
+        CPRINTF(player_rotted() ? "EP: " : "Essence: ");
+    }
+    else
+    {
+        CPRINTF(player_rotted() ? "HP: " : "Health: ");
+    }
     textcolour(hp_colour);
     CPRINTF("%d", you.hp);
     if (!boosted)
@@ -791,10 +868,37 @@ static void _print_stats_hp(int x, int y)
 
 #ifdef USE_TILE_LOCAL
     if (tiles.is_using_small_layout())
-        HP_Bar.vdraw(2, 10, you.hp, you.hp_max);
+    {
+        if (you.species == SP_DJINNI)
+        {
+            EP_Bar.vdraw(2, 10, you.hp, you.hp_max);
+        }
+        else
+        {
+            HP_Bar.vdraw(2, 10, you.hp, you.hp_max);
+        }
+    }
     else
-#endif
+    {
+        if (you.species == SP_DJINNI)
+        {
+            EP_Bar.draw(19, y, you.hp, you.hp_max);
+        }
+        else
+        {
+            HP_Bar.draw(19, y, you.hp, you.hp_max, false, you.hp - max(0, poison_survival()));
+        }
+    }
+#else
+    if (you.species == SP_DJINNI)
+    {
+        EP_Bar.draw(19, y, you.hp, you.hp_max);
+    }
+    else
+    {
         HP_Bar.draw(19, y, you.hp, you.hp_max, you.hp - max(0, poison_survival()));
+    }
+#endif
 }
 
 static short _get_stat_colour(stat_type stat)
@@ -993,7 +1097,7 @@ static void _add_status_light_to_out(int i, vector<status_light>& out)
 {
     status_info inf;
 
-    if (fill_status_info(i, &inf) && !inf.light_text.empty())
+    if (fill_status_info(i, inf) && !inf.light_text.empty())
     {
         status_light sl(inf.light_colour, inf.light_text);
         out.push_back(sl);
@@ -1057,6 +1161,7 @@ static void _get_status_lights(vector<status_light>& out)
         DUR_DEATHS_DOOR_COOLDOWN,
         DUR_QUAD_DAMAGE,
         STATUS_SERPENTS_LASH,
+        STATUS_TIME_STOP,
     };
 
     bitset<STATUS_LAST_STATUS + 1> done;
@@ -1233,8 +1338,8 @@ static void _redraw_title()
     NOWRAP_EOL_CPRINTF("%s", species.c_str());
     if (you_worship(GOD_NO_GOD))
     {
-        if (you.char_class == JOB_MONK && you.species != SP_DEMIGOD
-            && !had_gods())
+        if (you.char_class == JOB_MONK && you.species != SP_PROMETHEAN
+            && !had_gods() && you.pledge != PLEDGE_BRUTE_FORCE)
         {
             string godpiety = "**....";
             textcolour(DARKGREY);
@@ -1280,8 +1385,10 @@ static void _redraw_title()
 
 void print_stats()
 {
-    int ac_pos = 5;
-    int ev_pos = ac_pos + 1;
+    int temp = (you.species == SP_LAVA_ORC) ? 1 : 0;
+    int temp_pos = 5;
+    int ac_pos = temp_pos + temp;
+    int ev_pos = temp_pos + temp + 1;
 
     cursor_control coff(false);
     textcolour(LIGHTGREY);
@@ -1297,6 +1404,8 @@ void print_stats()
         you.redraw_hit_points = true;
     if (MP_Bar.wants_redraw())
         you.redraw_magic_points = true;
+    if (Temp_Bar.wants_redraw() && you.species == SP_LAVA_ORC)
+        you.redraw_temperature = true;
 
     // Poison display depends on regen rate, so should be redrawn every turn.
     if (you.duration[DUR_POISONING])
@@ -1325,6 +1434,13 @@ void print_stats()
         _print_stats_mp(1, 4);
     }
 
+    _print_stats_contam(1, 4);
+    if (you.redraw_temperature)
+    {
+        you.redraw_temperature = false;
+        _print_stats_temperature(1, temp_pos);
+    }
+
     if (you.redraw_armour_class)
     {
         you.redraw_armour_class = false;
@@ -1338,12 +1454,12 @@ void print_stats()
 
     for (int i = 0; i < NUM_STATS; ++i)
         if (you.redraw_stats[i])
-            _print_stat(static_cast<stat_type>(i), 19, 5 + i);
+            _print_stat(static_cast<stat_type>(i), 19, 5 + i + temp);
     you.redraw_stats.init(false);
 
     if (you.redraw_experience)
     {
-        CGOTOXY(1, 8, GOTO_STAT);
+        CGOTOXY(1, 8 + temp, GOTO_STAT);
         textcolour(Options.status_caption_colour);
         CPRINTF("XL: ");
         textcolour(HUD_VALUE_COLOUR);
@@ -1360,7 +1476,7 @@ void print_stats()
         you.redraw_experience = false;
     }
 
-    int yhack = 0;
+    int yhack = temp;
 
     // Line 9 is Noise and Turns
 #ifdef USE_TILE_LOCAL
@@ -1436,6 +1552,8 @@ static string _level_description_string_hud()
 void print_stats_level()
 {
     int ypos = 8;
+    if (you.species == SP_LAVA_ORC)
+        ypos++;
     cgotoxy(19, ypos, GOTO_STAT);
     textcolour(HUD_CAPTION_COLOUR);
     CPRINTF("Place: ");
@@ -1454,18 +1572,21 @@ void draw_border()
     clrscr();
 
     textcolour(Options.status_caption_colour);
+    int temp = (you.species == SP_LAVA_ORC) ? 1 : 0;
 
 //    int hp_pos = 3;
     int mp_pos = 4;
-    int ac_pos = 5;
-    int ev_pos = 6;
-    int sh_pos = 7;
+    int ac_pos = 5 + temp;
+    int ev_pos = 6 + temp;
+    int sh_pos = 7 + temp;
     int str_pos = ac_pos;
     int int_pos = ev_pos;
     int dex_pos = sh_pos;
 
     //CGOTOXY(1, 3, GOTO_STAT); CPRINTF("Hp:");
     CGOTOXY(1, mp_pos, GOTO_STAT);
+    if (you.species == SP_DJINNI)
+        CPRINTF("Contam:");
     CGOTOXY(1, ac_pos, GOTO_STAT); CPRINTF("AC:");
     CGOTOXY(1, ev_pos, GOTO_STAT); CPRINTF("EV:");
     CGOTOXY(1, sh_pos, GOTO_STAT); CPRINTF("SH:");
@@ -1474,12 +1595,13 @@ void draw_border()
     CGOTOXY(19, int_pos, GOTO_STAT); CPRINTF("Int:");
     CGOTOXY(19, dex_pos, GOTO_STAT); CPRINTF("Dex:");
 
-    CGOTOXY(19, 9, GOTO_STAT);
+    int yhack = temp;
+    CGOTOXY(19, 9 + temp, GOTO_STAT);
     CPRINTF(Options.show_game_time ? "Time:" : "Turn:");
     // Line 8 is exp pool, Level
 }
 
-void redraw_screen()
+void redraw_screen(bool show_updates)
 {
     if (!crawl_state.need_save)
     {
@@ -1497,6 +1619,8 @@ void redraw_screen()
     you.redraw_title        = true;
     you.redraw_hit_points   = true;
     you.redraw_magic_points = true;
+    if (you.species == SP_LAVA_ORC)
+        you.redraw_temperature = true;
     you.redraw_stats.init(true);
     you.redraw_armour_class  = true;
     you.redraw_evasion       = true;
@@ -1519,13 +1643,15 @@ void redraw_screen()
     if (Options.messages_at_top)
     {
         display_message_window();
-        viewwindow();
+        viewwindow(show_updates);
     }
     else
     {
-        viewwindow();
+        viewwindow(show_updates);
         display_message_window();
     }
+    // normalize the cursor region independent of messages_at_top
+    set_cursor_region(GOTO_MSG);
 
     update_screen();
 }
@@ -1902,7 +2028,8 @@ static void _print_overview_screen_equip(column_composer& cols,
 
     for (equipment_type eqslot : e_order)
     {
-        if (you.species == SP_OCTOPODE
+        if ((you.species != SP_OCTOPODE
+            && you.species != SP_ABOMINATION)
             && eqslot != EQ_WEAPON
             && !you_can_wear(eqslot))
         {
@@ -2585,6 +2712,15 @@ string mutation_overview()
             !form_keeps_mutations()));
     }
 
+    if (you.species == SP_ABOMINATION)
+    {
+        mutations.push_back(_annotate_form_based("amphibious",
+                                                 !form_likes_water()));
+        mutations.push_back(_annotate_form_based(
+            make_stringf("%d rings", you.has_tentacles(false)),
+            !get_form()->slot_available(EQ_RING_EIGHT)));
+    }
+
     if (you.can_water_walk())
         mutations.emplace_back("walk on water");
 
@@ -2663,7 +2799,7 @@ string _status_mut_rune_list(int sw)
     status_info inf;
     for (unsigned i = 0; i <= STATUS_LAST_STATUS; ++i)
     {
-        if (fill_status_info(i, &inf) && !inf.short_text.empty())
+        if (fill_status_info(i, inf) && !inf.short_text.empty())
             status.emplace_back(inf.short_text);
     }
 

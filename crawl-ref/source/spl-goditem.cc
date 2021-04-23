@@ -31,6 +31,7 @@
 #include "mon-tentacle.h"
 #include "mutation.h"
 #include "religion.h"
+#include "spl-selfench.h"
 #include "spl-util.h"
 #include "state.h"
 #include "status.h"
@@ -313,8 +314,8 @@ spret_type cast_healing(int pow, int max_pow, bool fail)
 /// Effects that occur when the player is debuffed.
 struct player_debuff_effects
 {
-    /// Attributes removed by a debuff.
-    vector<attribute_type> attributes;
+    /// Permabuffs removed by a debuff.
+    vector<mutation_type> permabuffs;
     /// Durations removed by a debuff.
     vector<duration_type> durations;
 };
@@ -327,14 +328,15 @@ struct player_debuff_effects
  */
 static void _dispellable_player_buffs(player_debuff_effects &buffs)
 {
-    // attributes
-    static const attribute_type dispellable_attributes[] = {
-        ATTR_DEFLECT_MISSILES,
-    };
-
-    for (auto attribute : dispellable_attributes)
-        if (you.attribute[attribute])
-            buffs.attributes.push_back(attribute);
+    // permabuffs (only for purposes of checking if player is debuffable)
+    for (int i = 0; i < NUM_MUTATIONS; i++)
+    {
+        mutation_type mut_type = static_cast<mutation_type>(i);
+        if (you.has_permabuffs(mut_type))
+        {
+            buffs.permabuffs.push_back(mut_type);
+        }
+    }
 
     // durations
     for (unsigned int i = 0; i < NUM_DURATIONS; ++i)
@@ -361,7 +363,7 @@ bool player_is_debuffable()
     player_debuff_effects buffs;
     _dispellable_player_buffs(buffs);
     return !buffs.durations.empty()
-           || !buffs.attributes.empty();
+           || !buffs.permabuffs.empty();
 }
 
 /**
@@ -377,17 +379,6 @@ void debuff_player()
     // find the list of debuffable effects currently active
     player_debuff_effects buffs;
     _dispellable_player_buffs(buffs);
-
-    for (auto attr : buffs.attributes)
-    {
-        you.attribute[attr] = 0;
-#if TAG_MAJOR_VERSION == 34
-        if (attr == ATTR_DELAYED_FIREBALL)
-            mprf(MSGCH_DURATION, "Your charged fireball dissipates.");
-        else
-#endif
-            need_msg = true;
-    }
 
     for (auto duration : buffs.durations)
     {
@@ -414,6 +405,9 @@ void debuff_player()
             need_msg = true;
         }
     }
+
+    // Permabuffs drop instead of cycling through buffs.permabuffs
+    spell_drop_permabuffs();
 
     if (need_msg)
         mprf(MSGCH_WARN, "Your magical effects are unravelling.");
@@ -794,7 +788,6 @@ static bool _do_imprison(int pow, const coord_def& where, bool zin)
             // don't try to shove the orb of zot into lava and/or crash
             if (igrd(*ai) != NON_ITEM)
             {
-                coord_def newpos;
                 if (!has_push_spaces(*ai, false, &adj_spots))
                 {
                     success = false;
@@ -837,18 +830,11 @@ static bool _do_imprison(int pow, const coord_def& where, bool zin)
             veto_spots.push_back(newpos);
         }
 
-        // Make sure we have a legitimate tile.
-        proceed = false;
-        if (!zin && !monster_at(*ai))
-        {
-            if (feat_is_trap(grd(*ai), true) || feat_is_stone_stair(grd(*ai))
-                || safe_tiles.count(grd(*ai)))
-            {
-                proceed = true;
-            }
-        }
-        else if (zin && !cell_is_solid(*ai))
-            proceed = true;
+        // closed doors are solid, but we don't want a behaviour difference
+        // between open and closed doors
+        proceed = !cell_is_solid(*ai) || feat_is_door(grd(*ai));
+        if (!zin && monster_at(*ai))
+            proceed = false;
 
         if (proceed)
         {
@@ -960,32 +946,22 @@ bool cast_smiting(int pow, monster* mons)
         return true;
     }
 
+    if (stop_attack_prompt(mons, false, you.pos()))
+        return false;
+
     god_conduct_trigger conducts[3];
-    disable_attack_conducts(conducts);
+    set_attack_conducts(conducts, *mons, you.can_see(*mons));
 
-    const bool success = !stop_attack_prompt(mons, false, you.pos());
+    mprf("You smite %s!", mons->name(DESC_THE).c_str());
+    behaviour_event(mons, ME_ANNOY, &you);
 
-    if (success)
-    {
-        set_attack_conducts(conducts, mons);
+    // damage at 0 Invo ranges from 9-12 (avg 10), to 9-72 (avg 40) at 27.
+    int damage_increment = div_rand_round(pow, 8);
+    mons->hurt(&you, 6 + roll_dice(3, damage_increment));
+    if (mons->alive())
+        print_wounds(*mons);
 
-        mprf("You smite %s!", mons->name(DESC_THE).c_str());
-
-        behaviour_event(mons, ME_ANNOY, &you);
-    }
-
-    enable_attack_conducts(conducts);
-
-    if (success)
-    {
-        // damage at 0 Invo ranges from 9-12 (avg 10), to 9-72 (avg 40) at 27.
-        int damage_increment = div_rand_round(pow, 8);
-        mons->hurt(&you, 6 + roll_dice(3, damage_increment));
-        if (mons->alive())
-            print_wounds(*mons);
-    }
-
-    return success;
+    return true;
 }
 
 void holy_word_player(holy_word_source_type source)
@@ -1186,14 +1162,21 @@ void torment_player(actor *attacker, torment_source_type taux)
 
 void torment_cell(coord_def where, actor *attacker, torment_source_type taux)
 {
-    // Is the player in this cell?
-    if (where == you.pos())
+    // Is the player in this cell? Sceptre of Torment doesn't affect the
+    // wielder
+    if (where == you.pos()
+        && !(attacker && attacker->is_player() && taux == TORMENT_SCEPTRE))
         torment_player(attacker, taux);
     // Don't return, since you could be standing on a monster.
 
     // Is a monster in this cell?
     monster* mons = monster_at(where);
-    if (!mons || !mons->alive() || mons->res_torment())
+    if (!mons
+        || !mons->alive()
+        || mons->res_torment()
+        || attacker
+           && mons == attacker->as_monster()
+           && taux == TORMENT_SCEPTRE)
         return;
 
     int hploss = max(0, mons->hit_points * (50 - mons->res_negative_energy() * 5) / 100 - 1);

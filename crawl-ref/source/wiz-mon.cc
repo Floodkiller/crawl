@@ -565,7 +565,7 @@ void debug_stethoscope(int mon)
 
     if (mons_is_ghost_demon(mons.type))
     {
-        ASSERT(mons.ghost.get());
+        ASSERT(mons.ghost);
         const ghost_demon &ghost = *mons.ghost;
         mprf(MSGCH_DIAGNOSTICS, "Ghost damage: %d; brand: %d; att_type: %d; "
                                 "att_flav: %d",
@@ -757,7 +757,7 @@ static void _move_monster(const coord_def& where, int idx1)
 {
     dist moves;
     direction_chooser_args args;
-    args.needs_path = false;
+    args.unrestricted = true;
     args.top_prompt = "Move monster to where?";
     args.default_place = where;
     direction(moves, args);
@@ -780,6 +780,11 @@ static void _move_monster(const coord_def& where, int idx1)
     {
         mon2->moveto(where);
         mon1->check_redraw(where);
+    }
+    if (!you.see_cell(moves.target))
+    {
+        mon1->flags &= ~(MF_WAS_IN_VIEW | MF_SEEN);
+        mon1->seen_context = SC_NONE;
     }
 }
 

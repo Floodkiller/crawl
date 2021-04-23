@@ -15,6 +15,7 @@
 #include "act-iter.h"
 #include "areas.h"
 #include "artefact.h"
+#include "art-enum.h"
 #include "branch.h"
 #include "chardump.h"
 #include "cloud.h"
@@ -36,6 +37,7 @@
 #include "item-prop.h"
 #include "items.h"
 #include "item-use.h"
+#include "job-type.h"
 #include "libutil.h"
 #include "losglobal.h"
 #include "mapmark.h"
@@ -93,18 +95,28 @@ static bool _reaching_weapon_attack(const item_def& wpn)
 
     bool targ_mid = false;
     dist beam;
+    const reach_type reach_range = weapon_reach(wpn);
 
     direction_chooser_args args;
     args.restricts = DIR_TARGET;
     args.mode = TARG_HOSTILE;
-    args.range = 2;
+    args.range = reach_range;
     args.top_prompt = "Attack whom?";
     args.self = CONFIRM_CANCEL;
-    targeter_reach hitfunc(&you, REACH_TWO);
-    args.hitfunc = &hitfunc;
+
+    unique_ptr<targeter> hitfunc;
+    if (reach_range == REACH_TWO)
+        hitfunc = make_unique<targeter_reach>(&you, reach_range);
+    // Assume all longer forms of reach use smite targeting.
+    else
+    {
+        hitfunc = make_unique<targeter_smite>(&you, reach_range, 0, 0, false,
+                                              [](const coord_def& p) -> bool {
+                                              return you.pos() != p; });
+    }
+    args.hitfunc = hitfunc.get();
 
     direction(beam, args);
-
     if (!beam.isValid)
     {
         if (beam.isCancel)
@@ -126,26 +138,9 @@ static bool _reaching_weapon_attack(const item_def& wpn)
     if (mons && mons->submerged())
         mons = nullptr;
 
-    const int x_first_middle = you.pos().x + (delta.x)/2;
-    const int y_first_middle = you.pos().y + (delta.y)/2;
-    const int x_second_middle = beam.target.x - (delta.x)/2;
-    const int y_second_middle = beam.target.y - (delta.y)/2;
-    const coord_def first_middle(x_first_middle, y_first_middle);
-    const coord_def second_middle(x_second_middle, y_second_middle);
-
-    if (x_distance > 2 || y_distance > 2)
+    if (x_distance > reach_range || y_distance > reach_range)
     {
         mpr("Your weapon cannot reach that far!");
-        return false;
-    }
-
-    // Calculate attack delay now in case we have to apply it.
-    const int attack_delay = you.attack_delay().roll();
-
-    if (!feat_is_reachable_past(grd(first_middle))
-        && !feat_is_reachable_past(grd(second_middle)))
-    {
-        canned_msg(MSG_SOMETHING_IN_WAY);
         return false;
     }
 
@@ -155,41 +150,53 @@ static bool _reaching_weapon_attack(const item_def& wpn)
     if (mons)
         you.apply_berserk_penalty = false;
 
-    // Choose one of the two middle squares (which might be the same).
-    const coord_def middle =
-        !feat_is_reachable_past(grd(first_middle)) ? second_middle :
-        !feat_is_reachable_past(grd(second_middle)) ? first_middle :
-        random_choose(first_middle, second_middle);
+    // Calculate attack delay now in case we have to apply it.
+    const int attack_delay = you.attack_delay().roll();
 
     // Check for a monster in the way. If there is one, it blocks the reaching
     // attack 50% of the time, and the attack tries to hit it if it is hostile.
-
-    // If we're attacking more than a space away...
-    if (x_distance > 1 || y_distance > 1)
+    if (reach_range < REACH_THREE && (x_distance > 1 || y_distance > 1))
     {
+        const int x_first_middle = you.pos().x + (delta.x) / 2;
+        const int y_first_middle = you.pos().y + (delta.y) / 2;
+        const int x_second_middle = beam.target.x - (delta.x) / 2;
+        const int y_second_middle = beam.target.y - (delta.y) / 2;
+        const coord_def first_middle(x_first_middle, y_first_middle);
+        const coord_def second_middle(x_second_middle, y_second_middle);
+
+        if (!feat_is_reachable_past(grd(first_middle))
+            && !feat_is_reachable_past(grd(second_middle)))
+        {
+            canned_msg(MSG_SOMETHING_IN_WAY);
+            return false;
+        }
+
+        // Choose one of the two middle squares (which might be the same).
+        const coord_def middle =
+            !feat_is_reachable_past(grd(first_middle)) ? second_middle :
+            !feat_is_reachable_past(grd(second_middle)) ? first_middle :
+        random_choose(first_middle, second_middle);
+
         bool success = true;
         monster *midmons;
         if ((midmons = monster_at(middle))
-            && !midmons->submerged())
+            && !midmons->submerged()
+            && coinflip())
         {
-            // This chance should possibly depend on your skill with
-            // the weapon.
-            if (coinflip())
+            success = false;
+            beam.target = middle;
+            mons = midmons;
+            targ_mid = true;
+            if (mons->wont_attack())
             {
-                success = false;
-                beam.target = middle;
-                mons = midmons;
-                targ_mid = true;
-                if (mons->wont_attack())
-                {
-                    // Let's assume friendlies cooperate.
-                    mpr("You could not reach far enough!");
-                    you.time_taken = attack_delay;
-                    make_hungry(3, true);
-                    return true;
-                }
+                // Let's assume friendlies cooperate.
+                mpr("You could not reach far enough!");
+                you.time_taken = attack_delay;
+                make_hungry(3, true);
+                return true;
             }
         }
+
         if (success)
             mpr("You reach to attack!");
         else
@@ -277,6 +284,12 @@ static bool _evoke_horn_of_geryon()
 
 static bool _check_crystal_ball()
 {
+    if (you.species == SP_DJINNI)
+    {
+        mpr("You can only see your reflection. ");
+        return false;
+    }
+
     if (you.confused())
     {
         canned_msg(MSG_TOO_CONFUSED);
@@ -325,6 +338,64 @@ static void _spray_lightning(int range, int power)
     beam.target = you.pos() + coord_def(random2(13)-6, random2(13)-6);
     // Non-controlleable, so no player tracer.
     zapping(which_zap, power, beam);
+}
+
+/**
+ * Evoke the Disc of Storms, potentially hurling Shock, Lightning Bolt, or
+ * Orb of Electricity in all directions around the player. Odds of doing so,
+ * the number of zaps created, & their power all increase with Evocations.
+ */
+static bool _disc_of_storms()
+{
+    const int surge = pakellas_surge_devices();
+    surge_power(you.spec_evoke() + surge);
+    
+    const int fail_rate =
+        30 - player_adjust_evoc_power(you.skill(SK_EVOCATIONS), surge);
+    
+    //TODO: Crawlcode, fix this later
+    if (x_chance_in_y(fail_rate, 100))
+    {
+        canned_msg(MSG_NOTHING_HAPPENS);
+        return false;
+    }
+    if (x_chance_in_y(fail_rate, 100))
+    {
+        mpr("The disc glows for a moment, then fades.");
+        return false;
+    }
+    if (x_chance_in_y(fail_rate, 100))
+    {
+        mpr("Little bolts of electricity crackle over the disc.");
+        return false;
+    }
+
+    const int disc_count
+        = roll_dice(2, player_adjust_evoc_power(
+                           1 + you.skill_rdiv(SK_EVOCATIONS, 1, 7), surge));
+    ASSERT(disc_count);
+
+    mpr("The disc erupts in an explosion of electricity!");
+    const int range = player_adjust_evoc_power(
+                          you.skill_rdiv(SK_EVOCATIONS, 1, 3) + 5, surge); // 5--14
+    const int power = player_adjust_evoc_power(
+                          30 + you.skill(SK_EVOCATIONS, 2), surge); // 30-84
+    for (int i = 0; i < disc_count; ++i)
+        _spray_lightning(range, power);
+
+    // Let it rain.
+    for (radius_iterator ri(you.pos(), LOS_NO_TRANS); ri; ++ri)
+    {
+        if (!in_bounds(*ri) || cell_is_solid(*ri))
+            continue;
+        if (one_chance_in(60 - you.skill(SK_EVOCATIONS)))
+        {
+            place_cloud(CLOUD_RAIN, *ri,
+                        random2(you.skill(SK_EVOCATIONS)), &you);
+        }
+    }
+
+    return true;
 }
 
 /**
@@ -379,12 +450,6 @@ int wand_mp_cost()
 
 void zap_wand(int slot)
 {
-    if (!form_can_use_wand())
-    {
-        mpr("You have no means to grasp a wand firmly enough.");
-        return;
-    }
-
     if (inv_count() < 1)
     {
         canned_msg(MSG_NOTHING_CARRIED);
@@ -416,9 +481,7 @@ void zap_wand(int slot)
         return;
     }
 
-    const int mp_cost = wand_mp_cost();
-    if (!enough_mp(mp_cost, false))
-        return;
+    const int mp_cost = min(you.magic_points, wand_mp_cost());
 
     int item_slot;
     if (slot != -1)
@@ -455,8 +518,7 @@ void zap_wand(int slot)
         return;
     }
 
-    int power = (15 + you.skill(SK_EVOCATIONS, 7) / 2)
-                * (you.get_mutation_level(MUT_MP_WANDS) + 3) / 3;
+    int power = (15 + you.skill(SK_EVOCATIONS, 7) / 2) * (mp_cost + 9) / 9;
 
     const spell_type spell =
         spell_in_wand(static_cast<wand_type>(wand.sub_type));
@@ -475,7 +537,13 @@ void zap_wand(int slot)
     }
 
     // Spend MP.
-    dec_mp(mp_cost, false);
+    if (mp_cost)
+    {
+        dec_mp(mp_cost, false);
+        mprf("You feel a %ssurge of power%s",
+             mp_cost < 3 ? "slight " : "",
+             mp_cost < 3 ? "."       : "!");
+    }
 
     // Take off a charge.
     wand.charges--;
@@ -599,13 +667,69 @@ bool skill_has_manual(skill_type skill)
     return manual_slot_for_skill(skill) != -1;
 }
 
+void archaeologist_open_crate(item_def& crate)
+{
+    unrand_type type = (unrand_type)crate.props[ARCHAEOLOGIST_CRATE_ITEM].get_int();
+    make_item_unrandart(crate, type);
+    item_colour(crate);
+    item_set_appearance(crate);
+    mprf("The crate's locking mechanism finally gives in... Revealing %s!", 
+         crate.name(DESC_THE).c_str());
+    crate.props.erase(ARCHAEOLOGIST_CRATE_ITEM);
+    you.props[ARCHAEOLOGIST_TRIGGER_CRATE_ON_PICKUP] = false;
+
+}
+void archaeologist_read_tome(item_def& tome)
+{
+    tome.base_type = OBJ_BOOKS;
+    tome.sub_type = BOOK_MANUAL;
+    tome.skill_points = 700;
+     // significantly reduce requirements for Gnoll (trains 1/30 as fast)
+    if (you.species == SP_GNOLL)
+        tome.skill_points = 35;
+    tome.skill = (skill_type)tome.props[ARCHAEOLOGIST_TOME_SKILL].get_int();
+    item_colour(tome);
+    item_set_appearance(tome);
+    mprf("You have an epiphany! "
+         "The dusty tome is %s! Reading it may be key to unlocking the crate...",
+         tome.name(DESC_A).c_str());
+    you.start_train.insert(tome.skill);
+    update_can_train();
+    you.props[ARCHAEOLOGIST_TRIGGER_TOME_ON_PICKUP] = false;
+}
+
 void finish_manual(int slot)
 {
     item_def& manual(you.inv[slot]);
     const skill_type skill = static_cast<skill_type>(manual.plus);
 
-    mprf("You have finished your manual of %s and toss it away.",
-         skill_name(skill));
+    if (you.char_class == JOB_ARCHAEOLOGIST && manual.props.exists(ARCHAEOLOGIST_TOME_SKILL))
+    {
+        int crate_index = -1;
+        for (int i = 0; i < ENDOFPACK; i++)
+            if (you.inv[i].defined() && you.inv[i].is_type(OBJ_MISCELLANY, MISC_ANCIENT_CRATE))
+                crate_index = i;
+
+        if (crate_index != -1) 
+        {
+            mprf("As you finish your manual of %s, the mysteries of the crate's mechanism unravel in your mind!",
+                 skill_name(skill));
+            archaeologist_open_crate(you.inv[crate_index]);
+        }
+        else
+        {
+            mprf("As you finish your manual of %s, you suddenly remember the "
+                 "ancient crate it was unearthed with."
+                 " You are certain you could open it now, if only you "
+                 "could find it again...",
+                 skill_name(skill));
+            you.props[ARCHAEOLOGIST_TRIGGER_CRATE_ON_PICKUP] = true;
+        }
+    }
+    else
+        mprf("You have finished your manual of %s and toss it away.",
+             skill_name(skill));
+
     dec_inv_item_quantity(slot, 1);
 }
 
@@ -697,10 +821,6 @@ static bool _box_of_beasts(item_def &box)
                  MG_AUTOFOE);
     mg.set_summoned(&you, 3 + random2(3), 0);
 
-    auto &avoids = mg.props[MUTANT_BEAST_AVOID_FACETS].get_vector();
-    for (int facet = BF_FIRST; facet <= BF_LAST; ++facet)
-        if (god_hates_beast_facet(you.religion, static_cast<beast_facet>(facet)))
-            avoids.push_back(facet);
     mg.hd = beast_tiers[tier];
     dprf("hd %d (min %d, tier %d)", mg.hd, hd_min, tier);
     const monster* mons = create_monster(mg);
@@ -843,6 +963,30 @@ static bool _make_zig(item_def &zig)
     dec_inv_item_quantity(zig.link, 1);
     dungeon_terrain_changed(you.pos(), DNGN_ENTER_ZIGGURAT);
     mpr("You set the figurine down, and a mystic portal to a ziggurat forms.");
+    return true;
+}
+
+static bool _make_wizlab(item_def &wiz)
+{
+    if (feat_is_critical(grd(you.pos())))
+    {
+        mpr("You can't unlock a door to a wizard's laboratory here.");
+        return false;
+    }
+    for (int lev = 1; lev <= brdepth[BRANCH_WIZLAB]; lev++)
+    {
+        if (is_level_on_stack(level_id(BRANCH_WIZLAB, lev))
+            || you.where_are_you == BRANCH_WIZLAB)
+        {
+            mpr("Wizards don't let other wizards into their laboratories!");
+            return false;
+        }
+    }
+
+    ASSERT(in_inventory(wiz));
+    dec_inv_item_quantity(wiz.link, 1);
+    dungeon_terrain_changed(you.pos(), DNGN_ENTER_WIZLAB);
+    mpr("You twist the key in front of you, unlocking an unseen door to a wizard's laboratory!");
     return true;
 }
 
@@ -1091,7 +1235,6 @@ static bool _lamp_of_fire()
 
         const int surge = pakellas_surge_devices();
         surge_power(you.spec_evoke() + surge);
-        did_god_conduct(DID_FIRE, 6 + random2(3));
 
         mpr("The flames dance!");
 
@@ -1371,6 +1514,177 @@ void wind_blast(actor* agent, int pow, coord_def target, bool card)
             it.first->collide(it.second, agent, pow);
 }
 
+static bool _is_rock(dungeon_feature_type feat)
+{
+    return feat == DNGN_ROCK_WALL || feat == DNGN_CLEAR_ROCK_WALL
+           || feat == DNGN_SLIMY_WALL;
+}
+
+static bool _is_rubble_source(dungeon_feature_type feat)
+{
+    switch (feat)
+    {
+        case DNGN_ROCK_WALL:
+        case DNGN_CLEAR_ROCK_WALL:
+        case DNGN_SLIMY_WALL:
+        case DNGN_STONE_WALL:
+        case DNGN_CLEAR_STONE_WALL:
+        case DNGN_PERMAROCK_WALL:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
+static bool _adjacent_to_rubble_source(coord_def pos)
+{
+    for (adjacent_iterator ai(pos); ai; ++ai)
+    {
+        if (_is_rubble_source(grd(*ai)) && you.see_cell_no_trans(*ai))
+            return true;
+    }
+
+    return false;
+}
+
+static bool _stone_of_tremors()
+{
+    vector<coord_def> wall_pos;
+    vector<coord_def> rubble_pos;
+    vector<coord_def> door_pos;
+
+    for (distance_iterator di(you.pos(), false, true, LOS_RADIUS); di; ++di)
+    {
+        if (_is_rubble_source(grd(*di)))
+            wall_pos.push_back(*di);
+        else if (feat_is_door(grd(*di)))
+            door_pos.push_back(*di);
+        else if (_adjacent_to_rubble_source(*di))
+            rubble_pos.push_back(*di);
+    }
+
+    class targeter_rubble : public targeter
+    {
+    public:
+        vector<coord_def>& rubble;
+
+        targeter_rubble(vector<coord_def>& _rubble) :
+            rubble(_rubble)
+        {
+            origin = you.pos();
+        }
+
+        virtual aff_type is_affected(coord_def loc) override
+        {
+            return find(begin(rubble), end(rubble), loc) != end(rubble)
+                    ? AFF_YES
+                    : AFF_NO;
+        }
+
+        bool valid_aim(coord_def a) override
+        {
+            return true;
+        }
+    };
+
+    targeter_rubble hitfunc(rubble_pos);
+    if (stop_attack_prompt(hitfunc, "attack"))
+        return false;
+
+    /*if (!pakellas_device_surge())
+    {
+        you.turn_is_over = true;
+        return false;
+    }*/
+    const int surge = pakellas_surge_devices();
+    surge_power(you.spec_evoke() + surge);
+    mpr("The dungeon trembles and rubble falls from the walls!");
+    noisy(15, you.pos());
+
+    bolt rubble;
+    rubble.name       = "falling rubble";
+    rubble.range      = 1;
+    rubble.hit        = player_adjust_evoc_power(
+                            10 + you.skill_rdiv(SK_EVOCATIONS, 1, 2));
+    rubble.damage     = dice_def(3, player_adjust_evoc_power(
+                                        5 + you.skill(SK_EVOCATIONS)));
+    rubble.source_id  = MID_PLAYER;
+    rubble.glyph      = dchar_glyph(DCHAR_FIRED_MISSILE);
+    rubble.colour     = LIGHTGREY;
+    rubble.flavour    = BEAM_MMISSILE;
+    rubble.thrower    = KILL_YOU;
+    rubble.pierce     = false;
+    rubble.loudness   = 10;
+    rubble.draw_delay = 0;
+
+    // Hit the affected area with falling rubble.
+    for (coord_def pos : rubble_pos)
+    {
+        rubble.source = rubble.target = pos;
+        rubble.fire();
+    }
+    update_screen();
+    delay(200);
+
+    // Possibly shaft some monsters.
+    for (monster_near_iterator mi(you.pos(), LOS_NO_TRANS); mi; ++mi)
+    {
+        if (grd(mi->pos()) == DNGN_FLOOR
+            && is_valid_shaft_level()
+            && x_chance_in_y(
+                   player_adjust_evoc_power(75 + you.skill(SK_EVOCATIONS, 2)),
+                   800))
+        {
+            mi->do_shaft();
+        }
+    }
+
+    // Destroy doors.
+    for (coord_def pos : door_pos)
+    {
+        destroy_wall(pos);
+        mpr("The door collapses!");
+    }
+
+    // Collapse some walls and mark collapsed walls as valid elemental positions.
+    int num_elementals = _num_evoker_elementals(surge);
+    for (coord_def pos : wall_pos)
+    {
+        if (_is_rock(grd(pos)) && one_chance_in(3))
+        {
+            destroy_wall(pos);
+            rubble_pos.push_back(pos);
+        }
+    }
+    shuffle_array(rubble_pos);
+
+    // Create elementals.
+    bool created = false;
+    beh_type attitude = BEH_FRIENDLY;
+    if (player_will_anger_monster(MONS_EARTH_ELEMENTAL))
+        attitude = BEH_HOSTILE;
+
+    for (int n = 0; n < min(num_elementals, (int)rubble_pos.size()); ++n)
+    {
+        // Skip occupied positions
+        if (actor_at(rubble_pos[n]))
+            continue;
+        mgen_data mg(MONS_EARTH_ELEMENTAL, attitude, rubble_pos[n], 0,
+                        MG_FORCE_BEH | MG_FORCE_PLACE);
+        mg.set_summoned(&you, 3, SPELL_NO_SPELL);
+        mg.set_prox(PROX_CLOSE_TO_PLAYER);
+        mg.hd = player_adjust_evoc_power(
+                    6 + you.skill_rdiv(SK_EVOCATIONS, 2, 13), surge);
+        if (create_monster(mg))
+            created = true;
+    }
+    if (created)
+        mpr("The rubble rises up and takes form.");
+
+    return true;
+}
+
 static bool _phial_of_floods()
 {
     dist target;
@@ -1572,14 +1886,14 @@ static spret_type _harp_of_healing()
 
     return SPRET_SUCCESS;
 }
-/* Handles checking if user can still play harp, then heals them 
+/* Handles checking if user can still play harp, then heals them
  * if they can. If not, cancel the status.
  */
 void handle_playing_harp()
 {
     // Various special cases if user can no longer play harp
     if (you.confused() || you.berserk() || you.duration[DUR_MESMERISED]
-        || you.duration[DUR_BRAINLESS] || you.duration[DUR_COLLAPSE] 
+        || you.duration[DUR_BRAINLESS] || you.duration[DUR_COLLAPSE]
         || you.duration[DUR_CLUMSY] || silenced(you.pos())
         || you.duration[DUR_DEATHS_DOOR] || !you.can_device_heal())
     {
@@ -1587,8 +1901,8 @@ void handle_playing_harp()
         return;
     }
 
-    // Heal for 10 + (1 * Evocations), can adjust later if too weak/strong
-    const int base_pow = 10 + you.skill(SK_EVOCATIONS, 1);
+    // Heal for 5 + (.75 * Evocations), can adjust later if too weak/strong
+    const int base_pow = div_rand_round((500 + you.skill(SK_EVOCATIONS, 75)), 100);
     inc_hp(base_pow);
 
     // Make a small bit of noise for flavor
@@ -1605,7 +1919,7 @@ void end_playing_harp(bool voluntary)
         mpr("You stop playing the harp.");
     else
         mpr("Your playing has been interrupted!");
-    
+
     you.attribute[ATTR_PLAYING_HARP] = 0;
 }
 
@@ -1711,8 +2025,7 @@ bool evoke_item(int slot, bool check_range)
             return false;
         }
 
-        if (you.undead_state() == US_ALIVE && !you_foodless()
-            && you.hunger_state <= HS_STARVING)
+        if (apply_starvation_penalties())
         {
             canned_msg(MSG_TOO_HUNGRY);
             return false;
@@ -1720,6 +2033,11 @@ bool evoke_item(int slot, bool check_range)
         else if (you.magic_points >= you.max_magic_points)
         {
             canned_msg(MSG_FULL_MAGIC);
+            return false;
+        }
+        else if (you.species == SP_DJINNI)
+        {
+            mpr("The staff remains inert.");
             return false;
         }
         else if (x_chance_in_y(apply_enhancement(
@@ -1807,11 +2125,20 @@ bool evoke_item(int slot, bool check_range)
 
             break;
 
-#if TAG_MAJOR_VERSION == 34
         case MISC_STONE_OF_TREMORS:
-            canned_msg(MSG_NOTHING_HAPPENS);
-            return false;
-#endif
+            if (!evoker_charges(item.sub_type))
+            {
+                mpr("That is presently inert.");
+                return false;
+            }
+            if (_stone_of_tremors())
+            {
+                expend_xp_evoker(item.sub_type);
+                practise_evoking(3);
+            }
+            else
+                return false;
+            break;
 
         case MISC_PHIAL_OF_FLOODS:
             if (!evoker_charges(item.sub_type))
@@ -1860,6 +2187,11 @@ bool evoke_item(int slot, bool check_range)
                 practise_evoking(1);
             break;
 
+        case MISC_DISC_OF_STORMS:
+            if(_disc_of_storms())
+                practise_evoking(1);
+            break;
+
         case MISC_LIGHTNING_ROD:
             if (!evoker_charges(item.sub_type))
             {
@@ -1898,7 +2230,7 @@ bool evoke_item(int slot, bool check_range)
                 mpr("That is presently inert.");
                 return false;
             }
-            if(_harp_of_healing())
+            if (_harp_of_healing())
             {
                 expend_xp_evoker(item.sub_type);
                 practise_evoking(3);
@@ -1935,6 +2267,11 @@ bool evoke_item(int slot, bool check_range)
         case MISC_ZIGGURAT:
             // Don't set did_work to false, _make_zig handles the message.
             unevokable = !_make_zig(item);
+            break;
+
+        case MISC_WIZARD_KEY:
+            //Don't set did_work to false, _make_wizlab handles the message.
+            unevokable = !_make_wizlab(item);
             break;
 
         default:

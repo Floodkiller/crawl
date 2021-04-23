@@ -192,7 +192,7 @@ static const struct spell_desc spelldata[] =
     SPTYP_CHARMS,
     SPFLAG_DIR_OR_TARGET | SPFLAG_HELPFUL | SPFLAG_HASTY | SPFLAG_SELFENCH
         | SPFLAG_UTILITY,
-    6,
+    9,
     200,
     LOS_RADIUS, LOS_RADIUS,
     5, 0,
@@ -780,7 +780,7 @@ static const struct spell_desc spelldata[] =
 {
     SPELL_REPEL_MISSILES, "Repel Missiles",
     SPTYP_CHARMS | SPTYP_AIR,
-    SPFLAG_MONSTER,
+    SPFLAG_NONE,
     2,
     50,
     -1, -1,
@@ -1340,10 +1340,10 @@ static const struct spell_desc spelldata[] =
 {
     SPELL_PASSWALL, "Passwall",
     SPTYP_TRANSMUTATION | SPTYP_EARTH,
-    SPFLAG_DIR | SPFLAG_ESCAPE | SPFLAG_NOT_SELF | SPFLAG_UTILITY,
+    SPFLAG_TARGET | SPFLAG_ESCAPE | SPFLAG_NOT_SELF | SPFLAG_UTILITY,
     2,
-    200,
-    1, 9,
+    120,
+    1, 7,
     0, 0, // make silent to keep passwall a viable stabbing spell [rob]
     TILEG_PASSWALL,
 },
@@ -1664,18 +1664,16 @@ static const struct spell_desc spelldata[] =
     TILEG_FULMINANT_PRISM,
 },
 
-#if TAG_MAJOR_VERSION == 34
 {
     SPELL_SINGULARITY, "Singularity",
     SPTYP_TRANSLOCATION,
-    SPFLAG_TARGET | SPFLAG_AREA | SPFLAG_NOT_SELF | SPFLAG_MONSTER,
+    SPFLAG_TARGET | SPFLAG_AREA | SPFLAG_NOT_SELF,
     9,
     200,
     LOS_RADIUS, LOS_RADIUS,
     20, 0,
-    TILEG_ERROR,
+    TILEG_SINGULARITY,
 },
-#endif
 
 {
     SPELL_PARALYSE, "Paralyse",
@@ -2512,7 +2510,7 @@ static const struct spell_desc spelldata[] =
 {
     SPELL_INNER_FLAME, "Inner Flame",
     SPTYP_HEXES | SPTYP_FIRE,
-    SPFLAG_DIR_OR_TARGET | SPFLAG_NOT_SELF | SPFLAG_NEUTRAL | SPFLAG_MR_CHECK,
+    SPFLAG_TARGET | SPFLAG_NOT_SELF | SPFLAG_NEUTRAL | SPFLAG_MR_CHECK,
     3,
     200,
     LOS_RADIUS, LOS_RADIUS,
@@ -2573,7 +2571,7 @@ static const struct spell_desc spelldata[] =
     5,
     100,
     -1, -1,
-    5, 0,
+    0, 5,
     TILEG_BATTLESPHERE,
 },
 
@@ -2622,7 +2620,6 @@ static const struct spell_desc spelldata[] =
     3, 0,
     TILEG_DAZZLING_SPRAY,
 },
-
 {
     SPELL_FORCE_LANCE, "Force Lance",
     SPTYP_CONJURATION | SPTYP_TRANSLOCATION,
@@ -2937,7 +2934,7 @@ static const struct spell_desc spelldata[] =
     200,
     LOS_RADIUS, LOS_RADIUS,
     2, 0,
-    TILEG_GENERIC_MONSTER_SPELL,
+    TILEG_VIRULENCE,
 },
 
 #if TAG_MAJOR_VERSION == 34
@@ -3609,7 +3606,7 @@ static const struct spell_desc spelldata[] =
 {
     SPELL_THROW_ALLY, "Throw Ally",
     SPTYP_TRANSLOCATION,
-    SPFLAG_MONSTER | SPFLAG_NOT_SELF,
+    SPFLAG_TARGET | SPFLAG_MONSTER | SPFLAG_NOT_SELF,
     2,
     50,
     LOS_RADIUS, LOS_RADIUS,
@@ -3912,11 +3909,11 @@ static const struct spell_desc spelldata[] =
     SPELL_BLADE_OF_DISASTER, "Blade of Disaster",
     SPTYP_CHARMS | SPTYP_CONJURATION,
     SPFLAG_HELPFUL,
-    6,
+    5,
     200,
     -1, -1,
-    6, 0,
-    TILEG_EXCRUCIATING_WOUNDS,
+    5, 0,
+    TILEG_BLADE_OF_DISASTER,
 },
 
 {
@@ -3952,6 +3949,70 @@ static const struct spell_desc spelldata[] =
     TILEG_PHASE_SHIFT,
 },
 
+{
+    SPELL_HARPOON_SHOT, "Harpoon Shot",
+    SPTYP_CONJURATION | SPTYP_EARTH,
+    SPFLAG_DIR_OR_TARGET | SPFLAG_NEEDS_TRACER | SPFLAG_MONSTER,
+    4,
+    200,
+    6, 6,
+    4, 0,
+    TILEG_GENERIC_MONSTER_SPELL,
+},
+
+{
+    SPELL_CONJURE_DISTORTION, "Conjure Distortion",
+    SPTYP_TRANSLOCATION | SPTYP_CONJURATION,
+    SPFLAG_NEUTRAL | SPFLAG_UTILITY,
+    3,
+    100,
+    -1, -1,
+    5, 5,
+    TILEG_CONJURE_DISTORTION,
+},
+
+{
+    SPELL_TIME_STOP, "Time Stop",
+    SPTYP_HEXES,
+    SPFLAG_HELPFUL | SPFLAG_UTILITY | SPFLAG_NO_GHOST,
+    9,
+    200,
+    -1, -1,
+    0, 0,
+    TILEG_TIME_STOP,
+},
+
+{
+    SPELL_ISKENDERUNS_UNDOING, "Iskenderun's Undoing",
+    SPTYP_CONJURATION,
+    SPFLAG_DIR_OR_TARGET | SPFLAG_NOT_SELF | SPFLAG_NEEDS_TRACER,
+    9,
+    200,
+    8, 8,
+    7, 0,
+    TILEG_ISKENDERUNS_UNDOING,
+},
+
+{
+    SPELL_DIFFERENTIAL_EXPANSION, "Differential Expansion",
+    SPTYP_CONJURATION | SPTYP_ICE,
+    SPFLAG_DIR_OR_TARGET | SPFLAG_NEEDS_TRACER,
+    3,
+    100,
+    1, 1,
+    5, 0,
+    TILEG_DIFFERENTIAL_EXPANSION,
+},
+{
+    SPELL_CHILL_THREAD, "Chill Thread",
+    SPTYP_CHARMS| SPTYP_ICE,
+    SPFLAG_UTILITY,
+    1,
+    25,
+    -1, -1,
+    1, 0,
+    TILEG_CHILL_THREAD,
+},
 {
     SPELL_NO_SPELL, "nonexistent spell",
     SPTYP_NONE,

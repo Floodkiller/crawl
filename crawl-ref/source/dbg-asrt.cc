@@ -151,9 +151,9 @@ static void _dump_player(FILE *file)
 
     fprintf(file, "HP: %d/%d; mods: %d/%d\n", you.hp, you.hp_max,
             you.hp_max_adj_temp, you.hp_max_adj_perm);
-    fprintf(file, "MP: %d/%d; mod: %d\n",
+    fprintf(file, "MP: %d/%d; mod: %d/%d\n",
             you.magic_points, you.max_magic_points,
-            you.mp_max_adj);
+            you.mp_max_adj_temp, you.mp_max_adj_perm);
     fprintf(file, "Stats: %d (%d) %d (%d) %d (%d)\n",
             you.strength(false), you.max_strength(),
             you.intel(false), you.max_intel(),
@@ -274,10 +274,11 @@ static void _dump_player(FILE *file)
         int normal = you.mutation[i];
         int innate = you.innate_mutation[i];
         int temp   = you.temp_mutation[i];
+        int perma  = you.permabuffs[i];
 
         // Normally innate and temp imply normal, but a crash handler should
         // expect the spanish^Wunexpected.
-        if (!normal && !innate && !temp)
+        if (!normal && !innate && !temp && !perma)
             continue;
 
         if (const char* name = mutation_name(mut))
@@ -299,6 +300,11 @@ static void _dump_player(FILE *file)
                 fprintf(file, " (temporary)");
             else
                 fprintf(file, " (%d temporary)", temp);
+        }
+
+        if (perma)
+        {
+            fprintf(file, " (%d permabuff)", perma);
         }
 
         fprintf(file, "\n");
@@ -601,7 +607,7 @@ void do_crash_dump()
 
         _dump_ver_stuff(stderr);
 
-        dump_crash_info(stderr);
+        fprintf(stderr, "%s\n\n", crash_signal_info().c_str());
         write_stack_trace(stderr, 0);
         call_gdb(stderr);
 
@@ -623,8 +629,11 @@ void do_crash_dump()
     snprintf(name, sizeof(name), "%scrash-%s-%s.txt", dir.c_str(),
             you.your_name.c_str(), make_file_time(t).c_str());
 
-    if (!crawl_state.test && !_assert_msg.empty())
-        fprintf(stderr, "\n%s", _assert_msg.c_str());
+    const string signal_info = crash_signal_info();
+    const string cause_msg = _assert_msg.empty() ? signal_info : _assert_msg;
+
+    if (!crawl_state.test && !cause_msg.empty())
+        fprintf(stderr, "\n%s", cause_msg.c_str());
     // This message is parsed by the WebTiles server.
     fprintf(stderr,
             "\n\nWe crashed! This is likely due to a bug in Crawl. "
@@ -653,8 +662,8 @@ void do_crash_dump()
 
     set_msg_dump_file(file);
 
-    if (!_assert_msg.empty())
-        fprintf(file, "%s\n\n", _assert_msg.c_str());
+    if (!cause_msg.empty())
+        fprintf(file, "%s\n\n", cause_msg.c_str());
 
     _dump_ver_stuff(file);
 
@@ -665,7 +674,8 @@ void do_crash_dump()
     // First get the immediate cause of the crash and the stack trace,
     // since that's most important and later attempts to get more information
     // might themselves cause crashes.
-    dump_crash_info(file);
+    if (!signal_info.empty())
+        fprintf(file, "%s\n\n", signal_info.c_str());
     write_stack_trace(file, 0);
     fprintf(file, "\n");
 
@@ -699,6 +709,7 @@ void do_crash_dump()
 
     // Dumping the player state and crawl state is next least likely to cause
     // another crash, so do that next.
+    fprintf(file, "\nVersion history:\n%s\n", Version::history().c_str());
     crawl_state.dump();
     _dump_player(file);
 
@@ -750,7 +761,7 @@ void do_crash_dump()
 
     set_msg_dump_file(nullptr);
 
-    mark_milestone("crash", _assert_msg, "", t);
+    mark_milestone("crash", cause_msg, "", t);
 
     if (file != stderr)
         fclose(file);

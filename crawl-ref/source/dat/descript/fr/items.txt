@@ -428,6 +428,12 @@ dire flail
 
 Un fléau d'arme avec des pointes plus longues, et une tête plus lourde.
 %%%%
+disc of storms
+
+Cet objet, extrêmement puissant, peut déchaîner des tempêtes d'électricité
+destructrices. Son efficacité augmente entre les main d'une personne habituée à
+manipuler les dispositifs magiques.
+%%%%
 eudemon blade
 
 Une lame sacrée tout droit sortie des forges du paradis, et habitée par une
@@ -969,6 +975,15 @@ stone
 
 Un petit morceau d'un minéral naturel dense.. Elle peut être jetée à la main ou
 lancée avec une fronde.
+%%%%
+stone of tremors
+
+Une pierre polie habitée par de bienveillants esprits de la terre. La tenir en
+l'air enverra de puissantes ondes de choc dans le donjon pendant que les
+esprits cherchent une forme solide à l'intérieur de sa roche. Les créatures se
+tenant près des murs seront bombardés avec des chutes de gravats que la surface
+rocheuse laisse s'écrouler, tandis que d'autres peuvent être avalés par des
+fissures dans la terre elle-même.
 %%%%
 storm dragon scales
 

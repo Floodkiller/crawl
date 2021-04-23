@@ -46,6 +46,7 @@
 #include "items.h"
 #include "item-use.h"
 #include "jobs.h"
+#include "lang-fake.h"
 #include "libutil.h"
 #include "macro.h"
 #include "message.h"
@@ -53,9 +54,9 @@
 #include "mon-cast.h" // mons_spell_range
 #include "mon-death.h"
 #include "mon-tentacle.h"
+#include "mutation.h"
 #include "options.h"
 #include "output.h"
-#include "process-desc.h"
 #include "prompt.h"
 #include "religion.h"
 #include "skills.h"
@@ -79,47 +80,79 @@ int count_desc_lines(const string &_desc, const int width)
     return count(begin(desc), end(desc), '\n');
 }
 
-void print_description(const string &body)
+int show_description(const string &body)
 {
     describe_info inf;
     inf.body << body;
-    print_description(inf);
+    return show_description(inf);
 }
 
-class default_desc_proc
-{
-public:
-    int width() { return get_number_of_cols() - 1; }
-    int height() { return get_number_of_lines(); }
-    void print(const string &str) { cprintf("%s", str.c_str()); }
+/// A message explaining how the player can toggle between quote &
+static const string _toggle_message =
+    "Press '<w>!</w>'"
+#ifdef USE_TILE_LOCAL
+    " or <w>Right-click</w>"
+#endif
+    " to toggle between the description and quote.";
 
-    void nextline()
+int show_description(const describe_info &inf)
+{
+#ifdef USE_TILE_LOCAL
+    // Ensure we get the full screen size when calling get_number_of_cols()
+    cgotoxy(1, 1);
+#endif
+    string desc = process_description(inf);
+
+    formatted_scroller desc_fs;
+    int flags = MF_NOSELECT | MF_NOWRAP;
+    desc_fs.set_flags(flags, false);
+    desc_fs.set_more();
+    desc_fs.add_text(desc, false, get_number_of_cols());
+
+    formatted_scroller quote_fs;
+    quote_fs.set_more();
+
+    if (!inf.quote.empty())
     {
-        if (wherey() < height())
-            cgotoxy(1, wherey() + 1);
-        else
-            cgotoxy(1, height());
-        // Otherwise cgotoxy asserts; let's just clobber the last line
-        // instead, which should be noticeable enough.
+        desc_fs.set_flags(desc_fs.get_flags() | MF_ALWAYS_SHOW_MORE);
+        quote_fs.set_flags(quote_fs.get_flags() | MF_ALWAYS_SHOW_MORE);
+        desc_fs.set_more(formatted_string::parse_string(_toggle_message));
+        quote_fs.set_more(formatted_string::parse_string(_toggle_message));
+
+        quote_fs.add_text(inf.title, true);
+        quote_fs.add_text(inf.quote, false, get_number_of_cols() - 1);
     }
-};
 
-void print_description(const describe_info &inf)
-{
-    clrscr();
-    textcolour(LIGHTGREY);
-
-    default_desc_proc proc;
-    process_description<default_desc_proc>(proc, inf);
+    bool show_quote = false;
+    while (true)
+    {
+        formatted_scroller& fs = show_quote ? quote_fs : desc_fs;
+        fs.show();
+        int keyin = fs.getkey();
+        if (!inf.quote.empty() && (keyin == '!' || keyin == CK_MOUSE_CMD))
+            show_quote = !show_quote;
+        else
+        {
+            clrscr();
+            return keyin;
+        }
+    }
 }
 
-static void _print_quote(const describe_info &inf)
+string process_description(const describe_info &inf)
 {
-    clrscr();
-    textcolour(LIGHTGREY);
-
-    default_desc_proc proc;
-    process_quote<default_desc_proc>(proc, inf);
+    string desc;
+    if (!inf.prefix.empty())
+        desc += "\n\n" + trimmed_string(filtered_lang(inf.prefix));
+    if (!inf.title.empty())
+        desc += "\n\n" + trimmed_string(filtered_lang(inf.title));
+    desc += "\n\n" + trimmed_string(filtered_lang(inf.body.str()));
+    if (!inf.suffix.empty())
+        desc += "\n\n" + trimmed_string(filtered_lang(inf.suffix));
+    if (!inf.footer.empty())
+        desc += "\n\n" + trimmed_string(filtered_lang(inf.footer));
+    trim_string(desc);
+    return desc;
 }
 
 const char* jewellery_base_ability_string(int subtype)
@@ -140,8 +173,8 @@ const char* jewellery_base_ability_string(int subtype)
     case AMU_HARM:                return "Harm";
     case AMU_MANA_REGENERATION:   return "RegenMP";
     case AMU_THE_GOURMAND:        return "Gourm";
+    case AMU_ACROBAT:             return "Acrobat";
 #if TAG_MAJOR_VERSION == 34
-    case AMU_DISMISSAL:           return "Dismiss";
     case AMU_CONSERVATION:        return "Cons";
     case AMU_CONTROLLED_FLIGHT:   return "cFly";
 #endif
@@ -192,6 +225,7 @@ static vector<string> _randart_propnames(const item_def& item,
         { ARTP_ANGRY,                 prop_note::plain },
         { ARTP_CAUSE_TELEPORTATION,   prop_note::plain },
         { ARTP_NOISE,                 prop_note::plain },
+        { ARTP_HARM,                  prop_note::plain },
         { ARTP_CORRODE,               prop_note::plain },
         { ARTP_DRAIN,                 prop_note::plain },
         { ARTP_SLOW,                  prop_note::plain },
@@ -386,9 +420,9 @@ static const char* _jewellery_base_ability_description(int subtype)
         return "It increases your magic regeneration.";
     case AMU_THE_GOURMAND:
         return "It allows you to eat raw meat even when not hungry.";
+    case AMU_ACROBAT:
+        return "It helps you evade while moving and waiting.";
 #if TAG_MAJOR_VERSION == 34
-    case AMU_DISMISSAL:
-        return "It may teleport away creatures that harm you.";
     case AMU_CONSERVATION:
         return "It protects your inventory from destruction.";
 #endif
@@ -461,6 +495,7 @@ static string _randart_descrip(const item_def &item)
         { ARTP_SLOW, "It may slow you when you take damage.", false},
         { ARTP_FRAGILE, "It will be destroyed if unequipped.", false },
         { ARTP_SHIELDING, "It affects your SH (%d).", false},
+        { ARTP_HARM, "It increases damage dealt and taken.", false},
     };
 
     // Give a short description of the base type, for base types with no
@@ -527,16 +562,17 @@ static string _randart_descrip(const item_def &item)
 
 static const char *trap_names[] =
 {
-#if TAG_MAJOR_VERSION == 34
     "dart",
-#endif
     "arrow", "spear",
 #if TAG_MAJOR_VERSION > 34
     "teleport",
 #endif
     "permanent teleport",
     "alarm", "blade",
-    "bolt", "net", "Zot", "needle",
+    "bolt", "net", "Zot",
+#if TAG_MAJOR_VERSION == 34
+    "needle",
+#endif
     "shaft", "passage", "pressure plate", "web",
 #if TAG_MAJOR_VERSION == 34
     "gas", "teleport",
@@ -1020,7 +1056,8 @@ static string _handedness_string(const item_def &item)
     switch (you.hands_reqd(item))
     {
     case HANDS_ONE:
-        if (you.species == SP_FORMICID)
+        if (you.species == SP_FORMICID
+            || you.species == SP_ABOMINATION)
             description += "It is a weapon for one hand-pair.";
         else
             description += "It is a one handed weapon.";
@@ -1237,7 +1274,7 @@ static string _describe_weapon(const item_def &item, bool verbose)
         }
     }
 
-    if (you.duration[DUR_EXCRUCIATING_WOUNDS] && &item == you.weapon())
+    if (you.permabuffs[MUT_EXCRUCIATING_WOUNDS] && &item == you.weapon())
     {
         description += "\nIt is temporarily rebranded; it is actually a";
         if ((int) you.props[ORIGINAL_BRAND_KEY] == SPWPN_NORMAL)
@@ -1365,51 +1402,25 @@ static string _describe_ammo(const item_def &item)
                            "asphyxiation, dealing direct damage as well as "
                            "poisoning and slowing those it strikes.\n"
                            "It is twice as likely to be destroyed on impact as "
-                           "other needles.";
+                           "other darts.";
             break;
-        case SPMSL_PARALYSIS:
-            description += "It is tipped with a paralysing substance.";
-            break;
-        case SPMSL_SLEEP:
-            description += "It is coated with a fast-acting tranquilizer.";
-            break;
-        case SPMSL_CONFUSION:
-            description += "It is tipped with a substance that causes confusion.";
-            break;
-#if TAG_MAJOR_VERSION == 34
-        case SPMSL_SICKNESS:
-            description += "It has been contaminated by something likely to cause disease.";
-            break;
-#endif
         case SPMSL_FRENZY:
             description += "It is tipped with a substance that sends those it "
                            "hits into a mindless rage, attacking friend and "
                            "foe alike.";
             break;
-        case SPMSL_RETURNING:
-            description += "A skilled user can throw it in such a way that it "
-                           "will return to its owner.";
-            break;
-        case SPMSL_PENETRATION:
-            description += "It will pass through any targets it hits, "
-                           "potentially hitting all targets in its path until "
-                           "it reaches its maximum range.";
+        case SPMSL_BLINDING:
+            description += "It is tipped with a substance that causes "
+                           "blindness and brief confusion.";
             break;
         case SPMSL_DISPERSAL:
             description += "It will cause any target it hits to blink, with a "
                            "tendency towards blinking further away from the "
                            "one who " + threw_or_fired + " it.";
             break;
-        case SPMSL_EXPLODING:
-            description += "It will explode into fragments upon hitting a "
-                           "target, hitting an obstruction, or reaching its "
-                           "maximum range.";
-            break;
-        case SPMSL_STEEL:
-            description += "It deals increased damage compared to normal ammo.";
-            break;
         case SPMSL_SILVER:
-            description += "It deals substantially increased damage to chaotic "
+            description += "It deals increased damage compared to normal ammo "
+                           "and substantially increased damage to chaotic "
                            "and magically transformed beings. It also inflicts "
                            "extra damage against mutated beings, according to "
                            "how mutated they are.";
@@ -2140,7 +2151,7 @@ string get_item_description(const item_def &item, bool verbose,
         }
     }
 
-    if (god_hates_item_handling(item))
+    if (god_hates_item(item))
     {
         description << "\n\n" << uppercase_first(god_name(you.religion))
                     << " disapproves of the use of such an item.";
@@ -2161,6 +2172,16 @@ string get_item_description(const item_def &item, bool verbose,
     }
 
     return description.str();
+}
+
+string get_cloud_desc(cloud_type cloud)
+{
+    if (cloud == CLOUD_NONE)
+        return "";
+    const string cl_name = cloud_type_name(cloud);
+    const string cl_desc = getLongDescription(cl_name + " cloud");
+    return "A cloud of " + cl_name + (cl_desc.empty() ? "." : ".\n\n")
+        + cl_desc + extra_cloud_info(cloud);
 }
 
 void get_feature_desc(const coord_def &pos, describe_info &inf)
@@ -2225,78 +2246,18 @@ void get_feature_desc(const coord_def &pos, describe_info &inf)
     }
 
     if (const cloud_type cloud = env.map_knowledge(pos).cloud())
-    {
-        const string cl_name = cloud_type_name(cloud);
-        const string cl_desc = getLongDescription(cl_name + " cloud");
-        inf.body << "\n\nA cloud of " << cl_name
-                 << (cl_desc.empty() ? "." : ".\n\n")
-                 << cl_desc << extra_cloud_info(cloud);
-    }
+        inf.body << "\n\n" + get_cloud_desc(cloud);
 
     inf.quote = getQuoteString(db_name);
 }
 
-/// A message explaining how the player can toggle between quote &
-static const string _toggle_message =
-    "Press '<w>!</w>'"
-#ifdef USE_TILE_LOCAL
-    " or <w>Right-click</w>"
-#endif
-    " to toggle between the description and quote.";
-
-/**
- * If the given description has an associated quote, print a message at the
- * bottom of the screen explaining how the player can toggle between viewing
- * that quote & the description, and then check whether the input corresponds
- * to such a toggle.
- *
- * @param inf[in]       The description in question.
- * @param key[in,out]   The input command. If zero, is set to getchm().
- * @return              Whether the description & quote should be toggled.
- */
-static int _print_toggle_message(const describe_info &inf, int& key)
-{
-    mouse_control mc(MOUSE_MODE_MORE);
-
-    if (inf.quote.empty())
-    {
-        if (!key)
-            key = getchm();
-        return false;
-    }
-
-    const int bottom_line = min(30, get_number_of_lines());
-    cgotoxy(1, bottom_line);
-    formatted_string::parse_string(_toggle_message).display();
-    if (!key)
-        key = getchm();
-
-    if (key == '!' || key == CK_MOUSE_CMD)
-        return true;
-
-    return false;
-}
-
-void describe_feature_wide(const coord_def& pos, bool show_quote)
+void describe_feature_wide(const coord_def& pos)
 {
     describe_info inf;
     get_feature_desc(pos, inf);
-
-#ifdef USE_TILE_WEB
-    tiles_crt_control show_as_menu(CRT_MENU, "describe_feature");
-#endif
-
-    if (show_quote)
-        _print_quote(inf);
-    else
-        print_description(inf);
-
     if (crawl_state.game_is_hints())
-        hints_describe_pos(pos.x, pos.y);
-
-    int key = 0;
-    if (_print_toggle_message(inf, key))
-        describe_feature_wide(pos, !show_quote);
+        inf.body << hints_describe_pos(pos.x, pos.y);
+    show_description(inf);
 }
 
 void get_item_desc(const item_def &item, describe_info &inf)
@@ -2358,7 +2319,7 @@ static vector<command_type> _allowed_actions(const item_def& item)
             actions.push_back(CMD_WEAR_JEWELLERY);
         break;
     case OBJ_POTIONS:
-        if (!you_foodless()) // mummies and lich form forbidden
+        if (!you_foodless(true, true)) // mummies and lich form forbidden, djinni okay
             actions.push_back(CMD_QUAFF);
         break;
     default:
@@ -2514,10 +2475,6 @@ bool describe_item(item_def &item, function<void (string&)> fixup_desc)
     if (!item.defined())
         return true;
 
-#ifdef USE_TILE_WEB
-    tiles_crt_control show_as_menu(CRT_MENU, "describe_item");
-#endif
-
     string desc = get_item_description(item, true, false);
 
     string quote;
@@ -2555,6 +2512,7 @@ bool describe_item(item_def &item, function<void (string&)> fixup_desc)
                                      || crawl_state.updating_scores);
         vector<command_type> actions;
         formatted_scroller menu;
+        menu.set_flags(MF_SINGLESELECT);
         menu.add_text(desc, false, get_number_of_cols());
         if (do_actions)
         {
@@ -2657,7 +2615,7 @@ string get_skill_description(skill_type skill, bool need_title)
     switch (skill)
     {
         case SK_INVOCATIONS:
-            if (you.species == SP_DEMIGOD)
+            if (you.species == SP_PROMETHEAN)
             {
                 result += "\n";
                 result += "How on earth did you manage to pick this up?";
@@ -2778,18 +2736,16 @@ string player_spell_desc(spell_type spell)
 /**
  * Examine a given spell. Set the given string to its description, stats, &c.
  * If it's a book in a spell that the player is holding, mention the option to
- * memorize or forget it.
+ * memorise it.
  *
  * @param spell         The spell in question.
  * @param mon_owner     If this spell is being examined from a monster's
  *                      description, 'spell' is that monster. Else, null.
  * @param description   Set to the description & details of the spell.
- * @param item          The item (book or rod) holding the spell, if any.
- * @return              BOOK_MEM if you can memorise the spell
- *                      BOOK_FORGET if you can forget it
- *                      BOOK_NEITHER if you can do neither.
+ * @param item          The item holding the spell, if any.
+ * @return              Whether you can memorise the spell.
  */
-static int _get_spell_description(const spell_type spell,
+static bool _get_spell_description(const spell_type spell,
                                   const monster_info *mon_owner,
                                   string &description,
                                   const item_def* item = nullptr)
@@ -2843,34 +2799,22 @@ static int _get_spell_description(const spell_type spell,
     else
         description += player_spell_desc(spell);
 
-    // Don't allow memorization or amnesia after death.
+    // Don't allow memorization after death.
     // (In the post-game inventory screen.)
     if (crawl_state.player_is_dead())
-        return BOOK_NEITHER;
+        return false;
 
     const string quote = getQuoteString(string(spell_title(spell)) + " spell");
     if (!quote.empty())
         description += "\n" + quote;
 
-    if (item && item->base_type == OBJ_BOOKS
-        && (in_inventory(*item) || item->pos == you.pos())
+    if (item && item->base_type == OBJ_BOOKS && in_inventory(*item)
         && !you.has_spell(spell) && you_can_memorise(spell))
     {
-        if (you.has_spell(spell))
-        {
-            description += "\n(F)orget this spell by destroying the book.\n";
-            if (you_worship(GOD_SIF_MUNA))
-                description +="Sif Muna frowns upon the destroying of books.\n";
-            return BOOK_FORGET;
-        }
-        else if (you_can_memorise(spell))
-        {
-            description += "\n(M)emorise this spell.\n";
-            return BOOK_MEM;
-        }
+        return true;
     }
 
-    return BOOK_NEITHER;
+    return false;
 }
 
 /**
@@ -2890,8 +2834,7 @@ void get_spell_desc(const spell_type spell, describe_info &inf)
 
 /**
  * Examine a given spell. List its description and details, and handle
- * memorizing or forgetting the spell in question, if the player is able to
- * do so & chooses to.
+ * memorizing the spell in question, if the player is able & chooses to do so.
  *
  * @param spelled   The spell in question.
  * @param mon_owner If this spell is being examined from a monster's
@@ -2901,31 +2844,23 @@ void get_spell_desc(const spell_type spell, describe_info &inf)
 void describe_spell(spell_type spelled, const monster_info *mon_owner,
                     const item_def* item)
 {
-#ifdef USE_TILE_WEB
-    tiles_crt_control show_as_menu(CRT_MENU, "describe_spell");
-#endif
-
     string desc;
-    const int mem_or_forget = _get_spell_description(spelled, mon_owner, desc,
-                                                     item);
-    print_description(desc);
+    const bool can_mem = _get_spell_description(spelled, mon_owner, desc, item);
+    formatted_scroller menu;
+    menu.add_text(desc, false, get_number_of_cols());
 
-    mouse_control mc(MOUSE_MODE_MORE);
-    char ch;
-    if ((ch = getchm()) == 0)
-        ch = getchm();
+    if (can_mem)
+    {
+        menu.set_flags(menu.get_flags() | MF_ALWAYS_SHOW_MORE);
+        menu.set_more(formatted_string("(M)emorise this spell.", CYAN));
+    }
 
-    if (mem_or_forget == BOOK_MEM && toupper(ch) == 'M')
+    menu.show();
+
+    if (can_mem && toupper(menu.getkey()) == 'M')
     {
         redraw_screen();
         if (!learn_spell(spelled) || !you.turn_is_over)
-            more();
-        redraw_screen();
-    }
-    else if (mem_or_forget == BOOK_FORGET && toupper(ch) == 'F')
-    {
-        redraw_screen();
-        if (!forget_spell_from_book(spelled, item) || !you.turn_is_over)
             more();
         redraw_screen();
     }
@@ -2938,14 +2873,7 @@ void describe_spell(spell_type spelled, const monster_info *mon_owner,
  */
 void describe_ability(ability_type ability)
 {
-#ifdef USE_TILE_WEB
-    tiles_crt_control show_as_menu(CRT_MENU, "describe_ability");
-#endif
-
-    print_description(get_ability_desc(ability));
-
-    mouse_control mc(MOUSE_MODE_MORE);
-    getchm();// description screen wouldn't show up without getchm()
+    show_description(get_ability_desc(ability));
 }
 
 
@@ -3083,8 +3011,8 @@ static const char* _get_resist_name(mon_resist_flags res_type)
         return "negative energy";
     case MR_RES_DAMNATION:
         return "damnation";
-    case MR_RES_WIND:
-        return "wind";
+    case MR_RES_TORNADO:
+        return "tornadoes";
     default:
         return "buggy resistance";
     }
@@ -3537,7 +3465,7 @@ static string _monster_stat_description(const monster_info& mi)
         MR_RES_ELEC,    MR_RES_POISON, MR_RES_FIRE,
         MR_RES_STEAM,   MR_RES_COLD,   MR_RES_ACID,
         MR_RES_ROTTING, MR_RES_NEG,    MR_RES_DAMNATION,
-        MR_RES_WIND,
+        MR_RES_TORNADO,
     };
 
     vector<string> extreme_resists;
@@ -3552,7 +3480,7 @@ static string _monster_stat_description(const monster_info& mi)
         if (level != 0)
         {
             const char* attackname = _get_resist_name(rflags);
-            if (rflags == MR_RES_DAMNATION || rflags == MR_RES_WIND)
+            if (rflags == MR_RES_DAMNATION || rflags == MR_RES_TORNADO)
                 level = 3; // one level is immunity
             level = max(level, -1);
             level = min(level,  3);
@@ -3756,23 +3684,25 @@ static string _monster_stat_description(const monster_info& mi)
     if (mon_size)
         result << uppercase_first(pronoun) << " is " << mon_size << ".\n";
 
-    if (in_good_standing(GOD_ZIN, 0))
+    if (in_good_standing(GOD_ZIN, 0) && !mi.pos.origin() && monster_at(mi.pos))
     {
-        const int check = mi.hd - zin_recite_power();
-        if (check >= 0)
+        recite_counts retval;
+        monster *m = monster_at(mi.pos);
+        auto eligibility = zin_check_recite_to_single_monster(m, retval);
+        if (eligibility == RE_INELIGIBLE)
         {
-            result << uppercase_first(pronoun) << " is too strong to be"
-                                                  " recited to.";
+            result << uppercase_first(pronoun) <<
+                    " cannot be affected by reciting Zin's laws.";
         }
-        else if (check >= -5)
+        else if (eligibility == RE_TOO_STRONG)
         {
-            result << uppercase_first(pronoun) << " may be too strong to be"
-                                                  " recited to.";
+            result << uppercase_first(pronoun) <<
+                    " is too strong to be affected by reciting Zin's laws.";
         }
-        else
+        else // RE_ELIGIBLE || RE_RECITE_TIMER
         {
-            result << uppercase_first(pronoun) << " is weak enough to be"
-                                                  " recited to.";
+            result << uppercase_first(pronoun) <<
+                            " can be affected by reciting Zin's laws.";
         }
 
         if (you.wizard)
@@ -4140,27 +4070,31 @@ int describe_monsters(const monster_info &mi, bool force_seen,
             inf.footer += "\n" + footer;
     }
 
-#ifdef USE_TILE_WEB
-    tiles_crt_control show_as_menu(CRT_MENU, "describe_monster");
+#ifdef USE_TILE_LOCAL
+    // Ensure we get the full screen size when calling get_number_of_cols()
+    cgotoxy(1, 1);
 #endif
 
     spell_scroller fs(monster_spellset(mi), &mi, nullptr);
-    fs.add_text(inf.title);
+    fs.add_text(inf.title, true);
     fs.add_text(inf.body.str(), false, get_number_of_cols() - 1);
     if (crawl_state.game_is_hints())
         fs.add_text(hints_describe_monster(mi, has_stat_desc).c_str());
 
     formatted_scroller qs;
 
+    fs.set_more();
+    qs.set_more();
+
     if (!inf.quote.empty())
     {
-        fs.add_item_formatted_string(
-                formatted_string::parse_string("\n" + _toggle_message));
+        fs.set_flags(fs.get_flags() | MF_ALWAYS_SHOW_MORE);
+        qs.set_flags(qs.get_flags() | MF_ALWAYS_SHOW_MORE);
+        fs.set_more(formatted_string::parse_string(_toggle_message));
+        qs.set_more(formatted_string::parse_string(_toggle_message));
 
-        qs.add_text(inf.title);
+        qs.add_text(inf.title, true);
         qs.add_text(inf.quote, false, get_number_of_cols() - 1);
-        qs.add_item_formatted_string(
-                formatted_string::parse_string("\n" + _toggle_message));
     }
 
     fs.add_item_formatted_string(formatted_string::parse_string(inf.footer));
@@ -4174,9 +4108,7 @@ int describe_monsters(const monster_info &mi, bool force_seen,
             fs.show();
 
         int keyin = (show_quote ? qs : fs).get_lastch();
-        // this is never actually displayed to the player
-        // we just use it to check whether we should toggle.
-        if (_print_toggle_message(inf, keyin))
+        if (!inf.quote.empty() && (keyin == '!' || keyin == CK_MOUSE_CMD))
             show_quote = !show_quote;
         else
             return keyin;
@@ -4264,15 +4196,8 @@ string get_ghost_description(const monster_info &mi, bool concise)
 void describe_skill(skill_type skill)
 {
     ostringstream data;
-
-#ifdef USE_TILE_WEB
-    tiles_crt_control show_as_menu(CRT_MENU, "describe_skill");
-#endif
-
     data << get_skill_description(skill, true);
-
-    print_description(data.str());
-    getchm();
+    show_description(data.str());
 }
 
 // only used in tiles
@@ -4297,59 +4222,6 @@ string get_command_description(const command_type cmd, bool terse)
     }
 
     return result.substr(0, result.length() - 1);
-}
-
-void alt_desc_proc::nextline()
-{
-    ostr << "\n";
-}
-
-void alt_desc_proc::print(const string &str)
-{
-    ostr << str;
-}
-
-int alt_desc_proc::count_newlines(const string &str)
-{
-    return count(begin(str), end(str), '\n');
-}
-
-void alt_desc_proc::trim(string &str)
-{
-    int idx = str.size();
-    while (--idx >= 0)
-    {
-        if (str[idx] != '\n')
-            break;
-    }
-    str.resize(idx + 1);
-}
-
-bool alt_desc_proc::chop(string &str)
-{
-    int loc = -1;
-    for (size_t i = 1; i < str.size(); i++)
-        if (str[i] == '\n' && str[i-1] == '\n')
-            loc = i;
-
-    if (loc == -1)
-        return false;
-
-    str.resize(loc);
-    return true;
-}
-
-void alt_desc_proc::get_string(string &str)
-{
-    str = replace_all(ostr.str(), "\n\n\n\n", "\n\n");
-    str = replace_all(str, "\n\n\n", "\n\n");
-
-    trim(str);
-    while (count_newlines(str) > h)
-    {
-        if (!chop(str))
-            break;
-    }
 }
 
 /**

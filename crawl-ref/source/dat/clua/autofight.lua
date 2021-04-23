@@ -14,7 +14,6 @@
 local ATT_HOSTILE = 0
 local ATT_NEUTRAL = 1
 
-local LOS_RADIUS = 8
 
 AUTOFIGHT_STOP = 50
 AUTOFIGHT_HUNGER_STOP = 0
@@ -27,7 +26,7 @@ AUTOFIGHT_WAIT = false
 AUTOFIGHT_PROMPT_RANGE = true
 AUTOMAGIC_ACTIVE = false
 
-local function delta_to_vi(dx, dy)
+local function delta_to_cmd(dx, dy)
   local d2v = {
     [-1] = { [-1] = "CMD_MOVE_UP_LEFT",  [0] = "CMD_MOVE_LEFT",  [1] = "CMD_MOVE_DOWN_LEFT"},
     [0]  = { [-1] = "CMD_MOVE_UP",                               [1] = "CMD_MOVE_DOWN"},
@@ -36,7 +35,7 @@ local function delta_to_vi(dx, dy)
   return d2v[dx][dy]
 end
 
-local function target_delta_to_vi(dx, dy)
+local function target_delta_to_cmd(dx, dy)
   local d2v = {
     [-1] = { [-1] = "CMD_TARGET_UP_LEFT",  [0] = "CMD_TARGET_LEFT",  [1] = "CMD_TARGET_DOWN_LEFT"},
     [0]  = { [-1] = "CMD_TARGET_UP",                                 [1] = "CMD_TARGET_DOWN"},
@@ -59,16 +58,24 @@ end
 
 local function vector_move(a, dx, dy)
   for i = 1,abs(dx) do
-    a[#a+1] = target_delta_to_vi(sign(dx), 0)
+    a[#a+1] = target_delta_to_cmd(sign(dx), 0)
   end
   for i = 1,abs(dy) do
-    a[#a+1] = target_delta_to_vi(0, sign(dy))
+    a[#a+1] = target_delta_to_cmd(0, sign(dy))
   end
 end
 
 local function have_reaching()
   local wp = items.equipped_at("weapon")
-  return wp and wp.reach_range == 2 and not wp.is_melded
+  return wp and wp.reach_range >= 2 and not wp.is_melded
+end
+
+local function reach_range()
+  local wp = items.equipped_at("weapon")
+  if wp and not wp.is_melded then
+      return wp.reach_range
+  end
+  return 1
 end
 
 local function have_ranged()
@@ -104,13 +111,14 @@ local function can_move_now(dx, dy)
 end
 
 local function choose_move_towards(ax, ay, bx, by, square_func)
+  local los_radius = you.los()
   local move = nil
   local dx = bx - ax
   local dy = by - ay
   local function try_move(mx, my)
     if mx == 0 and my == 0 then
       return nil
-    elseif abs(ax+mx) > LOS_RADIUS or abs(ay+my) > LOS_RADIUS then
+    elseif abs(ax+mx) > los_radius or abs(ay+my) > los_radius then
       return nil
     elseif square_func(ax+mx, ay+my) then
       return {mx,my}
@@ -157,13 +165,13 @@ local function move_towards(dx, dy)
   if move == nil then
     crawl.mpr("Failed to move towards target.")
   else
-    crawl.do_commands({delta_to_vi(move[1],move[2])})
+    crawl.do_commands({delta_to_cmd(move[1],move[2])})
   end
 end
 
 local function will_tab(ax, ay, bx, by)
-  if abs(bx-ax) <= 1 and abs(by-ay) <= 1 or
-     abs(bx-ax) <= 2 and abs(by-ay) <= 2 and have_reaching() then
+  local range = reach_range()
+  if abs(bx-ax) <= range and abs(by-ay) <= range then
     return true
   end
   local move = choose_move_towards(ax, ay, bx, by, can_move_maybe)
@@ -186,12 +194,15 @@ local function get_monster_info(dx,dy,no_move)
   elseif not have_reaching() then
     info.attack_type = (-info.distance < 2) and 2 or 0
   else
-    if -info.distance > 2 then
+    local range = reach_range()
+    -- Assume extended reach (i.e. Rift) gets smite targeting.
+    local can_reach = range > 2 and you.see_cell_no_trans or view.can_reach
+    if -info.distance > range then
       info.attack_type = 0
     elseif -info.distance < 2 then
       info.attack_type = 2
     else
-      info.attack_type = view.can_reach(dx, dy) and 1 or 0
+      info.attack_type = can_reach(dx, dy) and 1 or 0
     end
   end
   if info.attack_type == 0 and have_throwing(no_move) and you.see_cell_no_trans(dx, dy) then
@@ -248,12 +259,13 @@ local function is_candidate_for_attack(x,y)
 end
 
 local function get_target(no_move)
+  local los_radius = you.los()
   local x, y, bestx, besty, best_info, new_info
   bestx = 0
   besty = 0
   best_info = nil
-  for x = -LOS_RADIUS,LOS_RADIUS do
-    for y = -LOS_RADIUS,LOS_RADIUS do
+  for x = -los_radius,los_radius do
+    for y = -los_radius,los_radius do
       if is_candidate_for_attack(x, y) then
         new_info = get_monster_info(x, y, no_move)
         if (not best_info) or compare_monster_info(new_info, best_info) then
@@ -289,7 +301,7 @@ local function attack_reach(x,y)
 end
 
 local function attack_melee(x,y)
-  crawl.do_commands({delta_to_vi(x, y)})
+  crawl.do_commands({delta_to_cmd(x, y)})
 end
 
 local function set_stop_level(key, value, mode)
@@ -360,7 +372,7 @@ function attack(allow_movement)
     crawl.mpr("You are too confused!")
   elseif caught then
     if AUTOFIGHT_CAUGHT then
-      crawl.do_commands({delta_to_vi(1, 0)}) -- Direction doesn't matter.
+      crawl.do_commands({delta_to_cmd(1, 0)}) -- Direction doesn't matter.
     else
       crawl.mpr("You are " .. caught .. "!")
     end

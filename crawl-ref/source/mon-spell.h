@@ -715,6 +715,12 @@ static const mon_spellbook mspell_list[] =
       }
     },
 
+    { MST_SWAMP_WORM,
+      {
+        { SPELL_HARPOON_SHOT, 80, MON_SPELL_NATURAL },
+      }
+    },
+
     // ('x') Lesser abominations and tentacled things.
     {  MST_WORLDBINDER,
       {
@@ -834,8 +840,9 @@ static const mon_spellbook mspell_list[] =
 
     {  MST_IRON_GIANT,
       {
-       { SPELL_IRON_SHOT, 40, MON_SPELL_WIZARD },
-       { SPELL_THROW_ALLY, 80, MON_SPELL_NATURAL },
+       { SPELL_IRON_SHOT, 24, MON_SPELL_WIZARD },
+       { SPELL_HARPOON_SHOT, 36, MON_SPELL_WIZARD },
+       { SPELL_THROW_ALLY, 36, MON_SPELL_NATURAL },
       }
     },
 
@@ -956,7 +963,7 @@ static const mon_spellbook mspell_list[] =
 
     {  MST_SHINING_EYE,
       {
-       { SPELL_MALMUTATE, 57, MON_SPELL_MAGICAL },
+       { SPELL_POLYMORPH, 57, MON_SPELL_MAGICAL },
       }
     },
 
@@ -1495,7 +1502,7 @@ static const mon_spellbook mspell_list[] =
        { SPELL_ENERGY_BOLT, 13, MON_SPELL_MAGICAL },
        { SPELL_SLOW, 13, MON_SPELL_MAGICAL },
        { SPELL_CONFUSE, 13, MON_SPELL_MAGICAL },
-       { SPELL_ENTROPIC_WEAVE, 13, MON_SPELL_MAGICAL },
+       { SPELL_MALMUTATE, 13, MON_SPELL_MAGICAL },
        { SPELL_DIG, 13, MON_SPELL_MAGICAL },
       }
     },

@@ -70,6 +70,7 @@ struct MouseEvent
         PRESS,
         RELEASE,
         MOVE,
+        WHEEL,
     };
 
     enum mouse_event_button
@@ -136,6 +137,7 @@ public:
 
     void cgotoxy(int x, int y, GotoRegion region = GOTO_CRT);
     GotoRegion get_cursor_region() const;
+    void set_cursor_region(GotoRegion region);
     int get_number_of_lines();
     int get_number_of_cols();
     bool is_using_small_layout();

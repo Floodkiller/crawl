@@ -591,6 +591,9 @@ static bool _artp_can_go_on_item(artefact_prop_type prop, const item_def &item,
             return item_class != OBJ_ARMOUR
                    && (item_class != OBJ_JEWELLERY
                        || jewellery_is_amulet(item));
+        case ARTP_HARM:
+            return item_class != OBJ_JEWELLERY && extant_props[ARTP_DRAIN];
+            // only get harm with *Drain
         default:
             return true;
     }
@@ -725,6 +728,8 @@ static const artefact_prop_data artp_data[] =
     { "Fragile", ARTP_VAL_BOOL, 25, // ARTP_FRAGILE,
         nullptr, []() { return 1; }, 0, 0 },
     { "SH", ARTP_VAL_ANY, 0, nullptr, nullptr, 0, 0 }, // ARTP_SHIELDING,
+    { "Harm", ARTP_VAL_BOOL, 0, // ARTP_HARM,
+        []() {return 1;}, nullptr, 0, 0},
 };
 COMPILE_CHECK(ARRAYSZ(artp_data) == ARTP_NUM_PROPERTIES);
 // weights sum to 1000
@@ -1767,9 +1772,7 @@ bool make_item_unrandart(item_def &item, int unrand_index)
 
     _set_unique_item_status(unrand_index, UNIQ_EXISTS);
 
-    if (unrand_index == UNRAND_VARIABILITY)
-        item.plus = random_range(-4, 16);
-    else if (unrand_index == UNRAND_FAERIE)
+    if (unrand_index == UNRAND_FAERIE)
         _make_faerie_armour(item);
     else if (unrand_index == UNRAND_OCTOPUS_KING_RING)
         _make_octoring(item);
@@ -1848,4 +1851,40 @@ void artefact_fixup_props(item_def &item)
 
     if (props.exists(KNOWN_PROPS_KEY))
         artefact_pad_store_vector(props[KNOWN_PROPS_KEY], false);
+}
+
+// Initialise the eligible unrands for archaeologist
+const vector<int> archaeologist_unrands()
+{
+    vector<int> eligible_unrands;
+
+    for (int i = 0; i < NUM_UNRANDARTS; ++i)
+    {
+        const int index = i + UNRAND_START;
+        const unrandart_entry *entry = &unranddata[i];
+
+        if (entry->base_type == OBJ_UNASSIGNED)
+            continue;
+
+        if (entry->flags & UNRAND_FLAG_NOGEN
+            || entry->flags & UNRAND_FLAG_NOTAC)
+            continue;
+
+        // Op/FD/Dr can't train armor to open the box
+        if ((you.species == SP_OCTOPODE || you.species == SP_FAERIE_DRAGON
+             || species_is_draconian(you.species))
+            && entry->base_type == OBJ_ARMOUR)
+            continue;
+
+        // As a non-felid: jewellery does not shape a character enough
+        // As a felid: we have no choice but to give jewellery
+        // XXX: This seems like a really convoluted way to do XNOR -- NP7.
+        if (you.species == SP_FELID && entry->base_type != OBJ_JEWELLERY
+            || you.species != SP_FELID && entry->base_type == OBJ_JEWELLERY)
+            continue;
+
+        eligible_unrands.push_back(index);
+    }
+
+    return eligible_unrands;
 }

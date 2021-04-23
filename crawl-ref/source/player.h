@@ -29,7 +29,6 @@
 #include "place-info.h"
 #include "quiver.h"
 #include "religion-enum.h"
-#include "seed-type.h"
 #include "skill-menu-state.h"
 #include "species.h"
 #include "stat-type.h"
@@ -37,6 +36,7 @@
 #include "transformation.h"
 #include "uncancellable-type.h"
 #include "unique-item-status-type.h"
+#include "pledge-type.h"
 
 #define ICY_ARMOUR_KEY "ozocubu's_armour_pow"
 #define TRANSFORM_POW_KEY "transform_pow"
@@ -47,9 +47,12 @@
 #define FORCE_MAPPABLE_KEY "force_mappable"
 #define REGEN_AMULET_ACTIVE "regen_amulet_active"
 #define MANA_REGEN_AMULET_ACTIVE "mana_regen_amulet_active"
+#define ACROBAT_AMULET_ACTIVE "acrobat_amulet_active"
 #define SAP_MAGIC_KEY "sap_magic_amount"
 #define TEMP_WATERWALK_KEY "temp_waterwalk"
 #define EMERGENCY_FLIGHT_KEY "emergency_flight"
+#define ABYSS_DEPTH_KEY "abyss_depth"
+#define LAST_ACTION_WAS_MOVE_OR_REST_KEY "last_action_was_move_or_rest"
 
 // display/messaging breakpoints for penalties from Ru's MUT_HORROR
 #define HORROR_LVL_EXTREME  3
@@ -121,6 +124,7 @@ public:
     string your_name;
     species_type species;
     job_type char_class;
+    pledge_type pledge;
 
     // This field is here even in non-WIZARD compiles, since the
     // player might have been playing previously under wiz mode.
@@ -142,7 +146,9 @@ public:
 
     int magic_points;
     int max_magic_points;
-    int mp_max_adj;             // max MP loss (ability costs, tutorial bonus)
+    int mp_max_adj_perm;        // max MP loss (ability costs, tutorial bonus)
+    int mp_max_adj_temp;        // Temporary max MP loss (reserved MP)
+    int mp_max_adj_temp_base;   // Base amount of MP reserved (before modifying)
 
     FixedVector<int8_t, NUM_STATS> stat_loss;
     FixedVector<int8_t, NUM_STATS> base_stats;
@@ -175,6 +181,8 @@ public:
     FixedBitVector<NUM_RUNE_TYPES> runes;
     int obtainable_runes; // can be != 15 in Sprint
 
+    FixedBitVector<NUM_SPELLS> spell_library;
+    FixedBitVector<NUM_SPELLS> hidden_spells;
     FixedVector<spell_type, MAX_KNOWN_SPELLS> spells;
     set<spell_type> old_vehumet_gifts, vehumet_gifts;
 
@@ -200,6 +208,9 @@ public:
     bool pending_revival;
     int lives;
     int deaths;
+
+    float temperature; // For lava orcs.
+    float temperature_last;
 
     FixedVector<uint8_t, NUM_SKILLS> skills; ///< skill level
     FixedVector<training_status, NUM_SKILLS> train; ///< see enum def
@@ -264,6 +275,7 @@ public:
     FixedVector<uint8_t, NUM_MUTATIONS> innate_mutation;
     FixedVector<uint8_t, NUM_MUTATIONS> temp_mutation;
     FixedVector<uint8_t, NUM_MUTATIONS> sacrifices;
+    FixedVector<uint8_t, NUM_MUTATIONS> permabuffs;
 
     FixedVector<uint8_t, NUM_ABILITIES> sacrifice_piety;
 
@@ -277,8 +289,6 @@ public:
 
     int magic_contamination;
 
-    FixedBitVector<NUM_FIXED_BOOKS> had_book;
-    FixedBitVector<NUM_SPELLS>      seen_spell;
     FixedVector<uint32_t, NUM_WEAPONS> seen_weapon;
     FixedVector<uint32_t, NUM_ARMOURS> seen_armour;
     FixedBitVector<NUM_MISCELLANY>     seen_misc;
@@ -357,8 +367,8 @@ public:
     // A list of allies awaiting an active recall
     vector<mid_t> recall_list;
 
-    // Hash seeds for deterministic stuff.
-    FixedVector<uint32_t, NUM_SEEDS> game_seeds;
+    // Hash seed for deterministic stuff.
+    uint32_t game_seed;
 
     // -------------------
     // Non-saved UI state:
@@ -411,6 +421,7 @@ public:
     bool redraw_title;
     bool redraw_hit_points;
     bool redraw_magic_points;
+    bool redraw_temperature;
     FixedVector<bool, NUM_STATS> redraw_stats;
     bool redraw_experience;
     bool redraw_armour_class;
@@ -486,6 +497,7 @@ public:
     int max_dex() const;
 
     bool in_water() const;
+    bool in_lava() const;
     bool in_liquid() const;
     bool can_swim(bool permanently = false) const;
     bool can_water_walk() const;
@@ -513,18 +525,21 @@ public:
     bool is_skeletal() const override;
 
     bool tengu_flight() const;
+    bool faerie_dragon_flight() const;
+
     int heads() const override;
 
     bool spellcasting_unholy() const;
 
     // Dealing with beholders. Implemented in behold.cc.
-    void add_beholder(const monster& mon, bool axe = false);
+    void add_beholder(const monster& mon, bool axe = false, bool skeleton = false);
     bool beheld() const;
     bool beheld_by(const monster& mon) const;
     monster* get_beholder(const coord_def &pos) const;
     monster* get_any_beholder() const;
     void remove_beholder(const monster& mon);
-    void clear_beholders();
+    void clear_beholders(bool ignore_reap = false, bool silent = true);
+    void beholders_check_noise(int loudness, bool axe = false);
     void update_beholders();
     void update_beholder(const monster* mon);
     bool possible_beholder(const monster* mon) const;
@@ -537,6 +552,7 @@ public:
     monster* get_any_fearmonger() const;
     void remove_fearmonger(const monster* mon);
     void clear_fearmongers();
+    void fearmongers_check_noise(int loudness, bool axe = false);
     void update_fearmongers();
     void update_fearmonger(const monster* mon);
 
@@ -614,6 +630,9 @@ public:
     int       has_usable_pseudopods(bool allow_tran = true) const;
     int       has_tentacles(bool allow_tran = true) const;
     int       has_usable_tentacles(bool allow_tran = true) const;
+    int       has_pincers(bool allow_tran = false) const;
+    bool      has_usable_pincers(bool allow_tran = false) const;
+
 
     // Information about player mutations. Implemented in mutation.cc
     int       get_base_mutation_level(mutation_type mut, bool innate=true, bool temp=true, bool normal=true) const;
@@ -630,6 +649,7 @@ public:
     bool      has_temporary_mutation(mutation_type mut) const;
     bool      has_innate_mutation(mutation_type mut) const;
     bool      has_mutation(mutation_type mut, bool check_form=true) const;
+    bool      has_permabuffs(mutation_type mut) const;
 
     int       how_mutated(bool innate=false, bool levels=false, bool temp=true) const;
 
@@ -751,7 +771,7 @@ public:
     int res_holy_energy() const override;
     int res_negative_energy(bool intrinsic_only = false) const override;
     bool res_torment() const override;
-    bool res_wind() const override;
+    bool res_tornado() const override;
     bool res_petrify(bool temp = true) const override;
     int res_constrict() const override;
     int res_magic(bool /*calc_unid*/ = true) const override;
@@ -784,6 +804,7 @@ public:
     int silence_radius() const override;
     int liquefying_radius() const override;
     int umbra_radius() const override;
+    int heat_radius() const override;
     bool petrifying() const override;
     bool petrified() const override;
     bool liquefied_ground() const override;
@@ -910,6 +931,9 @@ bool check_moveto_terrain(const coord_def& p, const string &move_verb,
                           const string &msg = "", bool *prompted = nullptr);
 bool check_moveto_cloud(const coord_def& p, const string &move_verb = "step",
                         bool *prompted = nullptr);
+bool check_moveto_exclusions(const vector<coord_def> &areas,
+                             const string &move_verb = "step",
+                             bool *prompted = nullptr);
 bool check_moveto_exclusion(const coord_def& p,
                             const string &move_verb = "step",
                             bool *prompted = nullptr);
@@ -936,6 +960,8 @@ bool player_can_hear(const coord_def& p, int hear_distance = 999);
 
 bool player_is_shapechanged();
 
+void update_acrobat_status();
+
 bool is_effectively_light_armour(const item_def *item);
 bool player_effectively_in_light_armour();
 
@@ -961,7 +987,7 @@ int player_prot_life(bool calc_unid = true, bool temp = true,
 bool regeneration_is_inhibited();
 int player_regen();
 int player_mp_regen();
-void update_regen_amulet_attunement();
+void update_amulet_attunement_by_health();
 void update_mana_regen_amulet_attunement();
 
 int player_res_cold(bool calc_unid = true, bool temp = true,
@@ -973,6 +999,7 @@ bool player_kiku_res_torment();
 
 bool player_likes_chunks(bool permanently = false);
 bool player_likes_water(bool permanently = false);
+bool player_likes_lava(bool permanently = false);
 
 int player_res_electricity(bool calc_unid = true, bool temp = true,
                            bool items = true);
@@ -1049,6 +1076,7 @@ void recalc_and_scale_hp();
 
 void dec_hp(int hp_loss, bool fatal, const char *aux = nullptr);
 void dec_mp(int mp_loss, bool silent = false);
+void drain_mp(int mp_loss);
 
 void inc_mp(int mp_gain, bool silent = false);
 void inc_hp(int hp_gain);
@@ -1058,6 +1086,8 @@ void rot_hp(int hp_loss);
 // Unrot the player and return excess HP if any.
 int unrot_hp(int hp_recovered);
 int player_rotted();
+bool reserve_mp(int mp_reserved);
+void unreserve_mp(int mp_recovered);
 void rot_mp(int mp_loss);
 
 void inc_max_hp(int hp_gain);
@@ -1067,7 +1097,7 @@ void deflate_hp(int new_level, bool floor);
 void set_hp(int new_amount);
 
 int get_real_hp(bool trans, bool rotted = false);
-int get_real_mp(bool include_items);
+int get_real_mp(bool include_items, bool reserved);
 
 int get_contamination_level();
 bool player_severe_contamination();
@@ -1139,3 +1169,40 @@ bool need_expiration_warning(coord_def p = you.pos());
 
 bool player_has_orb();
 bool player_on_orb_run();
+
+enum temperature_level
+{
+    TEMP_MIN = 1, // Minimum (and starting) temperature. Not any warmer than bare rock.
+    TEMP_COLD = 3,
+    TEMP_COOL = 5,
+    TEMP_ROOM = 7,
+    TEMP_WARM = 9, // Warmer than most creatures.
+    TEMP_HOT = 11,
+    TEMP_FIRE = 13, // Hot enough to ignite paper around you.
+    TEMP_MAX = 15, // Maximum temperature. As hot as lava!
+};
+enum temperature_effect
+{
+    LORC_LAVA_BOOST,
+    LORC_FIRE_BOOST,
+    LORC_STONESKIN,
+    LORC_COLD_VULN,
+    LORC_PASSIVE_HEAT,
+    LORC_HEAT_AURA,
+    LORC_NO_SCROLLS,
+    LORC_FIRE_RES_I,
+    LORC_FIRE_RES_II,
+    LORC_FIRE_RES_III,
+};
+int temperature();
+int temperature_last();
+void temperature_check();
+void temperature_increment(float degree);
+void temperature_decrement(float degree);
+void temperature_changed(float change);
+void temperature_decay();
+bool temperature_tier(int which);
+bool temperature_effect(int which);
+int temperature_colour(int temp);
+string temperature_string(int temp);
+string temperature_text(int temp);

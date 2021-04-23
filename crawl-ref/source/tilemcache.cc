@@ -454,7 +454,7 @@ bool mcache_monster::get_weapon_offset(tileidx_t mon_tile,
         *ofs_x = -3;
         *ofs_y = -3;
         break;
-    case TILEP_MONS_DEMIGOD:
+    case TILEP_MONS_PROMETHEAN:
     case TILEP_MONS_KIRKE:
     case TILEP_MONS_FREDERICK:
         *ofs_x = -1;
@@ -1248,8 +1248,8 @@ bool mcache_monster::valid(const monster_info& mon)
     bool have_shield_offs = (mon.type == MONS_PLAYER
                              && Options.tile_shield_offsets.first != INT_MAX)
         || get_shield_offset(mon_tile, &ox, &oy);
-    return (mon.inv[MSLOT_WEAPON].get() != nullptr && have_weapon_offs)
-        || (mon.inv[MSLOT_SHIELD].get() != nullptr && have_shield_offs);
+    return (mon.inv[MSLOT_WEAPON] && have_weapon_offs)
+        || (mon.inv[MSLOT_SHIELD] && have_shield_offs);
 }
 
 /////////////////////////////////////////////////////////////////////////////

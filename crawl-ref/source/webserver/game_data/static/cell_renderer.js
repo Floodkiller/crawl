@@ -552,17 +552,14 @@ function ($, view_data, main, tileinfo_player, icons, dngn, enums,
             var bg_idx = cell.bg.value;
             var renderer = this;
 
-            if (bg_idx > dngn.DNGN_UNSEEN)
-            {
-                if (bg.RAY)
-                    this.draw_dngn(dngn.RAY, x, y);
-                else if (bg.RAY_OOR)
-                    this.draw_dngn(dngn.RAY_OUT_OF_RANGE, x, y);
-                else if (bg.LANDING)
-                    this.draw_dngn(dngn.LANDING, x, y);
-                else if (bg.RAY_MULTI)
-                    this.draw_dngn(dngn.RAY_MULTI, x, y);
-            }
+            if (bg.RAY)
+                this.draw_dngn(dngn.RAY, x, y);
+            else if (bg.RAY_OOR)
+                this.draw_dngn(dngn.RAY_OUT_OF_RANGE, x, y);
+            else if (bg.LANDING)
+                this.draw_dngn(dngn.LANDING, x, y);
+            else if (bg.RAY_MULTI)
+                this.draw_dngn(dngn.RAY_MULTI, x, y);
         },
 
         draw_background: function(x, y, cell)
@@ -668,7 +665,6 @@ function ($, view_data, main, tileinfo_player, icons, dngn, enums,
                 {
                     if (cell.sanctuary)
                         this.draw_dngn(dngn.SANCTUARY, x, y);
-                    // TAG_MAJOR_VERSION == 34
                     if (cell.heat_aura)
                         this.draw_dngn(dngn.HEAT_AURA + cell.heat_aura - 1, x, y);
                     if (cell.silenced)

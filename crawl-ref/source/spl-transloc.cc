@@ -40,6 +40,7 @@
 #include "prompt.h"
 #include "shout.h"
 #include "spl-util.h"
+#include "spl-selfench.h"
 #include "stash.h"
 #include "state.h"
 #include "stringutil.h"
@@ -139,6 +140,7 @@ void uncontrolled_blink(bool override_stasis)
         return;
 
     canned_msg(MSG_YOU_BLINK);
+    end_time_stop(true);
     const coord_def origin = you.pos();
     move_player_to_grid(target, false);
     _place_tloc_cloud(origin);
@@ -406,6 +408,7 @@ spret_type controlled_blink(bool fail, bool safe_cancel)
     move_player_to_grid(target, false);
     // Controlling teleport contaminates the player. -- bwr
     contaminate_player(750 + random2(500), true);
+    end_time_stop(true);
 
     crawl_state.cancel_cmd_again();
     crawl_state.cancel_cmd_repeat();
@@ -682,12 +685,13 @@ static bool _teleport_player(bool wizard_tele, bool teleportitis)
             mpr("Your surroundings suddenly seem different.");
             large_change = true;
         }
-
+        
         // Leave a purple cloud.
         _place_tloc_cloud(old_pos);
 
         move_player_to_grid(newpos, false);
         stop_delay(true);
+        end_time_stop(true);
     }
 
     _handle_teleport_update(large_change, old_pos);
@@ -756,7 +760,7 @@ bool you_teleport_to(const coord_def where_to, bool move_monsters)
     bool large_change = you.see_cell(where);
 
     move_player_to_grid(where, false);
-
+    end_time_stop(true);
     _handle_teleport_update(large_change, old_pos);
     return true;
 }
@@ -841,7 +845,30 @@ spret_type cast_apportation(int pow, bolt& beam, bool fail)
             orb_pickup_noise(where, 30,
                 "The Orb shrieks as your magic touches it!",
                 "The Orb lets out a furious burst of light as your magic touches it!");
-            start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, "Now pick up the Orb and get out of here!");
+            
+            // Check if pledges were completed; if not, give a different message
+            // (still let the player anger Pandemonium though, that's funny)
+            // No need to check Angel of Justice here
+            if(you.pledge == PLEDGE_EXPLORER && runes_in_pack() < 15)
+            {
+                start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
+                    "You probably should have completed your pledge before doing this!");
+            }
+            else if(you.pledge == PLEDGE_DESCENT_INTO_MADNESS && you.zigs_completed < 1)
+            {
+                start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
+                    "You probably should have completed your pledge before doing this!");
+            }
+            else if(you.pledge == PLEDGE_NATURES_ALLY)
+            {
+                start_orb_run(CHAPTER_ANGERED_PANDEMONIUM,
+                    "Now pick up the Orb and go beat up some mummies!");
+            }
+            else                    
+            {
+                start_orb_run(CHAPTER_ANGERED_PANDEMONIUM, 
+                    "Now pick up the Orb and get out of here!");
+            }
         }
     }
 
@@ -1007,9 +1034,105 @@ spret_type cast_dispersal(int pow, bool fail)
     return SPRET_SUCCESS;
 }
 
-int gravitas_range(int pow, int strength)
+int gravitas_range(int pow, bool singularity, int strength)
 {
+    if (!singularity)
+    {
+        pow = pow*11/10;
+    }
     return max(0, min(LOS_RADIUS, (int)isqrt((pow/10 + 1) / strength)));
+}
+
+spret_type cast_singularity(actor* agent, int pow, const coord_def& where,
+                            bool fail)
+{
+    if (cell_is_solid(where))
+    {
+        if (agent->is_player())
+            mpr("You can't place that within a solid object!");
+        return SPRET_ABORT;
+    }
+
+    actor* victim = actor_at(where);
+    if (victim)
+    {
+        if (you.can_see(*victim))
+        {
+            if (agent->is_player())
+                mpr("You can't place the singularity on a creature.");
+            return SPRET_ABORT;
+        }
+
+        fail_check();
+
+        if (agent->is_player())
+            canned_msg(MSG_GHOSTLY_OUTLINE);
+        else if (you.can_see(*victim))
+        {
+            mprf("%s %s for a moment.",
+                 victim->name(DESC_THE).c_str(),
+                 victim->conj_verb("distort").c_str());
+        }
+        return SPRET_SUCCESS;
+    }
+
+    fail_check();
+
+    for (monster_iterator mi; mi; ++mi)
+        if (mi->type == MONS_SINGULARITY && mi->summoner == agent->mid)
+        {
+            simple_monster_message(**mi, " implodes!");
+            monster_die(**mi, KILL_RESET, NON_MONSTER);
+        }
+
+/*    monster* singularity = create_monster(
+                                mgen_data(MONS_SINGULARITY,
+                                          agent->is_player()
+                                          ? BEH_FRIENDLY
+                                          : SAME_ATTITUDE(agent->as_monster()),
+                                          agent,
+                                          // It's summoned, but it uses
+                                          // its own mechanic to time out.
+                                          0, SPELL_SINGULARITY,
+                                          where, MHITNOT, MG_FORCE_PLACE,
+                                          GOD_NO_GOD, MONS_NO_MONSTER,
+                                          pow / 20, COLOUR_INHERIT,
+                                          PROX_ANYWHERE,
+                                          level_id::current(),
+                                          (pow / 10) + 1));*/
+
+    mgen_data data(MONS_SINGULARITY,  agent->is_player()
+                                ? BEH_FRIENDLY
+                                : SAME_ATTITUDE(agent->as_monster()),
+                                where,
+                                MHITNOT,
+                                MG_FORCE_PLACE,
+                                GOD_NO_GOD);
+    // It's summoned, but it uses
+    // its own mechanic to time out.
+    data.set_summoned(agent, 0, SPELL_SINGULARITY, GOD_NO_GOD);
+    data.summon_type = SPELL_SINGULARITY;
+    data.set_prox(PROX_ANYWHERE);
+    data.hd = (pow / 10) + 1;
+
+    monster* singularity = create_monster(data);
+
+    if (singularity)
+    {
+        singularity->countdown = pow / 20;
+        if (you.can_see(*singularity))
+        {
+            const bool friendly = singularity->wont_attack();
+            mprf("Space collapses on itself with a %s crunch%s",
+                 friendly ? "satisfying" : "horrifying",
+                 friendly ? "." : "!");
+        }
+        invalidate_agrid(true);
+    }
+    else
+        canned_msg(MSG_NOTHING_HAPPENS);
+
+    return SPRET_SUCCESS;
 }
 
 #define GRAVITY "by gravitational forces"
@@ -1046,8 +1169,11 @@ static void _attract_actor(const actor* agent, actor* victim,
         }
         else if (actor* act_at_space = actor_at(newpos))
         {
-            if (victim != act_at_space)
+            if (victim != act_at_space
+                && act_at_space->type != MONS_SINGULARITY)
+            {
                 victim->collide(newpos, agent, pow);
+            }
             break;
         }
         else if (!victim->is_habitable(newpos))
@@ -1063,6 +1189,62 @@ static void _attract_actor(const actor* agent, actor* victim,
 
         if (victim->pos() == pos)
             break;
+    }
+}
+
+void singularity_pull(const monster *singularity)
+{
+    actor *agent = actor_by_mid(singularity->summoner);
+
+    for (actor_near_iterator ai(singularity->pos(), LOS_NO_TRANS); ai; ++ai)
+    {
+        if (*ai == singularity
+            || agent && mons_aligned(*ai, agent))
+        {
+            continue;
+        }
+
+        if (is_sanctuary(ai->pos()))
+            continue;
+
+        const int range = (singularity->pos() - ai->pos()).rdist();
+        const int strength =
+            min(4, (singularity->get_hit_dice()) / (range*range));
+        if (strength <= 0)
+            continue;
+
+        static const char *messages[] =
+        {
+            "%s pulls at %s.",
+            "%s crushes %s!",
+            "%s violently warps %s!",
+            "%s twists %s apart!",
+        };
+
+        if (ai->is_monster())
+            behaviour_event(ai->as_monster(), ME_ANNOY, singularity);
+
+        if (you.can_see(**ai))
+        {
+            // Note that we don't care if you see the singularity if
+            // you can see its impact on the monster; "Something
+            // violently warps Sigmund!" is perfectly acceptable,
+            // after all.
+            mprf(messages[strength - 1],
+                 singularity->name(DESC_THE).c_str(),
+                 ai->name(DESC_THE).c_str());
+        }
+        ai->hurt(singularity, roll_dice(strength, 12), BEAM_MMISSILE,
+                 KILLED_BY_BEAM, "", GRAVITY);
+
+        if (agent->is_player() && is_sanctuary(you.pos()))
+            remove_sanctuary(true);
+
+        if (ai->alive() && !ai->is_stationary())
+        {
+            _attract_actor(singularity, *ai, singularity->pos(),
+                          10 * singularity->get_hit_dice(), strength);
+        }
     }
 }
 
@@ -1106,6 +1288,7 @@ spret_type cast_gravitas(int pow, const coord_def& where, bool fail)
                                                          DESC_THE, false)
                                                          .c_str()
                                    : "empty space");
+    pow = pow*11/10;
     fatal_attraction(where, &you, pow);
     return SPRET_SUCCESS;
 }

@@ -75,6 +75,7 @@
 #include "spl-book.h"
 #include "spl-goditem.h"
 #include "spl-monench.h"
+#include "spl-selfench.h"
 #include "spl-summoning.h"
 #include "spl-wpnench.h"
 #include "spl-transloc.h"
@@ -164,7 +165,7 @@ bool bless_weapon(god_type god, brand_type brand, colour_t colour)
         return false;
     }
 
-    if (you.duration[DUR_EXCRUCIATING_WOUNDS]) // just in case
+    if (you.permabuffs[MUT_EXCRUCIATING_WOUNDS]) // just in case
     {
         ASSERT(you.weapon());
         end_weapon_brand(*you.weapon());
@@ -620,14 +621,14 @@ static int _heretic_recite_weakness(const monster *mon)
         && !(mon->has_ench(ENCH_DUMB) || mons_is_confused(*mon)))
     {
         // In the eyes of Zin, everyone is a sinner until proven otherwise!
-            degree++;
+        degree++;
 
         // Any priest is a heretic...
         if (mon->is_priest())
             degree++;
 
-        // Or those who believe in themselves...
-        if (mon->type == MONS_DEMIGOD)
+        // Or those who offend the gods with their existance...
+        if (mon->type == MONS_PROMETHEAN)
             degree++;
 
         // ...but evil gods are worse.
@@ -745,13 +746,6 @@ bool zin_check_able_to_recite(bool quiet)
     {
         if (!quiet)
             mpr("You're not ready to recite again yet.");
-        return false;
-    }
-
-    if (you.duration[DUR_WATER_HOLD] && !you.res_water_drowning())
-    {
-        if (!quiet)
-            mpr("You cannot recite while unable to breathe!");
         return false;
     }
 
@@ -1587,7 +1581,7 @@ void trog_do_trogs_hand(int pow)
 
 void trog_remove_trogs_hand()
 {
-    if (you.duration[DUR_REGENERATION] == 0)
+    if (you.permabuffs[MUT_REGEN_SPELL] == 0)
         mprf(MSGCH_DURATION, "Your skin stops crawling.");
     mprf(MSGCH_DURATION, "You feel less resistant to hostile enchantments.");
     you.duration[DUR_TROGS_HAND] = 0;
@@ -1897,7 +1891,8 @@ void yred_make_enslaved_soul(monster* mon, bool force_hostile)
             convert2bad(*wpn);
         }
     }
-    monster_drop_things(mon, false, is_holy_item);
+    monster_drop_things(mon, false, [](const item_def& item)
+                                    { return is_holy_item(item); });
     mon->remove_avatars();
 
     const monster orig = *mon;
@@ -3421,8 +3416,9 @@ spret_type fedhas_evolve_flora(bool fail)
 
         return SPRET_ABORT;
     }
-
-    monster_conversion upgrade = *map_find(conversions, plant->type);
+    auto upgrade_ptr = map_find(conversions, plant->type);
+    ASSERT(upgrade_ptr);
+    monster_conversion upgrade = *upgrade_ptr;
 
     vector<pair<int, int> > collected_rations;
     if (upgrade.ration_cost)
@@ -4208,7 +4204,7 @@ static int _gozag_max_shops()
     const int max_non_food_shops = 3;
 
     // add a food shop if you can eat (non-mu/dj)
-    if (!you_foodless_normally())
+    if (!you_foodless(false))
         return max_non_food_shops + 1;
     return max_non_food_shops;
 }
@@ -4306,7 +4302,7 @@ static void _setup_gozag_shop(int index, vector<shop_type> &valid_shops)
     ASSERT(!you.props.exists(make_stringf(GOZAG_SHOPKEEPER_NAME_KEY, index)));
 
     shop_type type = NUM_SHOPS;
-    if (index == 0 && !you_foodless_normally())
+    if (index == 0 && !you_foodless(false))
         type = SHOP_FOOD;
     else
     {
@@ -4453,13 +4449,11 @@ static void _gozag_place_shop(int index)
     ASSERT(grd(you.pos()) == DNGN_FLOOR);
     keyed_mapspec kmspec;
     kmspec.set_feat(_gozag_shop_spec(index), false);
-    if (!kmspec.get_feat().shop.get())
-        die("Invalid shop spec?");
 
     feature_spec feat = kmspec.get_feat();
-    shop_spec *spec = feat.shop.get();
-    ASSERT(spec);
-    place_spec_shop(you.pos(), *spec, you.experience_level);
+    if (!feat.shop)
+        die("Invalid shop spec?");
+    place_spec_shop(you.pos(), *feat.shop, you.experience_level);
 
     link_items();
     env.markers.add(new map_feature_marker(you.pos(), DNGN_ABANDONED_SHOP));
@@ -4945,6 +4939,7 @@ spret_type qazlal_elemental_force(bool fail)
     mg.summon_type = MON_SUMM_AID;
     mg.abjuration_duration = 1;
     mg.flags |= MG_FORCE_PLACE | MG_AUTOFOE;
+    mg.summoner = &you;
     int placed = 0;
     for (unsigned int i = 0; placed < count && i < targets.size(); i++)
     {
@@ -4953,7 +4948,12 @@ spret_type qazlal_elemental_force(bool fail)
         const cloud_struct &cl = *cloud_at(pos);
         mg.behaviour = BEH_FRIENDLY;
         mg.pos       = pos;
-        mg.cls = *map_find(elemental_clouds, cl.type);
+        auto mons_type = map_find(elemental_clouds, cl.type);
+        // it is not impossible that earlier placements caused new clouds not
+        // in the map.
+        if (!mons_type)
+            continue;
+        mg.cls = *mons_type;
         if (!create_monster(mg))
             continue;
         delete_cloud(pos);
@@ -5338,7 +5338,8 @@ static int _piety_for_skill_by_sacrifice(ability_type sacrifice)
         if (species_size(you.species, PSIZE_TORSO) <= SIZE_SMALL)
             piety_gain += _piety_for_skill(SK_STAVES);
         // No one-handed bows.
-        if (you.species != SP_FORMICID)
+        if (you.species != SP_FORMICID
+            || you.species != SP_ABOMINATION)
             piety_gain += _piety_for_skill(SK_BOWS);
     }
     return piety_gain;
@@ -5743,7 +5744,7 @@ static void _extra_sacrifice_code(ability_type sac)
     {
         equipment_type ring_slot;
 
-        if (you.species == SP_OCTOPODE)
+        if (you.species == SP_OCTOPODE || you.species == SP_ABOMINATION)
             ring_slot = EQ_RING_EIGHT;
         else
             ring_slot = EQ_LEFT_RING;
@@ -5776,7 +5777,7 @@ static void _extra_sacrifice_code(ability_type sac)
         // And one ring
         if (ring != nullptr)
         {
-            if (you.species == SP_OCTOPODE)
+            if (you.species == SP_OCTOPODE || you.species == SP_ABOMINATION)
             {
                 for (int eq = EQ_RING_ONE; eq <= EQ_RING_SEVEN; eq++)
                 {
@@ -5803,7 +5804,7 @@ static void _extra_sacrifice_code(ability_type sac)
             {
                 mprf("You put %s back on %s %s!",
                      ring->name(DESC_YOUR).c_str(),
-                     (you.species == SP_OCTOPODE ? "another" : "your other"),
+                     ((you.species == SP_OCTOPODE || you.species == SP_ABOMINATION) ? "another" : "your other"),
                      you.hand_name(true).c_str());
                 puton_ring(ring_inv_slot, false);
             }
@@ -5960,6 +5961,8 @@ bool ru_do_sacrifice(ability_type sac)
     // get confirmation that the sacrifice is desired.
     if (!_execute_sacrifice(sac, offer_text.c_str()))
         return false;
+    // save piety gain, since sacrificing skills can lower the piety gain
+    const int piety_gain = _ru_get_sac_piety_gain(sac);
     // Apply the sacrifice, starting by mutating the player.
     if (variable_sac)
     {
@@ -6000,7 +6003,8 @@ bool ru_do_sacrifice(ability_type sac)
         if (species_size(you.species, PSIZE_TORSO) <= SIZE_SMALL)
             _ru_kill_skill(SK_STAVES);
         // No one-handed bows.
-        if (you.species != SP_FORMICID)
+        if (you.species != SP_FORMICID
+            || you.species != SP_ABOMINATION)
             _ru_kill_skill(SK_BOWS);
     }
 
@@ -6020,8 +6024,7 @@ bool ru_do_sacrifice(ability_type sac)
         you.props["num_sacrifice_muts"] = num_sacrifices;
 
     // Actually give the piety for this sacrifice.
-    set_piety(min(piety_breakpoint(5),
-                  you.piety + _ru_get_sac_piety_gain(sac)));
+    set_piety(min(piety_breakpoint(5), you.piety + piety_gain));
 
     if (you.piety == piety_breakpoint(5))
         simple_god_message(" indicates that your awakening is complete.");
@@ -7154,7 +7157,7 @@ bool wu_jian_can_wall_jump(const coord_def& target, string &error_ret)
 {
     if (target.distance_from(you.pos()) != 1)
     {
-        error_ret = "You can only wall jump against adjacent positions.";
+        error_ret = "Please select an adjacent position to wall jump against.";
         return false;
     }
 
@@ -7292,6 +7295,11 @@ bool wu_jian_wall_jump_ability()
         crawl_state.cancel_cmd_again();
         crawl_state.cancel_cmd_repeat();
         return false;
+    }
+    if (you.digging)
+    {
+        you.digging = false;
+        mpr("You retract your mandibles.");
     }
     string wj_error;
     bool has_targets = false;

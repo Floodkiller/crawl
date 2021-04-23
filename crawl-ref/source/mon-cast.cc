@@ -95,6 +95,7 @@ static int  _mons_mass_confuse(monster* mons, bool actual = true);
 static int  _mons_control_undead(monster* mons, bool actual = true);
 static coord_def _mons_fragment_target(const monster &mons);
 static coord_def _mons_conjure_flame_pos(const monster &mon);
+static coord_def _mons_singularity_pos(const monster &mon);
 static coord_def _mons_awaken_earth_target(const monster& mon);
 static void _maybe_throw_ally(const monster &mons);
 static void _siren_sing(monster* mons, bool avatar);
@@ -253,7 +254,8 @@ static const map<spell_type, mons_spell_logic> spell_to_logic = {
             const int splpow = _mons_spellpower(slot.spell, caster);
 
             int damage = 0;
-            fire_los_attack_spell(slot.spell, splpow, &caster, false, &damage);
+            fire_los_attack_spell(slot.spell, splpow, &caster, nullptr, false,
+                                  &damage);
             if (damage > 0 && caster.heal(damage))
                 simple_monster_message(caster, " is healed.");
         },
@@ -268,7 +270,7 @@ static const map<spell_type, mons_spell_logic> spell_to_logic = {
         },
         [](monster &caster, mon_spell_slot slot, bolt&) {
             const int splpow = _mons_spellpower(slot.spell, caster);
-            fire_los_attack_spell(slot.spell, splpow, &caster, false);
+            fire_los_attack_spell(slot.spell, splpow, &caster, nullptr, false);
         },
         nullptr,
         MSPELL_LOGIC_NONE,
@@ -401,6 +403,18 @@ static const map<spell_type, mons_spell_logic> spell_to_logic = {
             }
         },
         _target_beam_setup(_mons_conjure_flame_pos),
+        MSPELL_LOGIC_NONE, 6
+    } },
+    { SPELL_SINGULARITY, {
+        _always_worthwhile,
+        [](monster &caster, mon_spell_slot slot, bolt& pbolt) {
+            const int splpow = _mons_spellpower(slot.spell, caster);
+            if (in_bounds(pbolt.target))
+                cast_singularity(&caster, splpow, pbolt.target, false);
+            else if (you.can_see(caster))
+                canned_msg(MSG_NOTHING_HAPPENS);
+        },
+        _target_beam_setup(_mons_singularity_pos),
         MSPELL_LOGIC_NONE, 6
     } },
     { SPELL_AWAKEN_EARTH, {
@@ -1042,6 +1056,7 @@ static int _mons_power_hd_factor(spell_type spell, bool random)
             return 5 * (2 + 1) * ENCH_POW_FACTOR;
 
         case SPELL_CAUSE_FEAR:
+        case SPELL_POLYMORPH:
             return 18 * ENCH_POW_FACTOR;
 
         case SPELL_MESMERISE:
@@ -1061,9 +1076,13 @@ static int _mons_power_hd_factor(spell_type spell, bool random)
 
         case SPELL_MONSTROUS_MENAGERIE:
         case SPELL_BATTLESPHERE:
+#if TAG_MAJOR_VERSION == 34
         case SPELL_SPECTRAL_WEAPON:
+#endif
         case SPELL_IGNITE_POISON:
         case SPELL_IOOD:
+        case SPELL_SINGULARITY:
+        case SPELL_ISKENDERUNS_UNDOING:
             return 6;
 
         case SPELL_SUMMON_DRAGON:
@@ -1299,6 +1318,7 @@ bolt mons_spell_beam(const monster* mons, spell_type spell_cast, int power,
     case SPELL_STEAM_BALL:
     case SPELL_TELEPORT_OTHER:
     case SPELL_SANDBLAST:
+    case SPELL_HARPOON_SHOT:
         zappy(spell_to_zap(real_spell), power, true, beam);
         break;
 
@@ -1362,7 +1382,7 @@ bolt mons_spell_beam(const monster* mons, spell_type spell_cast, int power,
         beam.damage     = dice_def(3, 20);
         beam.hit        = 15 + power / 30;
         beam.flavour    = BEAM_DEVASTATION; // DEVASTATION is BEAM_MMISSILE
-        beam.pierce     = true;             // (except bloodier)
+        beam.pierce     = true;             // except it also destroys walls
         break;
 
     case SPELL_SPIT_POISON:
@@ -1808,7 +1828,9 @@ bool setup_mons_cast(const monster* mons, bolt &pbolt, spell_type spell_cast,
     case SPELL_SUMMON_TWISTER:
 #endif
     case SPELL_BATTLESPHERE:
+#if TAG_MAJOR_VERSION == 34
     case SPELL_SPECTRAL_WEAPON:
+#endif
     case SPELL_WORD_OF_RECALL:
     case SPELL_INJURY_BOND:
     case SPELL_CALL_LOST_SOUL:
@@ -1835,7 +1857,6 @@ bool setup_mons_cast(const monster* mons, bolt &pbolt, spell_type spell_cast,
 #if TAG_MAJOR_VERSION == 34
     case SPELL_EPHEMERAL_INFUSION:
 #endif
-    case SPELL_CHAIN_OF_CHAOS:
     case SPELL_BLACK_MARK:
 #if TAG_MAJOR_VERSION == 34
     case SPELL_GRAND_AVATAR:
@@ -1885,6 +1906,7 @@ bool setup_mons_cast(const monster* mons, bolt &pbolt, spell_type spell_cast,
     case SPELL_GREATER_SERVANT_MAKHLEB:
     case SPELL_BIND_SOULS:
     case SPELL_DREAM_DUST:
+    case SPELL_TIME_STOP:
         pbolt.range = 0;
         pbolt.glyph = 0;
         return true;
@@ -3188,7 +3210,7 @@ static bool _trace_los(monster* agent, bool (*vulnerable)(actor*))
 
 static bool _tornado_vulnerable(actor* victim)
 {
-    return !victim->res_wind();
+    return !victim->res_tornado();
 }
 
 static bool _torment_vulnerable(actor* victim)
@@ -3207,11 +3229,6 @@ static bool _elec_vulnerable(actor* victim)
 static bool _mutation_vulnerable(actor* victim)
 {
     return victim->can_mutate();
-}
-
-static bool _dummy_vulnerable(actor* victim)
-{
-    return true;
 }
 
 static void _cast_black_mark(monster* agent)
@@ -3345,6 +3362,54 @@ static bool _spray_tracer(monster *caster, int pow, bolt parent_beam, spell_type
     }
 
     return mons_should_fire(beam);
+}
+
+/**
+ * Pick a target for conjuring a singularity.
+ * Since a singularity can't harm its caster, this should always
+ * give a valid target if it can see any enemies.
+ *
+ * @param[in] mon The monster casting this.
+ * @returns The best position for creating a singularity.
+ */
+static coord_def _mons_singularity_pos(const monster &mons)
+{
+    const monster *mon = &mons; // TODO: rewriteme
+    const int pow = _mons_spellpower(SPELL_SINGULARITY, *mon);
+    const int rad = gravitas_range(pow, true);
+    int max_strength = 0, max_count = 0;
+    coord_def retval;
+
+    for (distance_iterator di(mon->pos(), true, true, LOS_RADIUS); di; ++di)
+    {
+        int strength = 0;
+
+        if (cell_is_solid(*di) || actor_at(*di))
+            continue;
+        for (radius_iterator ri(*di, rad, C_SQUARE, LOS_NO_TRANS); ri; ++ri)
+        {
+            actor* victim = actor_at(*ri);
+            if (!victim
+                || !mon->can_see(*victim)
+                || mons_aligned(mon, victim))
+            {
+                continue;
+            }
+            strength += ((pow / 10) + 1) / (4 + grid_distance(*di, *ri));
+        }
+        if (strength == 0)
+            continue;
+        if (strength > max_strength
+            || (strength == max_strength && one_chance_in(++max_count)))
+        {
+            if (strength > max_strength)
+                max_count = 1;
+            max_strength = strength;
+            retval = *di;
+        }
+    }
+
+    return retval;
 }
 
 /**
@@ -3921,7 +3986,7 @@ static bool _target_and_justify_spell(monster &mons,
     // Don't knockback something we're trying to constrict.
     const actor *victim = actor_at(beem.target);
     if (victim &&
-        beem.can_knockback(victim)
+        beem.can_knockback(*victim)
         && mons.is_constricting()
         && mons.constricting->count(victim->mid))
     {
@@ -6301,11 +6366,11 @@ void mons_cast(monster* mons, bolt pbolt, spell_type spell_cast,
     case SPELL_BATTLESPHERE:
         cast_battlesphere(mons, min(splpow, 200), mons->god, false);
         return;
-
+#if TAG_MAJOR_VERSION == 34
     case SPELL_SPECTRAL_WEAPON:
         cast_spectral_weapon(mons, min(splpow, 200), mons->god, false);
         return;
-
+#endif
     case SPELL_TORNADO:
     {
         _mons_tornado(mons);
@@ -6455,7 +6520,6 @@ void mons_cast(monster* mons, bolt pbolt, spell_type spell_cast,
     }
 
     case SPELL_CHAIN_LIGHTNING:
-    case SPELL_CHAIN_OF_CHAOS:
         cast_chain_spell(spell_cast, splpow, mons);
         return;
 
@@ -6654,40 +6718,8 @@ void mons_cast(monster* mons, bolt pbolt, spell_type spell_cast,
         return;
 
     case SPELL_DISCHARGE:
-    {
-        const int power = min(200, splpow);
-        const int num_targs = 1 + random2(random_range(1, 3) + power / 20);
-        const int dam =
-            apply_random_around_square([power, mons] (coord_def where) {
-                return discharge_monsters(where, power, mons);
-            }, mons->pos(), true, num_targs);
-
-        if (dam > 0)
-            scaled_delay(100);
-        else
-        {
-            if (!you.can_see(*mons))
-                mpr("You hear crackling.");
-            else if (coinflip())
-            {
-                mprf("The air around %s crackles with electrical energy.",
-                     mons->name(DESC_THE).c_str());
-            }
-            else
-            {
-                const bool plural = coinflip();
-                mprf("%s blue arc%s ground%s harmlessly %s %s.",
-                     plural ? "Some" : "A",
-                     plural ? "s" : "",
-                     plural ? " themselves" : "s itself",
-                     plural ? "around" : random_choose_weighted(2, "beside",
-                                                                1, "behind",
-                                                                1, "before"),
-                     mons->name(DESC_THE).c_str());
-            }
-        }
+        cast_discharge(min(200, splpow), *mons);
         return;
-    }
 
     case SPELL_PORTAL_PROJECTILE:
     {
@@ -6902,6 +6934,16 @@ void mons_cast(monster* mons, bolt pbolt, spell_type spell_cast,
     case SPELL_GRAVITAS:
         fatal_attraction(foe->pos(), mons, splpow);
         return;
+
+    case SPELL_SINGULARITY:
+    {
+        if (in_bounds(pbolt.target))
+           cast_singularity(mons, splpow, pbolt.target, false);
+        else if (you.can_see(*mons))
+            canned_msg(MSG_NOTHING_HAPPENS);
+
+        return;
+    }
 
     case SPELL_ENTROPIC_WEAVE:
         foe->corrode_equipment("the entropic weave");
@@ -7318,6 +7360,7 @@ void mons_cast_noise(monster* mons, const bolt &pbolt,
                      spell_type spell_cast, mon_spell_slot_flags slot_flags)
 {
     bool force_silent = false;
+    noise_flag_type noise_flags = NF_NONE;
 
     if (mons->type == MONS_SHADOW_DRAGON)
         // Draining breath is silent.
@@ -7346,7 +7389,7 @@ void mons_cast_noise(monster* mons, const bolt &pbolt,
         if (silent)
             return;
 
-        noisy(noise, mons->pos(), mons->mid);
+        noisy(noise, mons->pos(), mons->mid, noise_flags);
         return;
     }
 
@@ -7382,7 +7425,7 @@ void mons_cast_noise(monster* mons, const bolt &pbolt,
 
     if (silent || noise == 0)
         mons_speaks_msg(mons, msg, chan, true);
-    else if (noisy(noise, mons->pos(), mons->mid) || !unseen)
+    else if (noisy(noise, mons->pos(), mons->mid, noise_flags) || !unseen)
     {
         // noisy() returns true if the player heard the noise.
         mons_speaks_msg(mons, msg, chan);
@@ -7728,7 +7771,7 @@ static void _siren_sing(monster* mons, bool avatar)
                                                        : MSGCH_MONSTER_SPELL);
     const bool already_mesmerised = you.beheld_by(*mons);
 
-    noisy(LOS_DEFAULT_RANGE, mons->pos(), mons->mid);
+    noisy(LOS_DEFAULT_RANGE, mons->pos(), mons->mid, NF_SIREN);
 
     if (avatar && !mons->has_ench(ENCH_MERFOLK_AVATAR_SONG))
         mons->add_ench(mon_enchant(ENCH_MERFOLK_AVATAR_SONG, 0, mons, 70));
@@ -7900,7 +7943,7 @@ static bool _ms_waste_of_time(monster* mon, mon_spell_slot slot)
 
     case SPELL_BATTLESPHERE:
         return find_battlesphere(mon);
-
+#if TAG_MAJOR_VERSION == 34
     case SPELL_SPECTRAL_WEAPON:
         return find_spectral_weapon(mon)
             || !weapon_can_be_spectral(mon->weapon())
@@ -7910,7 +7953,7 @@ static bool _ms_waste_of_time(monster* mon, mon_spell_slot slot)
             // generally helps the caster's target maintain distance, also
             // letting the target exploit the spectral's damage sharing.
             || grid_distance(mon->pos(), foe->pos()) > 2;
-
+#endif
     case SPELL_INJURY_BOND:
         for (monster_iterator mi; mi; ++mi)
         {
@@ -7970,13 +8013,11 @@ static bool _ms_waste_of_time(monster* mon, mon_spell_slot slot)
     case SPELL_SUMMON_SPECTRAL_ORCS:
     case SPELL_SUMMON_MUSHROOMS:
     case SPELL_ENTROPIC_WEAVE:
+    case SPELL_AIRSTRIKE:
         return !foe;
 
     case SPELL_HOLY_FLAMES:
         return !foe || no_clouds;
-
-    case SPELL_AIRSTRIKE:
-        return !foe || foe->res_wind();
 
     case SPELL_FREEZE:
         return !foe || !adjacent(mon->pos(), foe->pos());
@@ -8047,6 +8088,7 @@ static bool _ms_waste_of_time(monster* mon, mon_spell_slot slot)
         return true;
 
     case SPELL_THROW_BARBS:
+    case SPELL_HARPOON_SHOT:
         // Don't fire barbs in melee range.
         return !foe || adjacent(mon->pos(), foe->pos());
 
@@ -8112,8 +8154,6 @@ static bool _ms_waste_of_time(monster* mon, mon_spell_slot slot)
     case SPELL_CHAIN_LIGHTNING:
         return !_trace_los(mon, _elec_vulnerable)
                 || you.visible_to(mon) && friendly; // don't zap player
-    case SPELL_CHAIN_OF_CHAOS:
-        return !_trace_los(mon, _dummy_vulnerable);
     case SPELL_CORRUPTING_PULSE:
         return !_trace_los(mon, _mutation_vulnerable)
                || you.visible_to(mon)
@@ -8225,6 +8265,19 @@ static bool _ms_waste_of_time(monster* mon, mon_spell_slot slot)
                 return false;
         return true;
 
+    case SPELL_SINGULARITY:
+    {
+        if (!foe)
+            return true;
+
+        // If the foe is in range of an existing singularity of our monster,
+        // don't cast.
+        for (monster_near_iterator mi(foe->pos(), LOS_NO_TRANS); mi; ++mi)
+            if (mi->type == MONS_SINGULARITY && mi->summoner == mon->mid)
+                return grid_distance(foe->pos(), mi->pos()) * grid_distance(foe->pos(), mi->pos()) <= mi->get_hit_dice();
+        return false;
+    }
+
     case SPELL_CORPSE_ROT:
     case SPELL_POISONOUS_CLOUD:
     case SPELL_FREEZING_CLOUD:
@@ -8243,7 +8296,6 @@ static bool _ms_waste_of_time(monster* mon, mon_spell_slot slot)
     case SPELL_SUMMON_SWARM:
     case SPELL_SUMMON_ELEMENTAL:
     case SPELL_EPHEMERAL_INFUSION:
-    case SPELL_SINGULARITY:
     case SPELL_GRAND_AVATAR:
     case SPELL_INNER_FLAME:
     case SPELL_ANIMATE_DEAD:

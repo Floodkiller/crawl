@@ -832,6 +832,11 @@ static int _get_dest_stair_type(branch_type old_branch,
         // dgn_find_nearby_stair uses special logic for labyrinths.
         return DNGN_ENTER_LABYRINTH;
     }
+    
+    if (stair_taken == DNGN_ABYSS_TO_ZOT)
+    {
+        return DNGN_EXIT_ZOT;
+    }
 
     if (feat_is_portal_entrance(stair_taken))
         return DNGN_STONE_ARCH;
@@ -1100,6 +1105,12 @@ static bool _leave_level(dungeon_feature_type stair_taken,
         you.level_stack.pop_back();
         env.level_state |= LSTATE_DELETED;
         popped = true;
+    }
+    else if (!you.level_stack.empty() && stair_taken == DNGN_ABYSS_TO_ZOT)
+    {
+        //We still need to pop, but we're never going back to where we came from.
+        you.level_stack.pop_back();
+        env.level_state |= LSTATE_DELETED;
     }
     else if (stair_taken == DNGN_TRANSIT_PANDEMONIUM
              || stair_taken == DNGN_EXIT_THROUGH_ABYSS
@@ -1688,12 +1699,8 @@ void save_game(bool leave_game, const char *farewellmsg)
     // so Valgrind doesn't complain.
     _save_game_exit();
 
-    // TODO: just call game_ended?
-    if (crawl_should_restart(game_exit::save) && !crawl_state.seen_hups)
-        throw game_ended_condition(game_exit::save);
-
-    end(0, false, farewellmsg? "%s" : "See you soon, %s!",
-        farewellmsg? farewellmsg : you.your_name.c_str());
+    game_ended(game_exit::save, farewellmsg ? farewellmsg
+                                : "See you soon, " + you.your_name + "!");
 }
 
 // Saves the game without exiting.
@@ -1944,21 +1951,29 @@ static bool _restore_game(const string& filename)
             you.save = 0;
             return false;
         }
-        fail("Cannot load an incompatible save from version %s",
-             you.prev_save_version.c_str());
+        crawl_state.default_startup_name = you.your_name; // for main menu
+        you.save->abort();
+        delete you.save;
+        you.save = 0;
+        game_ended(game_exit::abort,
+            you.your_name + " is from an incompatible version and can't be loaded.");
     }
+
+    crawl_state.default_startup_name = you.your_name; // for main menu
 
     if (numcmp(you.prev_save_version.c_str(), Version::Long, 2) == -1
         && version_is_stable(you.prev_save_version.c_str()))
     {
-        if (!yesno("This game comes from a previous release of Crawl. If you "
-                   "load it now, you won't be able to go back. Continue?",
-                   true, 'n'))
+        if (!yesno(("This game comes from a previous release of Crawl (" +
+                    you.prev_save_version + "). If you load it now,"
+                    " you won't be able to go back. Continue?").c_str(),
+                    true, 'n'))
         {
             you.save->abort(); // don't even rewrite the header
             delete you.save;
             you.save = 0;
-            end(0, false, "Please reinstall the stable version then.\n");
+            game_ended(game_exit::abort, "Please use version " +
+                you.prev_save_version + " to load " + you.your_name + " then.");
         }
     }
 
@@ -2143,46 +2158,8 @@ bool get_save_version(reader &file, int &major, int &minor)
 static bool _convert_obsolete_species()
 {
     // At this point the character has been loaded but not resaved, but the grid, lua, stashes, etc have not been.
-#if TAG_MAJOR_VERSION == 34
-    if (you.species == SP_LAVA_ORC)
-    {
-        if (!yes_or_no("This <red>Lava Orc</red> save game cannot be loaded as-is. If you "
-                       "load it now, your character will be converted to a Hill Orc. Continue?"))
-        {
-            you.save->abort(); // don't even rewrite the header
-            delete you.save;
-            you.save = 0;
-            end(0, false, "Please load the save in an earlier version if you want to keep it as a Lava Orc.\n");
-        }
-        change_species_to(SP_HILL_ORC);
-        // No need for conservation
-        you.innate_mutation[MUT_CONSERVE_SCROLLS] = you.mutation[MUT_CONSERVE_SCROLLS] = 0;
-        // This is not an elegant way to deal with lava, but at this point the
-        // level isn't loaded so we can't check the grid features. In
-        // addition, even if the player isn't over lava, they might still get
-        // trapped.
-        fly_player(100);
-        return true;
-    }
-    if (you.species == SP_DJINNI)
-    {
-        if (!yes_or_no("This <red>Djinni</red> save game cannot be loaded as-is. If you "
-                       "load it now, your character will be converted to a Vine Stalker. Continue?"))
-        {
-            you.save->abort(); // don't even rewrite the header
-            delete you.save;
-            you.save = 0;
-            end(0, false, "Please load the save in an earlier version if you want to keep it as a Djinni.\n");
-        }
-        change_species_to(SP_VINE_STALKER);
-        you.magic_contamination = 0;
-        // Djinni were flying, so give the player some time to land
-        fly_player(100);
-        // Give them some time to find food. Creating food isn't safe as the grid doesn't exist yet, and may have water anyways.
-        you.hunger = HUNGER_MAXIMUM;
-        return true;
-    }
-#endif
+    
+    //There was a Djinni and Lava Orc save conversion was here, it's gone now.
     return false;
 }
 

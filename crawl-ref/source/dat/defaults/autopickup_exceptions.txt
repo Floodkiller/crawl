@@ -35,7 +35,9 @@ ae += [^n]identified.*spellbook
 :  if string.find(itname, "lamp of fire")
 :  or string.find(itname, "phial of floods")
 :  or string.find(itname, "fan of gales")
+:  or string.find(itname, "stone of tremors")
 :  or string.find(itname, "lightning rod")
+:  or string.find(itname, "disc of storms")
 :  or string.find(itname, "shard of Zot")
 :  or string.find(itname, "harp of healing")
 :  or string.find(itname, "crystal ball of energy") then
@@ -84,7 +86,7 @@ ae += [^n]identified.*spellbook
 # that means you already have one of it.). Some items may already be excluded
 # as bad_item, e.g. inaccuracy.
 ae += amulet of (nothing|inaccuracy|the gourmand|regeneration|harm)
-ae += amulet of (rage|guardian spirit|faith|magic regeneration)
+ae += amulet of (rage|guardian spirit|faith|magic regeneration|the acrobat)
 
 # Likewise for some rings.
 ae += ring of (see invisible|flight|poison resistance|resist corrosion)

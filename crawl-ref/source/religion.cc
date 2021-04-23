@@ -150,8 +150,8 @@ const vector<god_power> god_powers[NUM_GODS] =
 
     // Okawaru
     { { 1, ABIL_OKAWARU_HEROISM, "gain great but temporary skills" },
-      { 3, "Okawaru will gift you ammunition as your piety grows.",
-           "Okawaru will no longer gift you ammunition." },
+      { 3, "Okawaru will protect your ammunition and always make it return.",
+           "Okawaru will no protect your ammunition or make it return." },
       { 5, ABIL_OKAWARU_FINESSE, "speed up your combat" },
       { 5, "Okawaru will gift you equipment as you gain piety.",
            "Okawaru will no longer gift you equipment." },
@@ -186,7 +186,6 @@ const vector<god_power> god_powers[NUM_GODS] =
       { 4, ABIL_TROG_BROTHERS_IN_ARMS, "call in reinforcements" },
       { 5, "Trog will gift you weapons as you gain piety.",
            "Trog will no longer gift you weapons." },
-      {-1, ABIL_TROG_BURN_SPELLBOOKS, "call upon Trog to burn spellbooks in your surroundings" },
     },
 
     // Nemelex
@@ -394,7 +393,8 @@ bool is_evil_god(god_type god)
            || god == GOD_MAKHLEB
            || god == GOD_YREDELEMNUL
            || god == GOD_BEOGH
-           || god == GOD_LUGONU;
+           || god == GOD_LUGONU
+           || god == GOD_DITHMENOS;
 }
 
 bool is_good_god(god_type god)
@@ -1088,7 +1088,6 @@ void vehumet_accept_gift(spell_type spell)
     if (vehumet_is_offering(spell))
     {
         you.vehumet_gifts.erase(spell);
-        you.seen_spell.set(spell);
         you.duration[DUR_VEHUMET_GIFT] = 0;
     }
 }
@@ -1133,11 +1132,12 @@ static set<spell_type> _vehumet_eligible_gift_spells(set<spell_type> excluded_sp
 
         if (vehumet_supports_spell(spell)
             && !you.has_spell(spell)
+            && !you.spell_library[spell]
             && is_player_spell(spell)
             && spell_difficulty(spell) <= max_level
             && spell_difficulty(spell) >= min_level)
         {
-            if (!you.seen_spell[spell] && !_is_old_gift(spell))
+            if (!_is_old_gift(spell))
                 eligible_spells.insert(spell);
             else
                 backup_spells.insert(spell);
@@ -1240,8 +1240,10 @@ static int _pakellas_high_misc()
     static const vector<int> high_miscs = {
         MISC_FAN_OF_GALES,
         MISC_LAMP_OF_FIRE,
+        MISC_STONE_OF_TREMORS,
         MISC_PHIAL_OF_FLOODS,
         MISC_LIGHTNING_ROD,
+        MISC_DISC_OF_STORMS,
     };
 
     return _preferably_unseen_item(high_miscs, [](int misc) {
@@ -1367,7 +1369,7 @@ static bool _give_trog_oka_gift(bool forced)
         else
             gift_type = OBJ_ARMOUR;
     }
-    else if (need_missiles && you.species != SP_FELID)
+    else if (need_missiles && you.species != SP_FELID && !you_worship(GOD_OKAWARU))
         gift_type = OBJ_MISSILES;
     else
         return false;
@@ -1507,11 +1509,6 @@ static bool _gift_sif_kiku_gift(bool forced)
         }
         if (thing_created == NON_ITEM)
             return false;
-
-        // Mark the book type as known to avoid duplicate
-        // gifts if players don't read their gifts for some
-        // reason.
-        mark_had_book(gift);
 
         move_item_to_grid(&thing_created, you.pos(), true);
 
@@ -3083,7 +3080,27 @@ static bool _god_rejects_loveless(god_type god)
 
 bool player_can_join_god(god_type which_god)
 {
-    if (you.species == SP_DEMIGOD)
+    if (you.species == SP_PROMETHEAN || you.pledge == PLEDGE_BRUTE_FORCE)
+        return false;
+
+    if (you.pledge == PLEDGE_SPITEFUL && !you.attribute[ATTR_SPITEFUL])
+    {
+        mpr("You cannot worship a new god until you have abandoned Ru once before!");
+        return false;
+    }
+
+    if (you.pledge == PLEDGE_CHAOS)
+    {
+        mpr("Nice try, Xom isn't letting you go that easily!");
+        return false;
+    }
+    if (you.pledge == PLEDGE_PEER_PRESSURE && which_god == GOD_ZIN)
+    {
+        mpr("Zin refuses to participate in your sinful debauchery!");
+        return false;
+    }
+
+    if (which_god == GOD_TROG && you.mp_max_adj_temp > 0)
         return false;
 
     if (is_good_god(which_god) && you.undead_or_demonic())
@@ -3104,6 +3121,14 @@ bool player_can_join_god(god_type which_god)
 
     if (you.get_mutation_level(MUT_NO_LOVE) && _god_rejects_loveless(which_god))
         return false;
+
+    // Good gods don't like evil permabuffs (Necromutation is tracked in different function)
+    if (is_good_god(which_god)
+        && (you.permabuffs[MUT_REGEN_SPELL] || you.permabuffs[MUT_EXCRUCIATING_WOUNDS]))
+    {
+        mpr("Practitioners of evil magic need not apply.");
+        return false;
+    }
 
     if (you.get_mutation_level(MUT_NO_ARTIFICE)
         && which_god == GOD_PAKELLAS)
@@ -3491,7 +3516,7 @@ static void _join_jiyva()
 }
 
 /// Setup when joining the sacred cult of Ru.
-static void _join_ru()
+void join_ru()
 {
     _make_empty_vec(you.props[AVAILABLE_SAC_KEY], SV_INT);
     _make_empty_vec(you.props[HEALTH_SAC_KEY], SV_INT);
@@ -3578,7 +3603,7 @@ static const map<god_type, function<void ()>> on_join = {
             gain_piety(20, 1, false);  // allow instant access to first power
     }},
     { GOD_PAKELLAS, _join_pakellas },
-    { GOD_RU, _join_ru },
+    { GOD_RU, join_ru },
     { GOD_TROG, _join_trog },
     { GOD_ZIN, _join_zin },
 };
@@ -3587,7 +3612,8 @@ void join_religion(god_type which_god)
 {
     ASSERT(which_god != GOD_NO_GOD);
     ASSERT(which_god != GOD_ECUMENICAL);
-    ASSERT(you.species != SP_DEMIGOD);
+    ASSERT(you.species != SP_PROMETHEAN);
+    ASSERT(you.pledge != PLEDGE_BRUTE_FORCE);
 
     redraw_screen();
 
@@ -3714,6 +3740,11 @@ void god_pitch(god_type which_god)
                      " have %d.", fee, you.gold);
             }
         }
+        else if (which_god == GOD_TROG && you.mp_max_adj_temp < 0)
+        {
+            simple_god_message(" demands that you end your permanent spells first!",
+                               which_god);
+        }
         else if (you.get_mutation_level(MUT_NO_LOVE)
                  && _god_rejects_loveless(which_god))
         {
@@ -3748,54 +3779,13 @@ void god_pitch(god_type which_god)
         return;
     }
 
-#ifdef USE_TILE_WEB
-    tiles_crt_control show_as_menu(CRT_MENU, "god_pitch");
-#endif
-
-    describe_god(which_god, false);
-
-    string service_fee = "";
-    if (which_god == GOD_GOZAG)
-    {
-        if (fee == 0)
-        {
-            service_fee = string("Gozag will waive the service fee if you ")
-                          + random_choose("act now", "join today") + "!\n";
-        }
-        else
-        {
-            service_fee = make_stringf(
-                    "The service fee for joining is currently %d gold; you"
-                    " have %d.\n",
-                    fee, you.gold);
-        }
-    }
-    const string prompt = make_stringf("%sDo you wish to %sjoin this religion?",
-                                       service_fee.c_str(),
-                                       (you.worshipped[which_god]) ? "re" : "");
-
-    cgotoxy(1, 21, GOTO_CRT);
-    textcolour(channel_to_colour(MSGCH_PROMPT));
-    if (!yesno(prompt.c_str(), false, 'n', true, true, false, nullptr, GOTO_CRT))
-    {
-        you.turn_is_over = false; // Okay, opt out.
-        redraw_screen();
-        return;
-    }
-
-    const string abandon = make_stringf("Are you sure you want to abandon %s?",
-                                        god_name(you.religion).c_str());
-    if (!you_worship(GOD_NO_GOD) && !yesno(abandon.c_str(), false, 'n', true,
-                                           true, false, nullptr, GOTO_CRT))
+    if (describe_god_with_join(which_god))
+        join_religion(which_god);
+    else
     {
         you.turn_is_over = false;
-        canned_msg(MSG_OK);
         redraw_screen();
-        return;
     }
-
-    // OK, so join the new religion.
-    join_religion(which_god);
 }
 
 /** Ask the user for a god by name.
@@ -3955,10 +3945,6 @@ bool god_hates_spell(spell_type spell, god_type god, bool fake_spell)
         if (is_hasty_spell(spell))
             return true;
         break;
-    case GOD_DITHMENOS:
-        if (is_fiery_spell(spell))
-            return true;
-        break;
     case GOD_PAKELLAS:
         if (spell == SPELL_SUBLIMATION_OF_BLOOD)
             return true;
@@ -4010,8 +3996,6 @@ bool god_hates_ability(ability_type ability, god_type god)
 {
     switch (ability)
     {
-        case ABIL_BREATHE_FIRE:
-            return god == GOD_DITHMENOS;
         case ABIL_EVOKE_BERSERK:
             return god == GOD_CHEIBRIADOS;
         default:

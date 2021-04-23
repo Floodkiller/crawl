@@ -634,8 +634,8 @@ adventures, how they are displayed, and what commands there are to use them:
 /        wands          (use 'V' to evoke)
 =        rings          (use 'P'ut on and 'R'emove)
 "        amulets        (use 'P'ut on and 'R'emove)
-\\ or |   staves, rods   (use 'w'ield for staves; 'v' for evoking rods)
-\+ or :   spellbooks     (use 'r'ead and 'M'emorise and 'z'ap)
+\|       staves, rods   (use 'w'ield for staves; 'v' for evoking rods)
+:        spellbooks     (use 'r'ead and 'M'emorise and 'z'ap)
 }        miscellaneous  (use 'V' for evoking from the inventory)
 $        gold           (use 'g' to pick up)
 =======  =============  ================================================
@@ -1011,6 +1011,18 @@ representing a severe chance).
 
 Be careful of magic-using enemies! Some of them can use magic just as well as
 you, if not better, and often use it intelligently.
+
+Some spells when cast will stay permanently active at the cost of your maximum
+MP reserves. The cost to reserve these spells is equal to the number of spell
+levels of all permanent spells currently active (plus the one you are casting,
+multiplied based on your intelligence (starting at 5.0 at 0 intelligence and
+reduced by 0.1 per point of intelligence; ex. 25 intelligence will mean your
+spell levels are multipled by 2.5, 43 intelligence is 0.7, etc.), and then 
+finally reduced by your dexterity to a minimum of 1 MP. You can cancel these
+spells and regain your MP by casting the spell again to cancel it, releasing
+all your spells at once from your ability menu, equipping/unequipping body
+armour or a shield, being dispelled/cancelled, or having your MP reduced below
+the amount of MP you have reserved (releasing all of your spells).
 
 ****************************************
 I. Targeting
@@ -1570,31 +1582,33 @@ Tengu
   Tengu do not appreciate any form of servitude, and so are poor at using
   invocations. Their light avian bodies cannot sustain a great deal of injury.
 
-Demigods
-  Demigods are mortals with some divine or angelic ancestry, however distant;
-  they can be created by a number of processes, including magical experiments
-  and the time-honoured practice of interplanar miscegenation.
+Prometheans
+  Prometheans are mortals who have been created and given life and soul through
+  unnatural means. They can be created by a number of processes, including magical
+  experiments and advanced necromantic rituals. In most circumstances, they are
+  made from the parts of multiple different species to enhance their capabilities.
 
-  Demigods look more or less like members of their mortal part's species, but
-  have excellent attributes (Str, Int, Dex) and are extremely robust; they can
-  also draw on great supplies of magical energy. On the downside, they advance
-  more slowly in experience than any other race, gain skills slightly less
-  quickly than Humans and, due to their status, cannot worship the various gods
-  and powers available to other races.
+  Prometheans look more or less like humanoid-esque creatures, but have excellent
+  attributes (Str, Int, Dex) and are extremely robust; they can also draw on great 
+  supplies of magical energy. Due to the nature of how they are brought into being
+  and the inability to distinguish whose worshipper makes up the majority of a 
+  promethean, the gods have agreed as a whole to refuse to answer any of their prayers.
+  Additionally, they gain experience slowly and gain skills slightly less quickly than
+  Humans.
 
 Demonspawn
-  Demonspawn are horrible half-mortal, half-infernal creatures - the flip side
-  of the Demigods. Demonspawn can be created in any number of ways: magical
-  experiments, breeding, unholy pacts, etc. Although many Demonspawn may
-  initially be indistinguishable from those of pure mortal stock, they will
-  inevitably grow horns, scales or other unusual features. Powerful members of
-  this class of beings also develop a range of unholy abilities, which are
-  listed as mutations.
+  Demonspawn are horrible half-mortal, half-infernal creatures.
+  Demonspawn can be created in any number of ways: magical experiments,
+  breeding, unholy pacts, etc. Although many Demonspawn may initially
+  be indistinguishable from those of pure mortal stock, they will inevitably
+  grow horns, scales or other unusual features. Powerful members of this class
+  of beings also develop a range of unholy abilities, which are listed as
+  mutations.
 
   Demonspawn advance slowly in experience and learn most skills at about the
-  same rate as do Demigods. However, they are a little better at fighting
+  same rate as Prometheans. However, they are a little better at fighting
   and conjurations and much better at necromancy and invocations. Note that
-  unlike Demigods, they can take on gods, although not all will accept them.
+  unlike Prometheans, they can take on gods, although not all will accept them.
 
 Deep Dwarves
   Deep Dwarves are short, hardy people who, unlike their extinct surface
@@ -1614,6 +1628,9 @@ Deep Dwarves
   they often rely on divine assistance for healing. They are most at home with
   the magic of earth and death, eventually gaining some resistance to the dark
   powers of necromancy.
+
+  Deep Dwarves can tinker with wands so as to recharge them. However, each time
+  they do so, they lose a bit of their magical essence.
 
 Deep Elves
    This is an Elven species who long ago fled the overworld to live in darkness
@@ -1754,8 +1771,54 @@ Gnolls
   In order to survive with this limitation, Gnolls use their universal
   knowledge and excellent physical attributes of strength, intelligence, and
   dexterity to take advantage of every resource they find in the Dungeon. They
-  also have powerful noses have adapted to the Dungeon's scents, allowing them
-  to easily locate where treasures lay hidden.
+  also have powerful noses adapted to the Dungeon's scents, allowing them to
+  easily locate where treasures lay hidden.
+  
+Faerie Dragons
+  Faerie Dragons are a small species of magically-attuned dragonkin with so
+  few living members remaining that many believe them extinct. They are very
+  intelligent, but are known to be brash and often overconfident when
+  confronted with danger. Their shimmering scales and bright wings are
+  attractive, but have proven to be more bane than boon by drawing the
+  attention of the Dungeon's denizens.
+  
+  Most Faerie Dragons welcome confrontation and favour the use of destructive
+  spells to deal with enemies who challenge them. Their natural attunement to
+  magic reduces the MP cost of spells and negates any hunger generation. Their
+  scales shimmer with energy that repels incoming attacks and their bright
+  wings enable continuous flight. Faerie Dragons are small and evasive, but
+  they're frail and cannot wear any form of body armour.
+
+Hermit Crabs
+  Hermit Crabs are a sub-species of crab that have traded their evolutionary
+  trait of breathing exotic vapours for human-like intelligence. They explore
+  the world in the hopes of discovering stronger and fancier shells.
+
+  Hermit Crabs are poor fighters due to their oversized and unwieldly (but
+  marvelous) pincers. Instead, crab civilization leans towards studying the ways
+  of magic. In combination with always trading up for larger and heavier shells
+  throughout their youth, this has led to Hermit Crabs having strong defensive
+  aptitudes and the ability to cast many kinds of magic in even the heaviest of
+  armours.
+  
+  Hermit Crab society has taught its citizens that the form of the crab is the
+  pinnacle of evolution, and abandoning it should be looked upon in shame. As such,
+  the magic of Transmutation is often ignored for other pursuits, and their bodies
+  have learned to reject any mutation that would otherwise mar their perfect forms.
+
+Djinni
+  Djinni are magical beings born of pure fire. Their essence is made of a combination
+  of their vitality and magic, serving as both their life and magical sources. Instead of
+  hungering, actions that cause heavy exertion will subject them to magical contamination 
+  as they struggle to hold their form. Although a common myth, Djinni do not grant wishes.
+  
+  Djinni can be adequate fighters or magicians. Their magical abilities are very polarized:
+  they excel with Fire and Air Magic (their domain) but struggle with Earth and Ice Magic.
+  They also have a knack for Hexes and Evocations.
+
+  They are immune to all types of fire, including holy. Their lack of a physical body also
+  immunizes them to negative energy. However, they are especially susceptible to ice and water.
+  Finally, they continuously float through the air, lacking the ability to form feet. 
 
 The Undead
 ========================================
@@ -1888,8 +1951,42 @@ Gladiators
 Monks
   The Monk is a member of an ascetic order dedicated to the perfection of one's
   body and soul through the discipline of the martial arts. Monks start with
-  only a simple weapon and a robe. When they choose a god for the first time,
-  their spiritual training gives them a piety boost.
+  only a simple weapon of their choice and a robe. When they choose a god for
+  the first time, their spiritual training gives them a piety boost.
+
+Hunters
+  The Hunter is a type of fighter who specialises in missile weapons. A Hunter
+  starts with either some throwing weapons or a ranged weapon of their choice
+  and some ammunition, as well as a short sword, and a set of leathers.
+
+Assassins
+  An Assassin is a stealthy character who is especially good at killing, using
+  daggers or darts. They start with a dagger, a robe and cloak, poisoned darts,
+  and a few deadly and rare curare darts.
+
+Adventurer backgrounds
+======================
+
+Adventurers have varied and idiosyncratic skills that they have picked up in
+their travels.
+
+Artificers
+  Artificers are attuned to gadgets, mechanics and magic elicited from arcane
+  items, as opposed to casting magic themselves. As a consequence, they enter
+  the Dungeon with an assortment of wands. Artificers are skilled at evoking
+  magical items, and also understand the basics of melee combat.
+
+Wanderers
+  Wanderers are people who have not learned a specific trade. Instead, they've
+  travelled around becoming "jacks-of-all-trades, masters of none". They start
+  the game with a random assortment of skills and maybe some small items and
+  spells they picked up along the way, but, other than that, they're pretty much
+  on their own.
+
+Zealot backgrounds
+==================
+
+Zealots start the game already worshipping a god.
 
 Berserkers
   Berserkers are hardy warriors who worship Trog the Wrathful, from whom they
@@ -1918,31 +2015,9 @@ Warpers
   distances and positioning themselves precisely and use this to their advantage
   in melee or missile combat. They start with a scroll of blinking.
 
-Assassins
-  An Assassin is a stealthy character who is especially good at killing, using
-  daggers or blowguns. They start with some deadly curare needles.
-
-Hunters
-  The Hunter is a type of fighter who specialises in missile weapons. A Hunter
-  starts with either some throwing weapons or a ranged weapon and some
-  ammunition, as well as a short sword or club and a set of leathers.
-
 Arcane Marksmen
   Arcane Marksmen are Hunters who use debilitating spells to assist their ranged
   attacks. They are particularly good at keeping their enemies at a distance.
-
-Artificers
-  Artificers are attuned to gadgets, mechanics and magic elicited from arcane
-  items, as opposed to casting magic themselves. As a consequence, they enter
-  the Dungeon with an assortment of wands. Artificers are skilled at evoking
-  magical items, and also understand the basics of melee combat.
-
-Wanderers
-  Wanderers are people who have not learned a specific trade. Instead, they've
-  travelled around becoming "jacks-of-all-trades, masters of none". They start
-  the game with a large, random assortment of skills and maybe some small
-  items they picked up along the way, but, other than that, they're pretty much
-  on their own.
 
 Magicians
 ========================================
@@ -2073,16 +2148,15 @@ Ranged combat skills
 
 There are a number of individual weapon skills for missile weapons:
 
-  * Throwing (includes blowguns)
+  * Throwing
   * Bows
   * Crossbows
   * Slings
 
 Throwing is the skill for all things hurled without a launcher: tomahawks,
-javelins, nets, etc. The other skills refer to various types of missiles shot
-with a launcher. An exception to this are needles: these are launched using
-blowguns, an action which uses the Throwing skill. Since stones can be thrown
-without launchers to some effect, these skills crosstrain:
+javelins, nets, darts, etc. The other skills refer to various types of missiles
+shot with a launcher. Since stones can be thrown without launchers to some
+effect, these skills crosstrain:
 
   * Throwing and Slings
 
@@ -2532,7 +2606,7 @@ will deselect it (except for ',' and '-', obviously).
 /
   Select all wands.
 
-|
+\|
   Select all staves.
 
 \\

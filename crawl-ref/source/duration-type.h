@@ -21,7 +21,9 @@ enum duration_type
 #endif
     DUR_CORONA,
     DUR_DEATHS_DOOR,
+#if TAG_MAJOR_VERSION
     DUR_FIRE_SHIELD,
+#endif
 
 #if TAG_MAJOR_VERSION == 34
     DUR_BUILDING_RAGE,
@@ -29,8 +31,8 @@ enum duration_type
     DUR_EXHAUSTED,              // fatigue counter for berserk
 
     DUR_LIQUID_FLAMES,
-    DUR_ICY_ARMOUR,
 #if TAG_MAJOR_VERSION == 34
+    DUR_ICY_ARMOUR,
     DUR_REPEL_MISSILES,
     DUR_JELLY_PRAYER,
 #endif
@@ -38,7 +40,9 @@ enum duration_type
     DUR_DIVINE_VIGOUR,          // duration of Ely's Divine Vigour
     DUR_DIVINE_STAMINA,         // duration of Zin's Divine Stamina
     DUR_DIVINE_SHIELD,          // duration of TSO's Divine Shield
+#if TAG_MAJOR_VERSION == 34
     DUR_REGENERATION,
+#endif
     DUR_SWIFTNESS,
 #if TAG_MAJOR_VERSION == 34
     DUR_CONTROLLED_FLIGHT,
@@ -53,8 +57,8 @@ enum duration_type
 #if TAG_MAJOR_VERSION == 34
     DUR_DEFLECT_MISSILES,
     DUR_SEE_INVISIBLE,
-#endif
     DUR_EXCRUCIATING_WOUNDS,
+#endif    
     DUR_DEMONIC_GUARDIAN,       // demonic guardian timeout
     DUR_POWERED_BY_DEATH,
     DUR_SILENCE,
@@ -126,13 +130,11 @@ enum duration_type
 #endif
     DUR_WEAK,
     DUR_DIMENSION_ANCHOR,
-#if TAG_MAJOR_VERSION == 34
     DUR_ANTIMAGIC,
+#if TAG_MAJOR_VERSION == 34
     DUR_SPIRIT_HOWL,
-#endif
     DUR_INFUSION,
     DUR_SONG_OF_SLAYING,
-#if TAG_MAJOR_VERSION == 34
     DUR_SONG_OF_SHIELDING,
 #endif
     DUR_TOXIC_RADIANCE,
@@ -197,5 +199,6 @@ enum duration_type
     DUR_PHASE_SHIFT,
     DUR_BLADE_OF_DISASTER,
     DUR_NO_MORE_DISASTER,
+    DUR_ACROBAT,
     NUM_DURATIONS
 };

@@ -53,6 +53,14 @@ void make_hungry(int hunger_amount, bool suppress_msg,
     if (crawl_state.disables[DIS_HUNGER])
         return;
 
+    if (you.species == SP_DJINNI)
+    {
+        if (!magic)
+            return;
+         contaminate_player(hunger_amount * 4 / 3, true);
+        return;
+    }
+
     if (you_foodless())
         return;
 
@@ -118,14 +126,17 @@ void set_hunger(int new_hunger_level, bool suppress_msg)
         lessen_hunger(hunger_difference, suppress_msg);
 }
 
-bool you_foodless()
+/**
+ * Check to see if the player is foodless (doesn't eat or drink)
+ *
+ * @param temp          Is the state of being foodless temporary?
+ * @param can_eat       Bypass foodless restriction (for Djinni only).
+ *
+ */
+bool you_foodless(bool temp, bool can_eat)
 {
-    return you.undead_state() == US_UNDEAD;
-}
-
-bool you_foodless_normally()
-{
-    return you.undead_state(false) == US_UNDEAD;
+    return you.undead_state(temp) == US_UNDEAD
+        || (you.species == SP_DJINNI && !can_eat);
 }
 
 bool prompt_eat_item(int slot)
@@ -154,9 +165,10 @@ bool prompt_eat_item(int slot)
     return true;
 }
 
-static bool _eat_check(bool check_hunger = true, bool silent = false)
+static bool _eat_check(bool check_hunger = true, bool silent = false,
+                                                            bool temp = true)
 {
-    if (you_foodless())
+    if (you_foodless(temp, true))
     {
         if (!silent)
         {
@@ -734,6 +746,14 @@ bool eat_item(item_def &food)
     else
         dec_mitm_item_quantity(food.index(), 1);
 
+    if (you.pledge == PLEDGE_PEER_PRESSURE)
+    {
+        mpr("The food tastes really weird. An unseen audience cheers!");
+        mutate(RANDOM_MUTATION, "mutagenic meat");
+        did_god_conduct(DID_DELIBERATE_MUTATING, 10);
+        xom_is_stimulated(100);
+    }
+
     you.turn_is_over = true;
     return true;
 }
@@ -763,14 +783,14 @@ bool is_noxious(const item_def &food)
 
 // Returns true if an item of basetype FOOD or CORPSES cannot currently
 // be eaten (respecting species and mutations set).
-bool is_inedible(const item_def &item)
+bool is_inedible(const item_def &item, bool temp)
 {
     // Mummies and liches don't eat.
-    if (you_foodless())
+    if (you_foodless(temp, true))
         return true;
 
     if (item.base_type == OBJ_FOOD // XXX: removeme?
-        && !can_eat(item, true, false))
+        && !can_eat(item, true, false, temp))
     {
         return true;
     }
@@ -790,7 +810,7 @@ bool is_inedible(const item_def &item)
             item_def chunk = item;
             chunk.base_type = OBJ_FOOD;
             chunk.sub_type  = FOOD_CHUNK;
-            if (is_inedible(chunk))
+            if (is_inedible(chunk, temp))
                 return true;
         }
     }
@@ -804,7 +824,7 @@ bool is_inedible(const item_def &item)
 bool is_preferred_food(const item_def &food)
 {
     // Mummies and liches don't eat.
-    if (you_foodless())
+    if (you_foodless(true, true))
         return false;
 
     // Vampires don't really have a preferred food type, but they really
@@ -817,7 +837,8 @@ bool is_preferred_food(const item_def &food)
 
 #if TAG_MAJOR_VERSION == 34
     if (food.is_type(OBJ_POTIONS, POT_PORRIDGE)
-        && item_type_known(food))
+        && item_type_known(food)
+        && you.species != SP_DJINNI)
     {
         return you.get_mutation_level(MUT_CARNIVOROUS) == 0;
     }
@@ -855,8 +876,10 @@ bool is_forbidden_food(const item_def &food)
  *  @param food the item (must be a corpse or food item)
  *  @param suppress_msg whether to print why you can't eat it
  *  @param check_hunger whether to check how hungry you are currently
+ *  @param temp whether to factor in temporary forms
  */
-bool can_eat(const item_def &food, bool suppress_msg, bool check_hunger)
+bool can_eat(const item_def &food, bool suppress_msg, bool check_hunger,
+                                                                bool temp)
 {
 #define FAIL(msg) { if (!suppress_msg) mpr(msg); return false; }
     if (food.base_type != OBJ_FOOD && food.base_type != OBJ_CORPSES)
@@ -868,7 +891,7 @@ bool can_eat(const item_def &food, bool suppress_msg, bool check_hunger)
         check_hunger = false;
 
     // [ds] These redundant checks are now necessary - Lua might be calling us.
-    if (!_eat_check(check_hunger, suppress_msg))
+    if (!_eat_check(check_hunger, suppress_msg, temp))
         return false;
 
     if (is_noxious(food))
@@ -1023,6 +1046,13 @@ int you_min_hunger()
     return 0;
 }
 
+// General starvation penalties (such as inability to use spells/abilities and
+// reduced accuracy) don't apply to bloodless vampires or starving ghouls.
+bool apply_starvation_penalties()
+{
+    return you.hunger_state <= HS_STARVING && !you_min_hunger();
+}
+
 void handle_starvation()
 {
     // Don't faint or die while eating.
@@ -1075,7 +1105,7 @@ int hunger_bars(const int hunger)
 
 string hunger_cost_string(const int hunger)
 {
-    if (you_foodless())
+    if (you_foodless(true, true))
         return "N/A";
 
 #ifdef WIZARD

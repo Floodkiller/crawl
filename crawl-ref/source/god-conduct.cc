@@ -24,7 +24,7 @@ static bool _god_likes_killing(const monster& victim);
 
 god_conduct_trigger::god_conduct_trigger(
     conduct_type c, int pg, bool kn, const monster* vict)
-  : conduct(c), pgain(pg), known(kn), enabled(true), victim(nullptr)
+  : conduct(c), pgain(pg), known(kn), victim(nullptr)
 {
     if (vict)
     {
@@ -49,27 +49,24 @@ void god_conduct_trigger::set(conduct_type c, int pg, bool kn,
 
 god_conduct_trigger::~god_conduct_trigger()
 {
-    if (enabled && conduct != NUM_CONDUCTS)
+    if (conduct != NUM_CONDUCTS)
         did_god_conduct(conduct, pgain, known, victim.get());
 }
 
 static const char *conducts[] =
 {
     "",
-    "Evil", "Holy", "Attack Holy", "Attack Neutral",
-    "Attack Friend", "Friend Died",
-    "Kill Living", "Kill Undead", "Kill Demon", "Kill Natural Evil",
-    "Kill Unclean", "Kill Chaotic", "Kill Wizard", "Kill Priest",
-    "Kill Holy", "Kill Fast", "Banishment",
-    "Spell Memorise", "Spell Cast", "Spell Practise",
-    "Cannibalism", "Eat Souled Being",
-    "Deliberate Mutation", "Cause Glowing", "Use Unclean",
-    "Use Chaos", "Desecrate Orcish Remains",
-    "Kill Slime", "Kill Plant", "Was Hasty", "Corpse Violation",
-    "Carrion Rot", "Souled Friend Died", "Attack In Sanctuary",
-    "Kill Artificial", "Destroy Spellbook", "Exploration",
-    "Desecrate Holy Remains", "Seen Monster",
-    "Fire", "Kill Fiery", "Sacrificed Love", "Channel", "Hurt Foe",
+    "Evil", "Holy", "Attack Holy", "Attack Neutral", "Attack Friend",
+    "Friend Died", "Kill Living", "Kill Undead", "Kill Demon",
+    "Kill Natural Evil", "Kill Unclean", "Kill Chaotic", "Kill Wizard",
+    "Kill Priest", "Kill Holy", "Kill Fast", "Banishment", "Spell Memorise",
+    "Spell Cast", "Spell Practise", "Cannibalism", "Eat Souled Being",
+    "Deliberate Mutation", "Cause Glowing", "Use Unclean", "Use Chaos",
+    "Desecrate Orcish Remains", "Kill Slime", "Kill Plant", "Was Hasty",
+    "Corpse Violation", "Carrion Rot", "Souled Friend Died",
+    "Attack In Sanctuary", "Kill Artificial", "Exploration", 
+    "Desecrate Holy Remains", "Seen Monster", "Sacrificed Love", "Channel", 
+    "Hurt Foe",
 };
 COMPILE_CHECK(ARRAYSZ(conducts) == NUM_CONDUCTS);
 
@@ -356,9 +353,7 @@ static peeve_map divine_peeves[] =
     // GOD_MAKHLEB,
     peeve_map(),
     // GOD_SIF_MUNA,
-    {
-        { DID_DESTROY_SPELLBOOK, { "you destroy spellbooks", true, 1, 2 } },
-    },
+    peeve_map(),
     // GOD_TROG,
     {
         { DID_SPELL_MEMORISE, {
@@ -447,13 +442,7 @@ static peeve_map divine_peeves[] =
     // GOD_ASHENZARI,
     peeve_map(),
     // GOD_DITHMENOS,
-    {
-        { DID_FIRE, {
-            "you use fiery magic or items", false,
-            1, 1, " forgives your accidental fire-starting, just this once.",
-            " does not appreciate your starting fires!", nullptr, -5
-        } },
-    },
+    peeve_map(),
     // GOD_GOZAG,
     peeve_map(),
     // GOD_QAZLAL,
@@ -933,10 +922,6 @@ static like_map divine_likes[] =
         { DID_KILL_DEMON, KILL_DEMON_RESPONSE },
         { DID_KILL_HOLY, KILL_HOLY_RESPONSE },
         { DID_KILL_NONLIVING, KILL_NONLIVING_RESPONSE },
-        { DID_KILL_FIERY, {
-            "you kill beings that bring fire to the dungeon", true,
-            -6, 10, 0, " appreciates your extinguishing a source of fire."
-        } },
     },
     // GOD_GOZAG,
     like_map(),
@@ -1074,41 +1059,34 @@ void god_conduct_turn_start()
     _first_attack_was_friendly.clear();
 }
 
-void set_attack_conducts(god_conduct_trigger conduct[3], const monster* mon,
+void set_attack_conducts(god_conduct_trigger conduct[3], const monster &mon,
                          bool known)
 {
-    ASSERT(mon);  // TODO: change to const monster &mon
-    const mid_t mid = mon->mid;
+    // We need to examine the monster before it has been reset.
+    ASSERT(mon.alive());
 
-    if (mon->friendly())
+    const mid_t mid = mon.mid;
+
+    if (mon.friendly())
     {
         if (_first_attack_conduct.find(mid) == _first_attack_conduct.end()
             || _first_attack_was_friendly.find(mid)
                != _first_attack_was_friendly.end())
         {
-            conduct[0].set(DID_ATTACK_FRIEND, 5, known, mon);
+            conduct[0].set(DID_ATTACK_FRIEND, 5, known, &mon);
             _first_attack_was_friendly.insert(mid);
         }
     }
-    else if (mon->neutral())
-        conduct[0].set(DID_ATTACK_NEUTRAL, 5, known, mon);
+    else if (mon.neutral())
+        conduct[0].set(DID_ATTACK_NEUTRAL, 5, known, &mon);
 
-    if (mon->is_holy() && !mon->is_illusion())
-        conduct[2].set(DID_ATTACK_HOLY, mon->get_experience_level(), known, mon);
+    if (mon.is_holy() && !mon.is_illusion())
+    {
+        conduct[2].set(DID_ATTACK_HOLY, mon.get_experience_level(), known,
+                       &mon);
+    }
 
     _first_attack_conduct.insert(mid);
-}
-
-void enable_attack_conducts(god_conduct_trigger conduct[3])
-{
-    for (int i = 0; i < 3; ++i)
-        conduct[i].enabled = true;
-}
-
-void disable_attack_conducts(god_conduct_trigger conduct[3])
-{
-    for (int i = 0; i < 3; ++i)
-        conduct[i].enabled = false;
 }
 
 string get_god_likes(god_type which_god)
@@ -1123,9 +1101,6 @@ string get_god_likes(god_type which_god)
     // Unique/unusual piety gain methods first.
     switch (which_god)
     {
-    case GOD_TROG:
-        likes.emplace_back("you destroy spellbooks via the <w>a</w> command");
-        break;
     case GOD_JIYVA:
         likes.emplace_back("you sacrifice items by allowing slimes to consume "
                            "them");
@@ -1186,6 +1161,14 @@ string get_god_likes(god_type which_god)
 bool god_hates_cannibalism(god_type god)
 {
     return divine_peeves[god].count(DID_CANNIBALISM);
+}
+
+conduct_type god_hates_item_handling(const item_def& item)
+{
+    for (conduct_type conduct : item_conducts(item))
+        if (divine_peeves[you.religion].count(conduct))
+            return conduct;
+    return DID_NOTHING;
 }
 
 /**

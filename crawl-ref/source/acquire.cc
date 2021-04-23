@@ -39,6 +39,7 @@
 #include "state.h"
 #include "stringutil.h"
 #include "terrain.h"
+#include "unwind.h"
 
 static equipment_type _acquirement_armour_slot(bool);
 static armour_type _acquirement_armour_for_slot(equipment_type, bool);
@@ -470,8 +471,8 @@ static int _acquirement_weapon_subtype(bool divine, int & /*quantity*/)
     // Let's guess the percentage of shield use the player did, this is
     // based on empirical data where pure-shield MDs get skills like 17 sh
     // 25 m&f and pure-shield Spriggans 7 sh 18 m&f. Pretend formicid
-    // shield skill is 0 so they always weight towards 2H.
-    const int shield_sk = you.species == SP_FORMICID
+    // and abomination shield skill is 0 so they always weight towards 2H.
+    const int shield_sk = (you.species == SP_FORMICID || you.species == SP_ABOMINATION)
         ? 0
         : _skill_rdiv(SK_SHIELDS) * species_apt_factor(SK_SHIELDS);
     const int want_shield = min(2 * shield_sk, best_sk) + 10;
@@ -540,7 +541,7 @@ static int _acquirement_missile_subtype(bool /*divine*/, int & /*quantity*/)
             skill = i;
     }
 
-    missile_type result = MI_TOMAHAWK;
+    missile_type result = MI_BOOMERANG;
 
     switch (skill)
     {
@@ -553,9 +554,9 @@ static int _acquirement_missile_subtype(bool /*divine*/, int & /*quantity*/)
             // Choose from among all usable missile types.
             vector<pair<missile_type, int> > missile_weights;
 
-            missile_weights.emplace_back(MI_TOMAHAWK, 50);
-            missile_weights.emplace_back(MI_NEEDLE, 75);
-
+            missile_weights.emplace_back(MI_BOOMERANG, 50);
+            missile_weights.emplace_back(MI_DART, 75);
+            missile_weights.emplace_back(MI_PIE, 25);
             if (you.body_size() >= SIZE_MEDIUM)
                 missile_weights.emplace_back(MI_JAVELIN, 100);
 
@@ -578,7 +579,7 @@ static int _acquirement_jewellery_subtype(bool /*divine*/, int & /*quantity*/)
 
     // Rings are (number of usable rings) times as common as amulets.
     // XXX: unify this with the actual check for ring slots
-    const int ring_num = (you.species == SP_OCTOPODE ? 8 : 2)
+    const int ring_num = ((you.species == SP_OCTOPODE || you.species == SP_ABOMINATION) ? 8 : 2)
                        - (you.get_mutation_level(MUT_MISSING_HAND) ? 1 : 0);
 
     // Try ten times to give something the player hasn't seen.
@@ -667,12 +668,16 @@ static int _acquirement_misc_subtype(bool /*divine*/, int & /*quantity*/)
         // The player never needs more than one.
         {MISC_LIGHTNING_ROD,
             (you.seen_misc[MISC_LIGHTNING_ROD] ?    0 : 17)},
+        {MISC_DISC_OF_STORMS,
+            (you.seen_misc[MISC_DISC_OF_STORMS] ?   0 : 17)},
         {MISC_LAMP_OF_FIRE,
             (you.seen_misc[MISC_LAMP_OF_FIRE] ?     0 : 17)},
         {MISC_PHIAL_OF_FLOODS,
             (you.seen_misc[MISC_PHIAL_OF_FLOODS] ?  0 : 17)},
         {MISC_FAN_OF_GALES,
             (you.seen_misc[MISC_FAN_OF_GALES] ?     0 : 17)},
+        {MISC_STONE_OF_TREMORS,
+            (you.seen_misc[MISC_STONE_OF_TREMORS] ? 0 : 17)},
         {MISC_SHARD_OF_ZOT,
             (you.seen_misc[MISC_SHARD_OF_ZOT] ?     0 : 17)},
         {MISC_HARP_OF_HEALING,
@@ -736,6 +741,13 @@ static int _acquirement_wand_subtype(bool /*divine*/, int & /*quantity*/)
     return *wand;
 }
 
+static int _acquirement_book_subtype(bool /*divine*/, int & /*quantity*/)
+{
+    return BOOK_MINOR_MAGIC;
+    //this gets overwritten later, but needs to be a sane value
+    //or asserts will get set off
+}
+
 typedef int (*acquirement_subtype_finder)(bool divine, int &quantity);
 static const acquirement_subtype_finder _subtype_finders[] =
 {
@@ -747,7 +759,7 @@ static const acquirement_subtype_finder _subtype_finders[] =
     0, // no scrolls
     _acquirement_jewellery_subtype,
     _acquirement_food_subtype, // potion acquirement = food for vampires
-    0, // books handled elsewhere
+    _acquirement_book_subtype,
     _acquirement_staff_subtype,
     0, // no, you can't acquire the orb
     _acquirement_misc_subtype,
@@ -835,8 +847,8 @@ static int _book_weight(book_type book)
     int total_weight = 0;
     for (spell_type stype : spellbook_template(book))
     {
-        // Skip over spells already seen.
-        if (you.seen_spell[stype])
+        // Skip over spells already in library.
+        if (you.spell_library[stype])
             continue;
         if (god_hates_spell(stype, you.religion))
             continue;
@@ -863,7 +875,7 @@ static bool _skill_useless_with_god(int skill)
     case GOD_ELYVILON:
         return skill == SK_NECROMANCY;
     case GOD_XOM:
-    case GOD_NEMELEX_XOBEH:
+    case GOD_RU:
     case GOD_KIKUBAAQUDGHA:
     case GOD_VEHUMET:
     case GOD_ASHENZARI:
@@ -1015,6 +1027,26 @@ static bool _do_book_acquirement(item_def &book, int agent)
         break;
     }
     } // switch book choice
+
+    // If we couldn't make a useful book, try to make a manual instead.
+    // We have to temporarily identify the book for this.
+    if (agent != GOD_XOM && agent != GOD_SIF_MUNA)
+    {
+        bool useless = false;
+        {
+            unwind_var<iflags_t> oldflags{book.flags};
+            book.flags |= ISFLAG_KNOW_TYPE;
+            useless = is_useless_item(book);
+        }
+        if (useless)
+        {
+            destroy_item(book);
+            book.base_type = OBJ_BOOKS;
+            book.quantity = 1;
+            return _acquire_manual(book);
+        }
+    }
+
     return true;
 }
 
@@ -1362,11 +1394,6 @@ int acquirement_create_item(object_class_type class_wanted,
             }
             // That might have changed the item's subtype.
             item_colour(acq_item);
-
-            // Don't mark books as seen if only generated for the
-            // acquirement statistics.
-            if (!debug)
-                mark_had_book(acq_item);
         }
         else if (acq_item.base_type == OBJ_JEWELLERY)
         {
@@ -1490,7 +1517,7 @@ bool acquirement(object_class_type class_wanted, int agent,
     if (you.get_mutation_level(MUT_NO_ARTIFICE))
         bad_class.set(OBJ_MISCELLANY);
 
-    bad_class.set(OBJ_FOOD, you_foodless_normally() && !you_worship(GOD_FEDHAS));
+    bad_class.set(OBJ_FOOD, you_foodless(false) && !you_worship(GOD_FEDHAS));
 
     static struct { object_class_type type; const char* name; } acq_classes[] =
     {

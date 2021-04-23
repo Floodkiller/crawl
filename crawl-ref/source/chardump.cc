@@ -40,6 +40,7 @@
 #include "notes.h"
 #include "output.h"
 #include "place.h"
+#include "pledge.h"
 #include "prompt.h"
 #include "religion.h"
 #include "showsymb.h"
@@ -62,6 +63,7 @@ static void _sdump_stats(dump_params &);
 static void _sdump_location(dump_params &);
 static void _sdump_religion(dump_params &);
 static void _sdump_hunger(dump_params &);
+static void _sdump_pledge(dump_params &);
 static void _sdump_transform(dump_params &);
 static void _sdump_visits(dump_params &);
 static void _sdump_gold(dump_params &);
@@ -120,6 +122,7 @@ static dump_section_handler dump_handlers[] =
     { "location",       _sdump_location      },
     { "religion",       _sdump_religion      },
     { "hunger",         _sdump_hunger        },
+    { "pledge",         _sdump_pledge        },
     { "transform",      _sdump_transform     },
     { "visits",         _sdump_visits        },
     { "gold",           _sdump_gold          },
@@ -225,6 +228,11 @@ static void _sdump_hunger(dump_params &par)
 
     par.text += hunger_level();
     par.text += ".\n\n";
+}
+
+static void _sdump_pledge(dump_params &par)
+{
+    par.text += get_pledge_morgue_line(you.pledge) + "\n\n";
 }
 
 static void _sdump_transform(dump_params &par)
@@ -403,6 +411,7 @@ static void _sdump_misc(dump_params &par)
     _sdump_location(par);
     _sdump_religion(par);
     _sdump_hunger(par);
+    _sdump_pledge(par);
     _sdump_transform(par);
     _sdump_visits(par);
     _sdump_gold(par);
@@ -842,7 +851,7 @@ static void _sdump_spells(dump_params &par)
     {
         verb = par.se? "didn't" : "don't";
 
-        text += "You " + verb + " know any spells.\n\n";
+        text += "You " + verb + " know any spells.\n";
     }
     else
     {
@@ -863,6 +872,72 @@ static void _sdump_spells(dump_params &par)
 
                 spell_line += letter;
                 spell_line += " - ";
+                spell_line += spell_title(spell);
+
+                spell_line = chop_string(spell_line, 24);
+                spell_line += "  ";
+
+                bool already = false;
+
+                for (const auto bit : spschools_type::range())
+                {
+                    if (spell_typematch(spell, bit))
+                    {
+                        spell_line += spell_type_shortname(bit, already);
+                        already = true;
+                    }
+                }
+
+                spell_line = chop_string(spell_line, 41);
+
+                spell_line += spell_power_string(spell);
+
+                spell_line = chop_string(spell_line, 54);
+
+                spell_line += failure_rate_to_string(raw_spell_fail(spell));
+
+                spell_line = chop_string(spell_line, 66);
+
+                spell_line += make_stringf("%-5d", spell_difficulty(spell));
+
+                spell_line += spell_hunger_string(spell);
+                spell_line += "\n";
+
+                text += spell_line;
+            }
+        }
+        text += "\n";
+    }
+
+    if (!you.spell_library.count())
+    {
+        verb = par.se ? "was" : "is";
+        text += "Your spell library " + verb + " empty.\n\n";
+    }
+    else
+    {
+        verb = par.se? "contained" : "contains";
+        text += "Your spell library " + verb + " the following spells:\n\n";
+        text += " Spells                   Type           Power        Failure   Level  Hunger" "\n";
+
+        FixedBitVector<NUM_SPELLS> memorizable = you.spell_library;
+
+        for (int j = 0; j < 52; j++)
+        {
+            const spell_type spell  = get_spell_by_letter(index_to_letter(j));
+            if (spell != SPELL_NO_SPELL)
+                memorizable.set(spell, false);
+        }
+
+        for (int j = 0; j < NUM_SPELLS; j++)
+        {
+            const spell_type spell  = static_cast<spell_type>(j);
+
+            if (memorizable.get(spell))
+            {
+                string spell_line;
+
+                spell_line += ' ';
                 spell_line += spell_title(spell);
 
                 spell_line = chop_string(spell_line, 24);
@@ -1127,6 +1202,7 @@ static const char* _stab_names[] =
     "Paralysed",
     "Sleeping",
     "Betrayed ally",
+    "Time stopped",
 };
 
 static const char* _aux_attack_names[1 + UNAT_LAST_ATTACK] =

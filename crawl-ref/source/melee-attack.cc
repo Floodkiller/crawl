@@ -386,7 +386,7 @@ bool melee_attack::handle_phase_hit()
         return false;
     }
 
-    if (attacker->is_player() && you.duration[DUR_INFUSION])
+    if (attacker->is_player() && you.permabuffs[MUT_INFUSION])
     {
         if (enough_mp(1, true, false))
         {
@@ -403,6 +403,10 @@ bool melee_attack::handle_phase_hit()
                 dec_mp(1);
             }
         }
+    }
+    if (attacker->is_player() && you.permabuffs[MUT_SPECTRAL_WEAPON])
+    {
+        summon_spectral_weapon(&you, calc_spell_power(SPELL_SPECTRAL_WEAPON,true),you.religion);         
     }
 
     // This does more than just calculate the damage, it also sets up
@@ -492,12 +496,43 @@ bool melee_attack::handle_phase_hit()
         if (!defender->alive())
             return true;
     }
-    else if (defender->is_player())
+
+    if (attacker != defender && adjacent(defender->pos(), attack_position)
+        && attacker->alive() && defender->can_see(*attacker)
+        && !defender->cannot_act() && !defender->confused()
+        && (!defender->is_player() || (!you.duration[DUR_LIFESAVING]
+                                       && !attacker->as_monster()->neutral()))
+        && !mons_aligned(attacker, defender) // confused friendlies attacking
+        // Retaliation only works on the first attack in a round.
+        // FIXME: player's attack is -1, even for auxes
+        && effective_attack_number <= 0)
+    {
+        
+        if (defender->is_player())
+        {
+            const bool using_lbl = defender->weapon()
+                && item_attack_skill(*defender->weapon()) == SK_LONG_BLADES;
+            const bool using_fencers
+                = player_equip_unrand(UNRAND_FENCERS);
+            const int chance = using_lbl + using_fencers;
+
+            if (x_chance_in_y(chance, 3) && !is_riposte) // no ping-pong!
+                riposte();
+
+            // Retaliations can kill!
+            if (!attacker->alive())
+                return false;
+        }
+    }
+
+    // taking off an "else" here so passives fire on the first attach
+    if (defender->is_player())
     {
         // These effects (mutations right now) are only triggered when
         // the player is hit, each of them will verify their own required
         // parameters.
         do_passive_freeze();
+        do_passive_heat();
         emit_foul_stench();
     }
 
@@ -808,11 +843,11 @@ bool melee_attack::attack()
 
     // Stuff for god conduct, this has to remain here for scope reasons.
     god_conduct_trigger conducts[3];
-    disable_attack_conducts(conducts);
 
     if (attacker->is_player() && attacker != defender)
     {
-        set_attack_conducts(conducts, defender->as_monster());
+        set_attack_conducts(conducts, *defender->as_monster(),
+                            you.can_see(*defender));
 
         if (player_under_penance(GOD_ELYVILON)
             && god_hates_your_god(GOD_ELYVILON)
@@ -905,8 +940,6 @@ bool melee_attack::attack()
     handle_phase_aux();
 
     handle_phase_end();
-
-    enable_attack_conducts(conducts);
 
     return attack_occurred;
 }
@@ -1091,6 +1124,9 @@ public:
         if (you.has_usable_claws())
             return base_dam + roll_dice(you.has_claws(), 3);
 
+        if (you.has_usable_pincers())
+            return base_dam + roll_dice(you.has_pincers(), 4);
+
         return base_dam;
     }
 
@@ -1100,6 +1136,9 @@ public:
             return "slash";
 
         if (you.has_usable_claws())
+            return "claw";
+
+        if (you.has_usable_pincers())
             return "claw";
 
         if (you.has_usable_tentacles())
@@ -1490,7 +1529,7 @@ int melee_attack::player_apply_misc_modifiers(int damage)
     if (you.duration[DUR_MIGHT] || you.duration[DUR_BERSERK])
         damage += 1 + random2(10);
 
-    if (you.species != SP_VAMPIRE && you.hunger_state <= HS_STARVING)
+    if (apply_starvation_penalties())
         damage -= random2(5);
 
     return damage;
@@ -1807,8 +1846,6 @@ void melee_attack::player_weapon_upsets_god()
     {
         did_god_conduct(god_hates_item_handling(*weapon), 2);
     }
-    else if (weapon && weapon->is_type(OBJ_STAVES, STAFF_FIRE))
-        did_god_conduct(DID_FIRE, 1);
 }
 
 /* Apply player-specific effects as well as brand damage.
@@ -3037,7 +3074,7 @@ void melee_attack::mons_apply_attack_flavour()
 
 void melee_attack::do_passive_freeze()
 {
-    if (you.has_mutation(MUT_PASSIVE_FREEZE)
+    if ( (you.has_mutation(MUT_PASSIVE_FREEZE) || you.permabuffs[MUT_CHILL_THREAD] )
         && attacker->alive()
         && adjacent(you.pos(), attacker->as_monster()->pos()))
     {
@@ -3047,13 +3084,22 @@ void melee_attack::do_passive_freeze()
 
         monster* mon = attacker->as_monster();
 
-        const int orig_hurted = random2(11);
+        int orig_hurted = 0;
+        // mutation and spell are additive
+        if (you.has_mutation(MUT_PASSIVE_FREEZE))
+            orig_hurted = orig_hurted + random2(11);
+        if (you.permabuffs[MUT_CHILL_THREAD]) 
+            orig_hurted = orig_hurted + random2(3);
         int hurted = mons_adjust_flavoured(mon, beam, orig_hurted);
 
         if (!hurted)
             return;
 
-        simple_monster_message(*mon, " is very cold.");
+        if (you.permabuffs[MUT_CHILL_THREAD]) 
+            simple_monster_message(*mon, " feels very chill.");
+
+        if (you.has_mutation(MUT_PASSIVE_FREEZE)) 
+            simple_monster_message(*mon, " is very cold.");
 
 #ifndef USE_TILE_LOCAL
         flash_monster_colour(mon, LIGHTBLUE, 200);
@@ -3064,6 +3110,39 @@ void melee_attack::do_passive_freeze()
         if (mon->alive())
         {
             mon->expose_to_element(BEAM_COLD, orig_hurted);
+            print_wounds(*mon);
+        }
+    }
+}
+
+void melee_attack::do_passive_heat()
+{
+    if (you.species == SP_LAVA_ORC && temperature_effect(LORC_PASSIVE_HEAT)
+        && attacker->alive()
+        && grid_distance(you.pos(), attacker->as_monster()->pos()) == 1)
+    {
+        bolt beam;
+        beam.flavour = BEAM_FIRE;
+        beam.thrower = KILL_YOU;
+
+        monster* mon = attacker->as_monster();
+
+        const int orig_hurted = random2(5);
+        int hurted = mons_adjust_flavoured(mon, beam, orig_hurted);
+
+        if (!hurted)
+            return;
+
+        simple_monster_message(*mon, " is singed by your heat.");
+
+#ifndef USE_TILE_LOCAL
+        flash_monster_colour(mon, LIGHTRED, 200);
+#endif
+        mon->hurt(&you, hurted);
+
+        if (mon->alive())
+        {
+            mon->expose_to_element(BEAM_FIRE, orig_hurted);
             print_wounds(*mon);
         }
     }
@@ -3484,8 +3563,14 @@ int melee_attack::calc_your_to_hit_unarmed(int uattack)
     if (you.get_mutation_level(MUT_EYEBALLS))
         your_to_hit += 2 * you.get_mutation_level(MUT_EYEBALLS) + 1;
 
-    if (you.species != SP_VAMPIRE && you.hunger_state <= HS_STARVING)
+    if (apply_starvation_penalties())
         your_to_hit -= 3;
+
+    if (you.duration[DUR_VERTIGO])
+        your_to_hit -= 5;
+
+    if (you.confused())
+        your_to_hit -= 5;
 
     your_to_hit += slaying_bonus();
 

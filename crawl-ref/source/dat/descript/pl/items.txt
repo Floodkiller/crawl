@@ -216,6 +216,12 @@ dire flail
 
 Cep z kolczastymi odważnikami po obu stronach.
 %%%%
+disc of storms
+
+Ten potężny przedmiot potrafi wypuścić niszczące elektryczne wyładowanie,
+zwłaszcza w rękach kogoś kto potrafi dobrze posługiwać się magicznymi
+przedmiotami.
+%%%%
 eudemon blade
 
 Wspaniałe ostrze wykute w kuźniach Niebios, opętane przez dobrego ducha. Jest
@@ -667,6 +673,13 @@ Miękka skóra smoka parowego, w surowej postaci. Można zrobić z niej zbroję.
 stone
 
 Mały kamyk. Można nim rzucić lub wystrzelić go z procy.
+%%%%
+stone of tremors
+
+Wygładzony kamień zamieszkały przez przyjazne duchy ziemi. Uderzenie tym
+kamieniem o skałę spowoduje małe trzęsienie ziemi, wyzwalając owe duchy.
+Ktokolwiek stoi w pobliżu surowej skały zostanie zasypany gradem mniejszych i
+większych odłamów — lub nawet zapadnie się w szczeliny w podłożu.
 %%%%
 storm dragon scales
 

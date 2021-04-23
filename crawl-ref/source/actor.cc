@@ -216,7 +216,11 @@ bool actor::res_corr(bool calc_unid, bool items) const
 
 bool actor::cloud_immune(bool calc_unid, bool items) const
 {
-    return items && (wearing_ego(EQ_CLOAK, SPARM_CLOUD_IMMUNE, calc_unid));
+    const item_def *body_armour = slot_item(EQ_BODY_ARMOUR);
+    return items 
+           && (wearing_ego(EQ_CLOAK, SPARM_CLOUD_IMMUNE, calc_unid)
+               || (body_armour && (is_unrandom_artefact(*body_armour, UNRAND_RCLOUDS)
+                                   || is_unrandom_artefact(*body_armour, UNRAND_LEAR))));
 }
 
 bool actor::holy_wrath_susceptible() const
@@ -286,7 +290,9 @@ bool actor::reflection(bool calc_unid, bool items) const
 
 bool actor::extra_harm(bool calc_unid, bool items) const
 {
-    return items && wearing(EQ_AMULET, AMU_HARM, calc_unid);
+    return items &&
+           (wearing(EQ_AMULET, AMU_HARM, calc_unid)
+            || scan_artefacts(ARTP_HARM, calc_unid));
 }
 
 bool actor::rmut_from_item(bool calc_unid) const
@@ -763,22 +769,8 @@ void actor::constriction_damage_defender(actor &defender, int duration)
     {
         exclamations = ", but do no damage.";
     }
-    else if (damage < HIT_WEAK)
-        exclamations = ".";
-    else if (damage < HIT_MED)
-        exclamations = "!";
-    else if (damage < HIT_STRONG)
-        exclamations = "!!";
     else
-    {
-        int tmpdamage = damage;
-        exclamations = "!!!";
-        while (tmpdamage >= 2 * HIT_STRONG)
-        {
-            exclamations += "!";
-            tmpdamage >>= 1;
-        }
-    }
+        exclamations = attack_strength_punctuation(damage);
 
     if (is_player() || you.can_see(*this))
     {

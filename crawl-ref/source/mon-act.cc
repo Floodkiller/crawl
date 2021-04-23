@@ -46,6 +46,7 @@
 #include "mon-death.h"
 #include "mon-movetarget.h"
 #include "mon-place.h"
+#include "mon-poly.h"
 #include "mon-project.h"
 #include "mon-speak.h"
 #include "mon-tentacle.h"
@@ -73,6 +74,7 @@
 
 static bool _handle_pickup(monster* mons);
 static void _mons_in_cloud(monster& mons);
+static void _heated_area(monster& mons);
 static bool _monster_move(monster* mons);
 
 // [dshaligram] Doesn't need to be extern.
@@ -158,12 +160,7 @@ static void _escape_water_hold(monster& mons)
 {
     if (mons.has_ench(ENCH_WATER_HOLD))
     {
-        if (mons_habitat(mons) != HT_AMPHIBIOUS
-            && mons_habitat(mons) != HT_WATER)
-        {
-            mons.speed_increment -= 5;
-        }
-        simple_monster_message(mons, " pulls free of the water.");
+        simple_monster_message(mons, " slips free of the water.");
         mons.del_ench(ENCH_WATER_HOLD);
     }
 }
@@ -1101,22 +1098,10 @@ static void _mons_fire_wand(monster& mons, item_def &wand, bolt &beem,
 
     if (was_visible)
     {
-        const int wand_type = wand.sub_type;
-
-        set_ident_type(OBJ_WANDS, wand_type, true);
-        if (!mons.props["wand_known"].get_bool())
-            mprf("It is %s.", wand.name(DESC_A).c_str());
-
         if (wand.charges <= 0)
-        {
-            mons.props["wand_known"] = false;
             mprf("The now-empty wand crumbles to dust.");
-        }
         else
-        {
-            mons.props["wand_known"] = true;
             mons.flags |= MF_SEEN_RANGED;
-        }
     }
 
     if (wand.charges <= 0)
@@ -1494,6 +1479,8 @@ static void _pre_monster_move(monster& mons)
         // Update constriction durations
         mons.accum_has_constricted();
 
+        _heated_area(mons);
+
         if (mons.type == MONS_NO_MONSTER)
             return;
     }
@@ -1663,9 +1650,28 @@ void handle_monster_move(monster* mons)
         return;
     }
 
+    if (mons->type == MONS_SINGULARITY)
+    {
+        const actor * const summoner = actor_by_mid(mons->summoner);
+        if (!summoner || !summoner->alive())
+        {
+            mons->suicide();
+            return;
+        }
+        if (--mons->countdown <= 0)
+            mons->suicide();
+        else
+        {
+            singularity_pull(mons);
+            mons->speed_increment -= 10;
+        }
+        return;
+    }
+
     mons->shield_blocks = 0;
 
     _mons_in_cloud(*mons);
+    _heated_area(*mons);
     if (!mons->alive())
         return;
 
@@ -2170,6 +2176,7 @@ static void _ancient_zyme_sicken(monster* mons)
         return;
 
     if (!is_sanctuary(you.pos())
+        && !mons->wont_attack()
         && you.res_rotting() <= 0
         && !you.duration[DUR_DIVINE_STAMINA]
         && cell_see_cell(you.pos(), mons->pos(), LOS_SOLID_SEE))
@@ -2178,7 +2185,8 @@ static void _ancient_zyme_sicken(monster* mons)
         {
             if (!you.duration[DUR_SICKENING])
             {
-                mprf(MSGCH_WARN, "You feel yourself growing ill in the presence of %s.",
+                mprf(MSGCH_WARN, "You feel yourself growing ill in the "
+                                 "presence of %s.",
                     mons->name(DESC_THE).c_str());
             }
 
@@ -2199,7 +2207,8 @@ static void _ancient_zyme_sicken(monster* mons)
     for (radius_iterator ri(mons->pos(), LOS_RADIUS, C_SQUARE); ri; ++ri)
     {
         monster *m = monster_at(*ri);
-        if (m && cell_see_cell(mons->pos(), *ri, LOS_SOLID_SEE)
+        if (m && !mons_aligned(mons, m)
+            && cell_see_cell(mons->pos(), *ri, LOS_SOLID_SEE)
             && !is_sanctuary(*ri))
         {
             m->sicken(2 * you.time_taken);
@@ -2371,6 +2380,34 @@ static void _update_monster_attitude(monster *mon)
     }
 }
 
+vector<monster *> just_seen_queue;
+
+void mons_set_just_seen(monster *mon)
+{
+    mon->seen_context = SC_JUST_SEEN;
+    just_seen_queue.push_back(mon);
+}
+
+static void _display_just_seen()
+{
+    // these are monsters that were marked as SC_JUST_SEEN at some point since
+    // last time this was called. We announce any that leave all at once so
+    // as to handle monsters that may move multiple times per world_reacts.
+    for (auto m : just_seen_queue)
+    {
+        if (!m || invalid_monster(m) || !m->alive())
+            continue;
+        // can't use simple_monster_message here, because m is out of view.
+        // The monster should be visible to be in this queue.
+        if (in_bounds(m->pos()) && !you.see_cell(m->pos()))
+        {
+            mprf(MSGCH_PLAIN, "%s moves out of view.",
+                m->name(DESC_THE, true).c_str());
+        }
+    }
+    just_seen_queue.clear();
+}
+
 /**
  * Get all monsters to make an action, if they can/want to.
  *
@@ -2429,6 +2466,7 @@ void handle_monsters(bool with_noise)
             break;
         }
     }
+    _display_just_seen();
 
     // Process noises now (before clearing the sleep flag).
     if (with_noise)
@@ -3330,8 +3368,6 @@ static bool _do_move_monster(monster& mons, const coord_def& delta)
     // The monster gave a "comes into view" message and then immediately
     // moved back out of view, leaing the player nothing to see, so give
     // this message to avoid confusion.
-    if (mons.seen_context == SC_JUST_SEEN && !you.see_cell(f))
-        simple_monster_message(mons, " moves out of view.");
     else if (crawl_state.game_is_hints() && mons.flags & MF_WAS_IN_VIEW
              && !you.see_cell(f))
     {
@@ -3367,6 +3403,11 @@ static bool _do_move_monster(monster& mons, const coord_def& delta)
 
     mons.check_redraw(mons.pos() - delta);
     mons.apply_location_effects(mons.pos() - delta);
+    if (!invalid_monster(&mons) && you.can_see(mons))
+    {
+        handle_seen_interrupt(&mons);
+        seen_monster(&mons);
+    }
 
     _handle_manticore_barbs(mons);
 
@@ -3719,4 +3760,44 @@ static void _mons_in_cloud(monster& mons)
         return;
 
     actor_apply_cloud(&mons);
+}
+
+static void _heated_area(monster& mons)
+{
+    if (!heated(mons.pos()))
+        return;
+    if (mons.is_fiery())
+        return;
+    // HACK: Currently this prevents even auras not caused by lava orcs...
+    if (you_worship(GOD_BEOGH) && mons.friendly() && mons.god == GOD_BEOGH)
+        return;
+    const int base_damage = random2(11);
+    // Timescale, like with clouds:
+    const int speed = mons.speed > 0 ? mons.speed : 10;
+    const int timescaled = max(0, base_damage) * 10 / speed;
+    // rF protects:
+    const int adjusted_damage = resist_adjust_damage(&mons,
+                                BEAM_FIRE, timescaled);
+    // So does AC:
+    const int final_damage = max(0, adjusted_damage
+                                 - random2(mons.armour_class()));
+    if (final_damage > 0)
+    {
+        if (mons.observable())
+        {
+            mprf("%s is %s by your radiant heat.",
+                mons.name(DESC_THE).c_str(),
+                (final_damage) > 10 ? "blasted" : "burned");
+        }
+        behaviour_event(&mons, ME_DISTURB, 0, mons.pos());
+#ifdef DEBUG_DIAGNOSTICS
+        mprf(MSGCH_DIAGNOSTICS, "%s %s %d damage from heat.",
+            mons.name(DESC_THE).c_str(),
+            mons.conj_verb("take").c_str(),
+            final_damage);
+#endif
+        mons.hurt(&you, final_damage, BEAM_MISSILE);
+        if (mons.alive() && mons.observable())
+            print_wounds(mons);
+    }
 }

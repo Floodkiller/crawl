@@ -13,6 +13,25 @@ enum recall_t
     RECALL_BEOGH,
 };
 
+struct passwall_path
+{
+    passwall_path(const actor &act, const coord_def& dir, const int max_range);
+    coord_def start;
+    coord_def delta;
+    int range;
+    bool dest_found;
+
+    coord_def actual_dest;
+    vector<coord_def> path;
+
+    bool spell_succeeds() const;
+    int max_walls() const;
+    int actual_walls() const;
+    bool is_valid(string *fail_msg) const;
+    bool check_moveto() const;
+    vector <coord_def> possible_dests() const;
+};
+
 spret_type cast_recall(bool fail);
 void start_recall(recall_t type);
 void recall_orders(monster *mons);
@@ -24,3 +43,5 @@ spret_type cast_passwall(const coord_def& delta, int pow, bool fail);
 spret_type cast_intoxicate(int pow, bool fail);
 spret_type cast_darkness(int pow, bool fail);
 spret_type cast_phase_shift(int pow, bool fail);
+spret_type cast_reap(bool fail);
+bool renew_reap();

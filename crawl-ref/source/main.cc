@@ -132,6 +132,7 @@
 #include "spl-damage.h"
 #include "spl-goditem.h"
 #include "spl-other.h"
+#include "spl-selfench.h"
 #include "spl-summoning.h"
 #include "spl-transloc.h"
 #include "spl-util.h"
@@ -232,6 +233,8 @@ static void _take_starting_note();
 static void _startup_hints_mode();
 static void _set_removed_types_as_identified();
 
+static bool check_time_stop();
+
 static void _startup_asserts()
 {
     for (int i = 0; i < NUM_BRANCHES; ++i)
@@ -331,7 +334,10 @@ int main(int argc, char *argv[])
 #endif
 
     _launch_game_loop();
-    end(0);
+    if (crawl_state.last_game_exit.message.size())
+        end(0, false, "%s\n", crawl_state.last_game_exit.message.c_str());
+    else
+        end(0);
 
     return 0;
 }
@@ -377,7 +383,7 @@ static void _launch_game_loop()
         catch (game_ended_condition &ge)
         {
             game_ended = true;
-            crawl_state.last_game_exit = ge.exit_reason;
+            crawl_state.last_game_exit = ge;
             _reset_game();
 
             // Don't re-enter the Sprint menu with restart_after_save, as
@@ -393,7 +399,7 @@ static void _launch_game_loop()
         {
             end(1, false, "Error: truncation inside the save file.\n");
         }
-    } while (crawl_should_restart(crawl_state.last_game_exit)
+    } while (crawl_should_restart(crawl_state.last_game_exit.exit_reason)
              && game_ended
              && !crawl_state.seen_hups);
 }
@@ -411,13 +417,7 @@ NORETURN static void _launch_game()
 
     _set_removed_types_as_identified();
 
-    if (!game_start && you.prev_save_version != Version::Long)
-    {
-        const string note = make_stringf("Upgraded the game from %s to %s",
-                                         you.prev_save_version.c_str(),
-                                         Version::Long);
-        take_note(Note(NOTE_MESSAGE, 0, 0, note));
-    }
+    Version::record(you.prev_save_version);
 
     if (!crawl_state.game_is_tutorial())
     {
@@ -1122,6 +1122,14 @@ static void _input()
 #endif
         const command_type cmd = you.turn_is_over ? CMD_NO_CMD : _get_next_cmd();
 
+        // Clear "last action was a move or rest" flag.
+        // This needs to be after _get_next_cmd, which triggers a tiles redraw.
+        if (you.props[LAST_ACTION_WAS_MOVE_OR_REST_KEY].get_bool())
+        {
+            you.props[LAST_ACTION_WAS_MOVE_OR_REST_KEY] = false;
+            you.redraw_evasion = true;
+        }
+
         if (crawl_state.seen_hups)
             save_game(true, "Game saved, see you later!");
 
@@ -1199,13 +1207,78 @@ static void _input()
 
 }
 
+static bool _avarice_prevents_stairs(dungeon_feature_type& ftype)
+{
+    if (!you.runes[RUNE_DIS])
+    {
+        const dungeon_feature_type banned_stairs[] = 
+        { DNGN_ENTER_GEHENNA, DNGN_ENTER_COCYTUS, DNGN_ENTER_TARTARUS, DNGN_ABYSS_TO_ZOT,
+          DNGN_ENTER_PANDEMONIUM, DNGN_ENTER_SLIME, DNGN_ENTER_VAULTS, DNGN_ENTER_ZOT,
+          DNGN_ENTER_SNAKE, DNGN_ENTER_TOMB, DNGN_ENTER_SWAMP, DNGN_ENTER_SHOALS,
+          DNGN_ENTER_SPIDER };
+        
+        // This 13 is banned_stairs length, and should not be hardcoded but I'm lazy
+        const int BANNED_STAIRS_LENGTH = 13;
+        
+        for(int i = 0; i < BANNED_STAIRS_LENGTH; i++)
+        {
+            if (banned_stairs[i] == ftype)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+static bool _spiteful_prevents_stairs(dungeon_feature_type& ftype)
+{
+    if (you.attribute[ATTR_SPITEFUL] == 0)
+    {
+        // Can only enter Lair and Temple, ban all available entrances from there
+        // (including Hell and Pandemonium due to special vaults)
+        // Allow Abyss as well despite that not being per the tournament descriptions
+        // to avoid weird hardcoding/frustration
+        const dungeon_feature_type banned_stairs[] =
+        { DNGN_ENTER_DEPTHS, DNGN_ENTER_HELL, DNGN_ABYSS_TO_ZOT, DNGN_ENTER_PANDEMONIUM,
+          DNGN_ENTER_SLIME, DNGN_ENTER_VAULTS, DNGN_ENTER_ORC, DNGN_ENTER_SNAKE,
+          DNGN_ENTER_SWAMP, DNGN_ENTER_SHOALS, DNGN_ENTER_SPIDER };
+          
+        // This 11 is banned_stairs length, and should not be hardcoded but I'm lazy
+        const int BANNED_STAIRS_LENGTH = 11;
+        
+        for(int i = 0; i < BANNED_STAIRS_LENGTH; i++)
+        {
+            if (banned_stairs[i] == ftype)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
                              bool known_shaft)
 {
     // Up and down both work for shops, portals, and altars.
     if (ftype == DNGN_ENTER_SHOP || feat_is_altar(ftype))
     {
-        if (you.berserk())
+        if (crawl_state.doing_prev_cmd_again)
+        {
+            mprf("You can't repeat %s actions.",
+                ftype == DNGN_ENTER_SHOP ? "shop" : "altar");
+            crawl_state.cancel_cmd_all();
+        }
+        else if (you.berserk())
             canned_msg(MSG_TOO_BERSERK);
         else if (ftype == DNGN_ENTER_SHOP) // don't convert to capitalism
             shop();
@@ -1270,6 +1343,76 @@ static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
             return false;
         }
     }
+    
+    // Pledge checks
+    switch(you.pledge)
+    {
+        case PLEDGE_NATURES_ALLY:
+            if (ftype == DNGN_ENTER_TOMB && !player_has_orb())
+            {
+                mpr("Your pledge prevents you from entering until you have the Orb of Zot.");
+                return false;
+            }
+            if (ftype == DNGN_EXIT_DUNGEON && !you.runes[RUNE_TOMB])
+            {
+                mpr("Your pledge prevents you from leaving until you have the golden rune of Zot.");
+                return false;
+            }
+            break;
+        
+        case PLEDGE_LORD_OF_DARKNESS:
+            if (ftype == DNGN_ENTER_ORC || ftype == DNGN_ENTER_LAIR
+                || ftype == DNGN_ENTER_VAULTS)
+            {
+                mpr("Your pledge prevents you from entering this branch.");
+                return false;
+            }
+            break;
+
+        case PLEDGE_VOW_OF_COURAGE:
+            if ((ftype == DNGN_ABYSS_TO_ZOT || ftype == DNGN_ENTER_DEPTHS)
+                && runes_in_pack() < 6)
+            {
+                mpr("Your pledge prevents you from entering this branch until you have 6 runes.");
+                return false;
+            }
+            break;
+
+        case PLEDGE_AVARICE:
+            if (_avarice_prevents_stairs(ftype))
+            {
+                mpr("Your pledge prevents you from entering this branch until you have the iron rune of Zot.");
+                return false;
+            }
+            break;
+        
+        case PLEDGE_SPITEFUL:
+            if (_spiteful_prevents_stairs(ftype))
+            {
+                mpr("Your pledge prevents you from entering this branch until you abandon Ru at least once.");
+                return false;
+            }
+            break;
+
+        case PLEDGE_HARVEST:
+            // Harvest blocks any stairs or portals except stuff that stays on the level
+            if (ftype != DNGN_ENTER_SHOP && !feat_is_altar(ftype)
+                && ftype != DNGN_PASSAGE_OF_GOLUBRIA && ftype != DNGN_TRANSPORTER)
+            {
+                for (monster_iterator mi; mi; ++mi)
+                {
+                    if (mons_is_unique(mi->type))
+                    {
+                        mpr("A unique monster is still present on the level, preventing you from leaving!");
+                        return false;
+                    }
+                }
+            }
+            break;
+
+        default:
+            break;
+    }
 
     // Rune locks
     int min_runes = 0;
@@ -1278,7 +1421,8 @@ static bool _can_take_stairs(dungeon_feature_type ftype, bool down,
         if (ftype != it->entry_stairs)
             continue;
 
-        if (!is_existing_level(level_id(it->id, 1)))
+        //Megabyss: You can now get into Zot without having 3 runes via the back door.
+        //if (!is_existing_level(level_id(it->id, 1)))
         {
             min_runes = runes_for_branch(it->id);
             if (runes_in_pack() < min_runes)
@@ -1318,7 +1462,15 @@ static bool _prompt_dangerous_portal(dungeon_feature_type ftype)
         return yesno("Are you sure you wish to approach this portal? There's no "
                      "telling what its forces would wreak upon your fragile "
                      "self.", false, 'n');
-
+    case DNGN_ABYSS_TO_ZOT:
+        if (runes_in_pack() >= 3) { return true; }
+        return yesno("If you enter this portal you will be placed just inside "
+                     "of the Realm of Zot. If you do not have 3 runes, you "
+                     "will be able to leave but not re-enter. Continue?", false, 'n');
+    case DNGN_EXIT_ZOT:
+        if (runes_in_pack() >= 3) { return true; }
+        return yesno("You will not be able to re-enter the Realm of Zot "
+                     "via this staircase without 3 runes. Continue? ", false, 'n');
     default:
         return true;
     }
@@ -1589,7 +1741,7 @@ static void _toggle_travel_speed()
 
 static void _do_rest()
 {
-    if (you.hunger_state <= HS_STARVING && !you_min_hunger())
+    if (apply_starvation_penalties())
     {
         mpr("You're too hungry to rest.");
         return;
@@ -1674,6 +1826,7 @@ static void _do_list_gold()
 void process_command(command_type cmd)
 {
     you.apply_berserk_penalty = true;
+
     switch (cmd)
     {
 #ifdef USE_TILE
@@ -1748,7 +1901,7 @@ void process_command(command_type cmd)
         break;
     }
 #endif
-    case CMD_REST:            _do_rest(); break;
+    case CMD_REST:           _do_rest(); break;
 
     case CMD_GO_UPSTAIRS:
     case CMD_GO_DOWNSTAIRS:
@@ -1814,6 +1967,7 @@ void process_command(command_type cmd)
             break;
         // else fall-through
     case CMD_WAIT:
+        update_acrobat_status();
         you.turn_is_over = true;
         break;
 
@@ -1873,7 +2027,7 @@ void process_command(command_type cmd)
 
         // Informational commands.
     case CMD_DISPLAY_CHARACTER_STATUS: display_char_status();          break;
-    case CMD_DISPLAY_COMMANDS:         list_commands(0, true);         break;
+    case CMD_DISPLAY_COMMANDS:         list_commands(0); clrscr(); redraw_screen(); break;
     case CMD_DISPLAY_INVENTORY:        display_inventory();            break;
     case CMD_DISPLAY_KNOWN_OBJECTS: check_item_knowledge(); redraw_screen(); break;
     case CMD_DISPLAY_MUTATIONS: display_mutations(); redraw_screen();  break;
@@ -1892,10 +2046,6 @@ void process_command(command_type cmd)
 
     case CMD_DISPLAY_RELIGION:
     {
-#ifdef USE_TILE_WEB
-        if (!you_worship(GOD_NO_GOD))
-            tiles_crt_control show_as_menu(CRT_MENU, "describe_god");
-#endif
         describe_god(you.religion, true);
         redraw_screen();
         break;
@@ -2187,6 +2337,8 @@ static void _update_still_winds()
 
 void world_reacts()
 {
+    if (check_time_stop()) return;
+    
     // All markers should be activated at this point.
     ASSERT(!env.markers.need_activate());
 
@@ -2236,7 +2388,8 @@ void world_reacts()
 
     ASSERT(you.time_taken >= 0);
     you.elapsed_time += you.time_taken;
-    if (you.elapsed_time >= 2*1000*1000*1000)
+    if (you.elapsed_time >= 2*1000*1000*1000 ||
+        (you.pledge == PLEDGE_CONQUEROR && you.elapsed_time >= 500000))
     {
         // 2B of 1/10 turns. A 32-bit signed int can hold 2.1B.
         // The worst case of mummy scumming had 92M turns, the second worst
@@ -2246,7 +2399,10 @@ void world_reacts()
         // a gigabyte of bzipped ttyrec.
         // We could extend the counters to 64 bits, but in the light of the
         // above, it's an useless exercise.
-        mpr("Outside, the world ends.");
+        if (you.pledge == PLEDGE_CONQUEROR)
+            mpr("You failed to complete your pledge in time.");
+        else
+            mpr("Outside, the world ends.");
         mpr("Sorry, but your quest for the Orb is now rather pointless. "
             "You quit...");
         // Please do not give it a custom ktyp or make it cool in any way
@@ -2310,6 +2466,38 @@ void world_reacts()
     // the loudest noise tracking for the next world_reacts cycle.
     you.los_noise_last_turn = you.los_noise_level;
     you.los_noise_level = 0;
+}
+
+bool check_time_stop()
+{
+    //need to do it this way, since delays don't set 'you.turn_is_over'
+    if (you.attribute[ATTR_TIME_STOP] == 0 || you.time_taken <= 0)
+       return false;
+    
+    bool totally_stopped = false;
+    
+    if (you.time_taken >= you.attribute[ATTR_TIME_STOP])
+    {
+        you.time_taken -= you.attribute[ATTR_TIME_STOP];
+        you.attribute[ATTR_TIME_STOP] = 0;
+    }
+    else
+    {
+        you.attribute[ATTR_TIME_STOP] -= you.time_taken;
+        you.turn_is_over = false;
+        you.time_taken = 0;
+        you.elapsed_time_at_last_input = you.elapsed_time;
+        totally_stopped = true;
+        update_turn_count();
+    }
+    you.redraw_status_lights = true;
+
+    if (you.attribute[ATTR_TIME_STOP] == 0)
+    {
+        end_time_stop(false);
+    }
+    
+    return totally_stopped;
 }
 
 static command_type _get_next_cmd()
@@ -2827,14 +3015,14 @@ static void _do_playing_harp()
     if (you.attribute[ATTR_PLAYING_HARP] == 0)
         return;
 
-    // Convert prepping value into initialized value 
+    // Convert prepping value into initialized value
     // (to avoid immediate cancel on starting turn)
     if (you.attribute[ATTR_PLAYING_HARP] == -1)
     {
         you.attribute[ATTR_PLAYING_HARP] = 1;
         return;
     }
-    
+
     if (crawl_state.prev_cmd == CMD_WAIT)
         handle_playing_harp();
     else
@@ -3030,7 +3218,7 @@ static void _move_player(coord_def move)
 
     if (you.digging)
     {
-        if (you.hunger_state <= HS_STARVING && you.undead_state() == US_ALIVE)
+        if (apply_starvation_penalties())
         {
             you.digging = false;
             canned_msg(MSG_TOO_HUNGRY);
@@ -3165,13 +3353,7 @@ static void _move_player(coord_def move)
 
         if (you.duration[DUR_WATER_HOLD])
         {
-            if (you.can_swim())
-                mpr("You deftly slip free of the water engulfing you.");
-            else //Unless you're a natural swimmer, this takes longer than normal
-            {
-                mpr("With effort, you pull free of the water engulfing you.");
-                you.time_taken = you.time_taken * 3 / 2;
-            }
+            mpr("You slip free of the water engulfing you.");
             you.duration[DUR_WATER_HOLD] = 1;
             you.props.erase("water_holder");
         }
@@ -3285,6 +3467,8 @@ static void _move_player(coord_def move)
         && feat_is_closed_door(targ_grid))
     {
         _open_door(move);
+        move.reset();
+        return;
     }
     else if (!targ_pass && grd(targ) == DNGN_MALIGN_GATEWAY
              && !attacking && !you.is_stationary())
@@ -3347,8 +3531,12 @@ static void _move_player(coord_def move)
         did_god_conduct(DID_HASTY, 1, true);
     }
 
+    bool did_wu_jian_attack = false;
     if (you_worship(GOD_WU_JIAN) && !attacking)
-        wu_jian_post_move_effects(did_wall_jump, initial_position);
+        did_wu_jian_attack = wu_jian_post_move_effects(did_wall_jump, initial_position);
+
+    if (!attacking && moving && !did_wall_jump)
+        update_acrobat_status();
 }
 
 static int _get_num_and_char(const char* prompt, char* buf, int buf_len)

@@ -4,12 +4,14 @@
 
 #include "god-passive.h"
 
+#if TAG_MAJOR_VERSION == 34
 static void _end_weapon_brand()
 {
     you.duration[DUR_EXCRUCIATING_WOUNDS] = 1;
     ASSERT(you.weapon());
     end_weapon_brand(*you.weapon(), true);
 }
+#endif
 
 static void _end_invis()
 {
@@ -135,6 +137,11 @@ static const duration_def duration_data[] =
       {{ "You feel a little less agile now.", []() {
           notify_stat_change(STAT_DEX, -5, true);
       }}}},
+    { DUR_ANTIMAGIC,
+      RED, "-Mag",
+      "antimagic", "",
+      "You have trouble accessing your magic.", D_DISPELLABLE | D_EXPIRES,
+      {{ "You regain control over your magic." }}, 27},
     { DUR_BERSERK,
       BLUE, "Berserk",
       "berserking", "berserker",
@@ -199,6 +206,7 @@ static const duration_def duration_data[] =
       "exhausted", "",
       "You are exhausted.", D_NO_FLAGS,
       {{ "You feel less exhausted." }}},
+#if TAG_MAJOR_VERSION == 34
     { DUR_FIRE_SHIELD,
       BLUE, "RoF",
       "immune to fire clouds", "fire shield",
@@ -210,6 +218,7 @@ static const duration_def duration_data[] =
       "icy armour", "",
       "You are protected by a layer of icy armour.", D_DISPELLABLE | D_EXPIRES,
       {}, 6},
+#endif
     { DUR_LIQUID_FLAMES,
       RED, "Fire",
       "liquid flames", "",
@@ -383,6 +392,7 @@ static const duration_def duration_data[] =
       "marked", "sentinel's mark",
       "A sentinel's mark is revealing your location to enemies.", D_DISPELLABLE | D_EXPIRES,
       {{ "The sentinel's mark upon you fades away." }}},
+#if TAG_MAJOR_VERSION == 34
     { DUR_INFUSION,
       BLUE, "Infus",
       "infused", "",
@@ -395,6 +405,7 @@ static const duration_def duration_data[] =
       "Your melee attacks are strengthened by your song.", D_DISPELLABLE | D_EXPIRES,
       {{ "Your song has ended." },
         { "Your song is almost over." }}, 6},
+#endif
     { DUR_BLADE_OF_DISASTER,
       MAGENTA, "Disaster",
       "disaster", "blade of disaster",
@@ -498,7 +509,7 @@ static const duration_def duration_data[] =
       "no potions", "",
       "You cannot drink potions.", D_NO_FLAGS,
       {{ "", []() {
-          if (!you_foodless())
+          if (!you_foodless(true, true))
               mprf(MSGCH_RECOVERY, "You can drink potions again.");
       }}}},
     { DUR_QAZLAL_FIRE_RES,
@@ -580,7 +591,12 @@ static const duration_def duration_data[] =
       "can't hop", "",
       "", D_NO_FLAGS,
       {{ "You are ready to hop once more." }}},
-
+    { DUR_ACROBAT, 0, "",
+      "acrobat", "",
+      "", D_NO_FLAGS,
+      {{ "", []() {
+          you.redraw_evasion = true;
+      }}}},
     // The following are visible in wizmode only, or are handled
     // specially in the status lights and/or the % or @ screens.
 
@@ -588,19 +604,23 @@ static const duration_def duration_data[] =
         {{ "", _end_invis }, { "You flicker for a moment.", 1}}, 6},
     { DUR_SLOW, 0, "", "", "slow", "", D_DISPELLABLE},
     { DUR_MESMERISED, 0, "", "", "mesmerised", "", D_DISPELLABLE,
-      {{ "You break out of your daze.", []() { you.clear_beholders(); }},
+      {{ "", []() { you.clear_beholders(false, false); }},
          {}, true }},
     { DUR_MESMERISE_IMMUNE, 0, "", "", "mesmerisation immunity", "", D_NO_FLAGS, {{""}} },
     { DUR_HASTE, 0, "", "", "haste", "", D_DISPELLABLE, {}, 6},
     { DUR_FLIGHT, 0, "", "", "flight", "", D_DISPELLABLE /*but special-cased*/, {}, 10},
     { DUR_POISONING, 0, "", "", "poisoning", "", D_NO_FLAGS},
     { DUR_PIETY_POOL, 0, "", "", "piety pool", "", D_NO_FLAGS},
+#if TAG_MAJOR_VERSION == 34
     { DUR_REGENERATION, 0, "", "", "regeneration", "", D_DISPELLABLE,
       {{ "Your skin stops crawling." },
           { "Your skin is crawling a little less now.", 1}}, 6},
+#endif
     { DUR_TRANSFORMATION, 0, "", "", "transformation", "", D_DISPELLABLE /*but special-cased*/, {}, 10},
+#if TAG_MAJOR_VERSION == 34
     { DUR_EXCRUCIATING_WOUNDS, 0, "", "", "excruciating wounds", "", D_DISPELLABLE,
       {{ "", _end_weapon_brand }}},
+#endif
     { DUR_DEMONIC_GUARDIAN, 0, "", "", "demonic guardian", "", D_NO_FLAGS, {{""}}},
     { DUR_POWERED_BY_DEATH, 0, "", "", "pbd", "", D_NO_FLAGS},
     { DUR_GOURMAND, 0, "", "", "gourmand", "", D_NO_FLAGS},
@@ -657,14 +677,10 @@ static const duration_def duration_data[] =
     { DUR_CONTROL_TELEPORT, 0, "", "", "old control teleport", "", D_NO_FLAGS},
     { DUR_DOOM_HOWL_IMMUNITY, 0, "", "", "old howl immunity", "", D_NO_FLAGS, {{""}}},
     { DUR_CONDENSATION_SHIELD, 0, "", "", "old condensation shield", "", D_NO_FLAGS},
-    { DUR_ANTIMAGIC,
-        RED, "-Mag",
-        "antimagic", "",
-        "You have trouble accessing your magic.", D_DISPELLABLE | D_EXPIRES,
-        {{ "You regain control over your magic." }}, 27},
     { DUR_TELEPATHY, 0, "", "", "old telepathy", "", D_NO_FLAGS},
     { DUR_MAGIC_ARMOUR, 0, "", "", "old magic armour", "", D_NO_FLAGS},
     { DUR_MAGIC_SHIELD, 0, "", "", "old magic shield", "", D_NO_FLAGS},
     { DUR_FORTITUDE, 0, "", "", "old fortitude", "", D_NO_FLAGS},
+
 #endif
 };

@@ -304,13 +304,13 @@ void InvEntry::set_show_glyph(bool doshow)
 }
 
 InvMenu::InvMenu(int mflags)
-    : Menu(mflags, "inventory", false), type(MT_INVLIST), pre_select(nullptr),
+    : Menu(mflags, "inventory"), type(MT_INVLIST), pre_select(nullptr),
       title_annotate(nullptr)
 {
 #ifdef USE_TILE_LOCAL
     if (Options.tile_menu_icons)
+        set_flags(mflags | MF_USE_TWO_COLUMNS);
 #endif
-        mdisplay->set_num_columns(2);
 
     InvEntry::set_show_cursor(false);
 }
@@ -426,8 +426,9 @@ string no_selectables_message(int item_selector)
     case OBJ_POTIONS:
         return "You aren't carrying any potions.";
     case OBJ_SCROLLS:
+        return "You aren't carrying any scrolls.";
     case OBJ_BOOKS:
-        return "You aren't carrying any spellbooks or scrolls.";
+        return "You don't have any books.";
     case OBJ_WANDS:
         return "You aren't carrying any wands.";
     case OBJ_JEWELLERY:
@@ -455,6 +456,8 @@ string no_selectables_message(int item_selector)
         return "You aren't carrying anything you can give to a follower.";
     case OSEL_CURSABLE:
         return "You don't have any cursable items.";
+    case OSEL_UNCURSED_WORN_RINGS:
+        return "You aren't wearing any uncursed rings.";
     }
 
     return "You aren't carrying any such object.";
@@ -475,30 +478,23 @@ void InvMenu::load_inv_items(int item_selector, int excluded_slot,
 }
 
 #ifdef USE_TILE
-bool InvEntry::get_tiles(vector<tile_def>& tileset) const
+bool get_tiles_for_item(const item_def &item, vector<tile_def>& tileset, bool show_background)
 {
-    if (!Options.tile_menu_icons)
-        return false;
-
-    // Runes + orb of zot have a special uncollected tile
-    if (quantity <= 0 && (item->base_type != OBJ_RUNES && item->base_type != OBJ_ORBS))
-        return false;
-
-    tileidx_t idx = tileidx_item(get_item_info(*item));
+    tileidx_t idx = tileidx_item(get_item_info(item));
     if (!idx)
         return false;
 
-    if (in_inventory(*item))
+    if (in_inventory(item))
     {
-        const equipment_type eq = item_equip_slot(*item);
+        const equipment_type eq = item_equip_slot(item);
         if (eq != EQ_NONE)
         {
-            if (item_known_cursed(*item))
+            if (item_known_cursed(item))
                 tileset.emplace_back(TILE_ITEM_SLOT_EQUIP_CURSED, TEX_DEFAULT);
             else
                 tileset.emplace_back(TILE_ITEM_SLOT_EQUIP, TEX_DEFAULT);
         }
-        else if (item_known_cursed(*item))
+        else if (item_known_cursed(item))
             tileset.emplace_back(TILE_ITEM_SLOT_CURSED, TEX_DEFAULT);
 
         tileidx_t base_item = tileidx_known_base_item(idx);
@@ -512,11 +508,11 @@ bool InvEntry::get_tiles(vector<tile_def>& tileset) const
     else
     {
         // Do we want to display the floor type or is that too distracting?
-        const coord_def c = item->held_by_monster()
-            ? item->holding_monster()->pos()
-            : item->pos;
+        const coord_def c = item.held_by_monster()
+            ? item.holding_monster()->pos()
+            : item.pos;
         tileidx_t ch = 0;
-        if (c != coord_def() && show_background)
+        if (c != coord_def() && show_background && item.link != ITEM_IN_SHOP)
         {
             ch = tileidx_feature(c);
             if (ch == TILE_FLOOR_NORMAL)
@@ -541,25 +537,37 @@ bool InvEntry::get_tiles(vector<tile_def>& tileset) const
                 tileset.emplace_back(TILEI_MASK_SHALLOW_WATER_MURKY, TEX_ICONS);
         }
     }
-    if (item->base_type == OBJ_WEAPONS || item->base_type == OBJ_MISSILES
-        || item->base_type == OBJ_ARMOUR
+    if (item.base_type == OBJ_WEAPONS || item.base_type == OBJ_MISSILES
+        || item.base_type == OBJ_ARMOUR
 #if TAG_MAJOR_VERSION == 34
-        || item->base_type == OBJ_RODS
+        || item.base_type == OBJ_RODS
 #endif
        )
     {
-        tileidx_t brand = tileidx_known_brand(*item);
+        tileidx_t brand = tileidx_known_brand(item);
         if (brand)
             tileset.emplace_back(brand, TEX_DEFAULT);
     }
-    else if (item->base_type == OBJ_CORPSES)
+    else if (item.base_type == OBJ_CORPSES)
     {
-        tileidx_t brand = tileidx_corpse_brand(*item);
+        tileidx_t brand = tileidx_corpse_brand(item);
         if (brand)
             tileset.emplace_back(brand, TEX_DEFAULT);
     }
 
     return true;
+}
+
+bool InvEntry::get_tiles(vector<tile_def>& tileset) const
+{
+    if (!Options.tile_menu_icons)
+        return false;
+
+    // Runes + orb of zot have a special uncollected tile
+    if (quantity <= 0 && (item->base_type != OBJ_RUNES && item->base_type != OBJ_ORBS))
+        return false;
+
+    return get_tiles_for_item(*item, tileset, show_background);
 }
 #else
 bool InvEntry::get_tiles(vector<tile_def>& tileset) const { return false; }
@@ -849,10 +857,6 @@ menu_letter InvMenu::load_items(const vector<const item_def*> &mitems,
         }
     }
 
-    // Don't make a menu so tall that we recycle hotkeys on the same page.
-    if (mitems.size() > 52 && (max_pagesize > 52 || max_pagesize == 0))
-        set_maxpagesize(52);
-
     return ckey;
 }
 
@@ -985,6 +989,7 @@ vector<SelItem> select_items(const vector<const item_def*> &items,
         }
 
         new_flags |= MF_SHOW_PAGENUMBERS | MF_ALLOW_FORMATTING;
+        new_flags |= menu.get_flags() & MF_USE_TWO_COLUMNS;
         menu.set_flags(new_flags);
         menu.show();
         selected = menu.get_selitems();
@@ -1017,9 +1022,6 @@ bool item_is_selected(const item_def &i, int selector)
 
     case OSEL_THROWABLE:
     {
-        if (you_worship(GOD_TROG) && item_is_spellbook(i))
-            return true;
-
         if (itype != OBJ_WEAPONS && itype != OBJ_MISSILES)
             return false;
 
@@ -1086,6 +1088,10 @@ bool item_is_selected(const item_def &i, int selector)
 
     case OSEL_CURSABLE:
         return item_is_cursable(i);
+
+    case OSEL_UNCURSED_WORN_RINGS:
+        return !i.cursed() && item_is_equipped(i) && itype == OBJ_JEWELLERY
+            && !jewellery_is_amulet(i);
 
     default:
         return false;
@@ -1180,24 +1186,19 @@ void display_inventory()
     if (you.pending_revival || crawl_state.updating_scores)
         flags |= MF_EASY_EXIT;
 
-    while (true)
+    InvMenu menu(flags | MF_ALLOW_FORMATTING);
+    menu.load_inv_items(OSEL_ANY, -1);
+    menu.set_type(MT_INVLIST);
+
+    menu.on_single_selection = [](const MenuEntry& item)
     {
-        unsigned char select =
-            _invent_select(nullptr, MT_INVLIST, OSEL_ANY, -1, flags);
+        unsigned char select = item.hotkeys[0];
+        const int invidx = letter_to_index(select);
+        ASSERT(you.inv[invidx].defined());
+        return describe_item(you.inv[invidx]);
+    };
 
-        if (isaalpha(select))
-        {
-            const int invidx = letter_to_index(select);
-            if (you.inv[invidx].defined())
-            {
-                if (!describe_item(you.inv[invidx]))
-                    break;
-            }
-        }
-        else
-            break;
-    }
-
+    menu.show(true);
     if (!crawl_state.doing_prev_cmd_again)
         redraw_screen();
 }
@@ -1387,28 +1388,28 @@ vector<SelItem> prompt_drop_items(const vector<SelItem> &preselected_items)
     return items;
 }
 
-int digit_inscription_to_inv_index(char digit, operation_types oper)
+static bool item_matches_digit_inscription(item_def &item, char digit, operation_types oper)
 {
+    const string& r(item.inscription);
     const char iletter = static_cast<char>(oper);
+    for (unsigned int j = 0; j + 2 < r.size(); ++j)
+        if (r[j] == '@' && (r[j+1] == iletter || r[j+1] == '*') && r[j+2] == digit)
+            return true;
+    return false;
+}
 
+item_def *digit_inscription_to_item(char digit, operation_types oper)
+{
     for (int i = 0; i < ENDOFPACK; ++i)
-    {
-        if (you.inv[i].defined())
-        {
-            const string& r(you.inv[i].inscription);
-            // Note that r.size() is unsigned.
-            for (unsigned int j = 0; j + 2 < r.size(); ++j)
-            {
-                if (r[j] == '@'
-                     && (r[j+1] == iletter || r[j+1] == '*')
-                     && r[j+2] == digit)
-                {
-                    return i;
-                }
-            }
-        }
-    }
-    return -1;
+        if (you.inv[i].defined()
+                && item_matches_digit_inscription(you.inv[i], digit, oper))
+            return &you.inv[i];
+
+    for (stack_iterator si(you.pos(), true); si; ++si)
+        if (item_matches_digit_inscription(*si, digit, oper))
+            return &*si;
+
+    return nullptr;
 }
 
 static bool _has_warning_inscription(const item_def& item,
@@ -1618,15 +1619,6 @@ bool needs_handle_warning(const item_def &item, operation_types oper,
     {
         if (get_weapon_brand(item) == SPWPN_DISTORTION
             && !have_passive(passive_t::safe_distortion))
-        {
-            return true;
-        }
-
-        if (get_weapon_brand(item) == SPWPN_VAMPIRISM
-            && you.undead_state() == US_ALIVE
-            && !you_foodless()
-            // Don't prompt if you aren't wielding it and you can't.
-            && (you.hunger_state >= HS_FULL || _is_wielded(item)))
         {
             return true;
         }
@@ -1922,11 +1914,11 @@ int prompt_invent_item(const char *prompt,
         else if (isadigit(keyin))
         {
             // scan for our item
-            int res = digit_inscription_to_inv_index(keyin, oper);
-            if (res != -1)
+            item_def *item = digit_inscription_to_item(keyin, oper);
+            if (item && in_inventory(*item))
             {
-                ret = res;
-                if (!do_warning || check_warning_inscriptions(you.inv[ret], oper))
+                ret = item->link;
+                if (!do_warning || check_warning_inscriptions(*item, oper))
                     break;
             }
         }

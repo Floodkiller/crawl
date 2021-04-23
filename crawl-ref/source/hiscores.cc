@@ -43,6 +43,7 @@
 #include "options.h"
 #include "ouch.h"
 #include "place.h"
+#include "pledge.h"
 #include "religion.h"
 #include "skills.h"
 #include "state.h"
@@ -304,9 +305,6 @@ static void _add_hiscore_row(MenuScroller* scroller, scorefile_entry& se, int id
 {
     TextItem* tmp = nullptr;
     tmp = new TextItem();
-
-    coord_def min_coord(1,1);
-    coord_def max_coord(1,2);
 
     tmp->set_fg_colour(WHITE);
     tmp->set_highlight_colour(WHITE);
@@ -744,6 +742,7 @@ void scorefile_entry::init_from(const scorefile_entry &se)
     zigmax             = se.zigmax;
     scrolls_used       = se.scrolls_used;
     potions_used       = se.potions_used;
+    pledge             = se.pledge;
     fixup_char_name();
 
     // We could just reset raw_line to "" instead.
@@ -757,10 +756,10 @@ actor* scorefile_entry::killer() const
 
 xlog_fields scorefile_entry::get_fields() const
 {
-    if (!fields.get())
+    if (!fields)
         return xlog_fields();
     else
-        return *fields.get();
+        return *fields;
 }
 
 bool scorefile_entry::parse(const string &line)
@@ -796,7 +795,7 @@ string scorefile_entry::raw_string() const
 
     set_score_fields();
 
-    if (!fields.get())
+    if (!fields)
         return "";
 
     return fields->xlog_line() + "\n";
@@ -1047,12 +1046,14 @@ void scorefile_entry::init_with_fields()
     scrolls_used = fields->int_field("scrollsused");
     potions_used = fields->int_field("potionsused");
 
+    pledge     = name_to_pledge(fields->str_field("pledge"));
+
     fixup_char_name();
 }
 
 void scorefile_entry::set_base_xlog_fields() const
 {
-    if (!fields.get())
+    if (!fields)
         fields.reset(new xlog_fields);
 
     string score_version = SCORE_VERSION;
@@ -1144,13 +1145,14 @@ void scorefile_entry::set_base_xlog_fields() const
         fields->add_field("zigdeepest", "%d", zigmax);
     fields->add_field("scrollsused", "%d", scrolls_used);
     fields->add_field("potionsused", "%d", potions_used);
+    fields->add_field("pledge", "%s", get_pledge_name(pledge).c_str());
 }
 
 void scorefile_entry::set_score_fields() const
 {
     fields.reset(new xlog_fields);
 
-    if (!fields.get())
+    if (!fields)
         return;
 
     set_base_xlog_fields();
@@ -1481,6 +1483,7 @@ void scorefile_entry::reset()
     zigmax               = 0;
     scrolls_used         = 0;
     potions_used         = 0;
+    pledge               = PLEDGE_NONE;
 }
 
 static int _award_modified_experience()
@@ -1638,7 +1641,7 @@ void scorefile_entry::init(time_t dt)
     status_info inf;
     for (unsigned i = 0; i <= STATUS_LAST_STATUS; ++i)
     {
-        if (fill_status_info(i, &inf) && !inf.short_text.empty())
+        if (fill_status_info(i, inf) && !inf.short_text.empty())
         {
             if (!status_effects.empty())
                 status_effects += ",";
@@ -1654,7 +1657,7 @@ void scorefile_entry::init(time_t dt)
 
     final_mp          = you.magic_points;
     final_max_mp      = you.max_magic_points;
-    final_base_max_mp = get_real_mp(false);
+    final_base_max_mp = get_real_mp(false, true);
 
     source_damage    = you.source_damage;
     turn_damage      = you.turn_damage;
@@ -1718,6 +1721,7 @@ void scorefile_entry::init(time_t dt)
         for (int i = 0; i < maxlev; i++)
             potions_used += you.action_count[p][i];
 
+    pledge = you.pledge;
     wiz_mode = (you.wizard || you.suppress_wizard ? 1 : 0);
     explore_mode = (you.explore ? 1 : 0);
 }
@@ -1927,7 +1931,7 @@ scorefile_entry::character_description(death_desc_verbosity verbosity) const
         desc = _append_sentence_delimiter(desc, ".");
         desc += _hiscore_newline_string();
 
-        if (race != SP_DEMIGOD && god != GOD_NO_GOD)
+        if (race != SP_PROMETHEAN && god != GOD_NO_GOD)
         {
             if (god == GOD_XOM)
             {

@@ -1,12 +1,12 @@
 // In the default case, these translations hold:
-// map_colour -> seen_colour
+// unseen_colour -> seen_colour
 // seen_colour -> seen_em_colour
 // colour -> em_colour
 // So use a macro:
 #define COLOURS(colour, map) colour, map, map, colour, map
 // And with the default (darkgrey) map colour:
 #define COLOUR_IS(colour) COLOURS(colour, DARKGREY)
-// And for when colour and map_colour are equal:
+// And for when colour and unseen_colour are equal:
 #define COLOUR_AND_MAP(colour) COLOURS(colour, colour)
 static feature_def feat_defs[] =
 {
@@ -16,7 +16,7 @@ static feature_def feat_defs[] =
     DNGN_UNSEEN, "", "unseen",
     // dchar, magic_dchar
     NUM_DCHAR_TYPES, NUM_DCHAR_TYPES,
-    // colour, map_colour, seen_colour, em_colour, seen_em_colour
+    // colour, unseen_colour, seen_colour, em_colour, seen_em_colour
     BLACK, DARKGREY, DARKGREY, BLACK, DARKGREY,
     // flags, minimap
     FFT_OPAQUE | FFT_SOLID, MF_UNSEEN,
@@ -353,6 +353,7 @@ PORTAL_EXIT(DNGN_EXIT_HELL, "gateway back into the Dungeon", "exit_hell", LIGHTR
 PORTAL_ENTRANCE(DNGN_ENTER_ABYSS, "one-way gate to the infinite horrors of the Abyss", "enter_abyss", ETC_WARP),
 PORTAL_ENTRANCE(DNGN_EXIT_THROUGH_ABYSS, "exit through the horrors of the Abyss", "exit_through_abyss", ETC_WARP),
 PORTAL_EXIT(DNGN_EXIT_ABYSS, "gateway leading out of the Abyss", "exit_abyss", ETC_WARP),
+PORTAL_ENTRANCE(DNGN_ABYSS_TO_ZOT, "one-way gate leading to the Realm of Zot", "abyss_to_zot", MAGENTA),
 
 PORTAL_ENTRANCE(DNGN_ENTER_PANDEMONIUM, "one-way gate leading to the halls of Pandemonium", "enter_pandemonium", LIGHTBLUE),
 PORTAL_EXIT(DNGN_TRANSIT_PANDEMONIUM, "gate leading to another region of Pandemonium", "transit_pandemonium", LIGHTGREEN),
@@ -511,7 +512,7 @@ ALTAR(DNGN_ALTAR_WU_JIAN, "ornate altar of the Wu Jian Council", "altar_wu_jian"
     enum, name, vaultname,\
     DCHAR_FOUNTAIN, NUM_DCHAR_TYPES,\
     COLOUR_IS(colour),\
-    FFT_NONE, MF_FLOOR,\
+    FFT_NONE, MF_FEATURE,\
 }
 FOUNTAIN(DNGN_FOUNTAIN_BLUE, "fountain of clear blue water", "fountain_blue", BLUE),
 FOUNTAIN(DNGN_FOUNTAIN_SPARKLING, "fountain of sparkling water", "fountain_sparkling", LIGHTBLUE),

@@ -54,6 +54,7 @@
 #include "religion.h"
 #include "rot.h"
 #include "spl-monench.h"
+#include "spl-selfench.h"
 #include "spl-summoning.h"
 #include "spl-util.h"
 #include "state.h"
@@ -201,7 +202,7 @@ void monster::init_with(const monster& mon)
     damage_total      = mon.damage_total;
     xp_tracking       = mon.xp_tracking;
 
-    if (mon.ghost.get())
+    if (mon.ghost)
         ghost.reset(new ghost_demon(*mon.ghost));
     else
         ghost.reset(nullptr);
@@ -1241,9 +1242,6 @@ bool monster::drop_item(mon_inv_type eslot, bool msg)
         }
     }
 
-    if (props.exists("wand_known") && msg && was_wand)
-        props.erase("wand_known");
-
     inv[eslot] = NON_ITEM;
     return true;
 }
@@ -1378,12 +1376,9 @@ static bool _is_signature_weapon(const monster* mons, const item_def &weapon)
         if (mons->type == MONS_DONALD)
             return mons->hands_reqd(weapon) == HANDS_ONE;
 
-        // What kind of assassin would forget her blowgun or dagger somewhere else?
+        // What kind of assassin would forget her dagger somewhere else?
         if (mons->type == MONS_SONJA)
-        {
-            return item_attack_skill(weapon) == SK_SHORT_BLADES
-                   || wtype == WPN_BLOWGUN;
-        }
+            return item_attack_skill(weapon) == SK_SHORT_BLADES;
 
         if (mons->type == MONS_IMPERIAL_MYRMIDON)
             return item_attack_skill(weapon) == SK_LONG_BLADES;
@@ -1973,7 +1968,7 @@ bool monster::pickup_missile(item_def &item, bool msg, bool force)
 
         // Allow upgrading throwing weapon brands (XXX: improve this!)
         if (item.sub_type == miss->sub_type
-            && (item.sub_type == MI_TOMAHAWK || item.sub_type == MI_JAVELIN)
+            && (item.sub_type == MI_BOOMERANG || item.sub_type == MI_JAVELIN)
             && get_ammo_brand(*miss) == SPMSL_NORMAL
             && get_ammo_brand(item) != SPMSL_NORMAL)
         {
@@ -2015,11 +2010,7 @@ bool monster::pickup_wand(item_def &item, bool msg, bool force)
     }
 
     if (pickup(item, MSLOT_WAND, msg))
-    {
-        if (msg)
-            props["wand_known"] = item_type_known(item);
         return true;
-    }
     else
         return false;
 }
@@ -2210,7 +2201,7 @@ bool monster::has_base_name() const
 {
     // Any non-ghost, non-Pandemonium demon that has an explicitly set
     // name has a base name.
-    return !mname.empty() && !ghost.get();
+    return !mname.empty() && !ghost;
 }
 
 static string _invalid_monster_str(monster_type type)
@@ -2816,6 +2807,14 @@ void monster::expose_to_element(beam_type flavour, int strength,
     {
     case BEAM_COLD:
         if (slow_cold_blood && mons_class_flag(type, M_COLD_BLOOD)
+            && res_cold() <= 0 && coinflip())
+        {
+            do_slow_monster(*this, this, (strength + random2(5)) * BASELINE_DELAY);
+        }
+        break;
+    // BEAM_ICE is not flavor and always has chance to slow
+    case BEAM_ICE:
+        if (mons_class_flag(type, M_COLD_BLOOD)
             && res_cold() <= 0 && coinflip())
         {
             do_slow_monster(*this, this, (strength + random2(5)) * BASELINE_DELAY);
@@ -3486,7 +3485,7 @@ int monster::evasion(ev_ignore_type evit, const actor* /*act*/) const
     if (evit & EV_IGNORE_HELPLESS)
         return max(ev, 0);
 
-    if (paralysed() || petrified() || petrifying() || asleep())
+    if (paralysed() || petrified() || petrifying() || asleep() || you.attribute[ATTR_TIME_STOP])
         return 0;
 
     if (caught() || is_constricted())
@@ -4013,9 +4012,11 @@ bool monster::res_torment() const
            || get_mons_resist(*this, MR_RES_TORMENT) > 0;
 }
 
-bool monster::res_wind() const
+bool monster::res_tornado() const
 {
-    return has_ench(ENCH_TORNADO) || get_mons_resist(*this, MR_RES_WIND) > 0;
+    return has_ench(ENCH_TORNADO)
+           || has_ench(ENCH_VORTEX)
+           || get_mons_resist(*this, MR_RES_TORNADO) > 0;
 }
 
 bool monster::res_petrify(bool /*temp*/) const
@@ -4159,7 +4160,7 @@ bool monster::airborne() const
 {
     // For dancing weapons, this function can get called before their
     // ghost_demon is created, so check for a nullptr ghost. -cao
-    return mons_is_ghost_demon(type) && ghost.get() && ghost->flies
+    return mons_is_ghost_demon(type) && ghost && ghost->flies
            // check both so spectral humans and zombified dragons both fly
            || mons_class_flag(mons_base_type(*this), M_FLIES)
            || mons_class_flag(type, M_FLIES)
@@ -4402,7 +4403,8 @@ int monster::hurt(const actor *agent, int amount, beam_type flavour,
 {
     if (mons_is_projectile(type)
         || mid == MID_ANON_FRIEND
-        || type == MONS_PLAYER_SHADOW)
+        || type == MONS_PLAYER_SHADOW
+        || type == MONS_SINGULARITY)
     {
         return 0;
     }
@@ -4537,6 +4539,22 @@ int monster::hurt(const actor *agent, int amount, beam_type flavour,
             monster_die(*this, KILL_YOU, NON_MONSTER);
         else
             monster_die(*this, KILL_MON, agent->mindex());
+    }
+    
+    if (you.attribute[ATTR_TIME_STOP] && amount > 0)
+    {
+        if (props.exists(STASIS_DAM))
+        {
+            props[STASIS_DAM].get_int() += amount;
+        }
+        else
+        {
+            props[STASIS_DAM].get_int() = amount;
+        }
+        //As a default, all damage during time stop originates from the player character's direction.
+        //Specific ways of dealing damage can override this to get other directions.
+        props[STASIS_VX].get_float() = pos().x - you.pos().x;
+        props[STASIS_VY].get_float() = pos().y - you.pos().y;
     }
 
     return amount;
@@ -4953,7 +4971,7 @@ void monster::set_transit(const level_id &dest)
 
 void monster::load_ghost_spells()
 {
-    if (!ghost.get())
+    if (!ghost)
     {
         spells.clear();
         return;

@@ -190,7 +190,7 @@ FEATFN_MEMOIZED(feat_is_portal_entrance, feat)
         return false;
 
     for (branch_iterator it; it; ++it)
-    {
+    { 
         if (it->entry_stairs == feat
             && !is_connected_branch(it->id))
         {
@@ -347,6 +347,7 @@ command_type feat_stair_direction(dungeon_feature_type feat)
     case DNGN_EXIT_PANDEMONIUM:
     case DNGN_TRANSIT_PANDEMONIUM:
     case DNGN_TRANSPORTER:
+    case DNGN_ABYSS_TO_ZOT:
         return CMD_GO_DOWNSTAIRS;
 
     default:
@@ -695,9 +696,10 @@ int count_neighbours_with_func(const coord_def& c, bool (*checker)(dungeon_featu
 // For internal use by find_connected_identical only.
 static void _find_connected_identical(const coord_def &d,
                                       dungeon_feature_type ft,
-                                      set<coord_def>& out)
+                                      set<coord_def>& out,
+                                      bool known_only)
 {
-    if (grd(d) != ft)
+    if (grd(d) != ft || (known_only && !env.map_knowledge(d).known()))
         return;
 
     string prop = env.markers.property_at(d, MAT_ANY, "connected_exclude");
@@ -711,22 +713,22 @@ static void _find_connected_identical(const coord_def &d,
 
     if (out.insert(d).second)
     {
-        _find_connected_identical(coord_def(d.x+1, d.y), ft, out);
-        _find_connected_identical(coord_def(d.x-1, d.y), ft, out);
-        _find_connected_identical(coord_def(d.x, d.y+1), ft, out);
-        _find_connected_identical(coord_def(d.x, d.y-1), ft, out);
+        _find_connected_identical(coord_def(d.x+1, d.y), ft, out, known_only);
+        _find_connected_identical(coord_def(d.x-1, d.y), ft, out, known_only);
+        _find_connected_identical(coord_def(d.x, d.y+1), ft, out, known_only);
+        _find_connected_identical(coord_def(d.x, d.y-1), ft, out, known_only);
     }
 }
 
 // Find all connected cells containing ft, starting at d.
-void find_connected_identical(const coord_def &d, set<coord_def>& out)
+void find_connected_identical(const coord_def &d, set<coord_def>& out, bool known_only)
 {
     string prop = env.markers.property_at(d, MAT_ANY, "connected_exclude");
 
     if (!prop.empty())
         out.insert(d);
     else
-        _find_connected_identical(d, grd(d), out);
+        _find_connected_identical(d, grd(d), out, known_only);
 }
 
 void get_door_description(int door_size, const char** adjective, const char** noun)
@@ -769,7 +771,7 @@ static unique_ptr<map_mask_boolean> _slime_wall_precomputed_neighbour_mask;
 
 static void _precompute_slime_wall_neighbours()
 {
-    map_mask_boolean &mask(*_slime_wall_precomputed_neighbour_mask.get());
+    map_mask_boolean &mask(*_slime_wall_precomputed_neighbour_mask);
     for (rectangle_iterator ri(1); ri; ++ri)
     {
         if (grd(*ri) == DNGN_SLIMY_WALL)
@@ -786,7 +788,7 @@ unwind_slime_wall_precomputer::unwind_slime_wall_precomputer(bool docompute)
     if (!(env.level_state & LSTATE_SLIMY_WALL))
         return;
 
-    if (docompute && !_slime_wall_precomputed_neighbour_mask.get())
+    if (docompute && !_slime_wall_precomputed_neighbour_mask)
     {
         did_compute_mask = true;
         _slime_wall_precomputed_neighbour_mask.reset(
@@ -806,7 +808,7 @@ bool slime_wall_neighbour(const coord_def& c)
     if (!(env.level_state & LSTATE_SLIMY_WALL))
         return false;
 
-    if (_slime_wall_precomputed_neighbour_mask.get())
+    if (_slime_wall_precomputed_neighbour_mask)
         return (*_slime_wall_precomputed_neighbour_mask)(c);
 
     // Not using count_adjacent_slime_walls because the early return might
@@ -1301,7 +1303,6 @@ static void _announce_swap(coord_def pos1, coord_def pos2)
 
     const bool notable_seen1 = is_notable_terrain(feat1) && you.see_cell(pos1);
     const bool notable_seen2 = is_notable_terrain(feat2) && you.see_cell(pos2);
-    coord_def orig_pos, dest_pos;
 
     if (notable_seen1 && notable_seen2)
     {

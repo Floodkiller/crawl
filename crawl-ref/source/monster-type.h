@@ -238,7 +238,7 @@ enum monster_type                      // menv[].type
     MONS_HALFLING,              // recolouring + single vault.
     MONS_FELID,                 // recolouring + single vault. Miaow!
     MONS_VAMPIRE_BAT,           // recolouring + vaults
-    MONS_DEMIGOD,               // recolouring + single vault
+    MONS_PROMETHEAN,            // recolouring + single vault
     MONS_DEMONSPAWN,
 #if TAG_MAJOR_VERSION > 34
     MONS_FIRST_DEMONSPAWN = MONS_DEMONSPAWN,
@@ -840,6 +840,7 @@ enum monster_type                      // menv[].type
     MONS_FULMINANT_PRISM,
     MONS_BATTLESPHERE,
 #endif
+    MONS_SINGULARITY,
     MONS_PILLAR_OF_SALT,
 #if TAG_MAJOR_VERSION > 34
     MONS_BLOCK_OF_ICE,
@@ -861,6 +862,9 @@ enum monster_type                      // menv[].type
     MONS_ANCESTOR_HEXER,
 #endif
     MONS_TEST_SPAWNER,
+#if TAG_MAJOR_VERSION > 34
+    MONS_TEST_STATUE,
+#endif
 
     // Add new monsters here:
 #if TAG_MAJOR_VERSION == 34
@@ -1010,7 +1014,6 @@ enum monster_type                      // menv[].type
     MONS_ROBIN,
 
     MONS_SHARD_SHRIKE,
-    MONS_SINGULARITY,
     MONS_SALAMANDER_STORMCALLER,
     MONS_ENTROPY_WEAVER,
     MONS_MOON_TROLL,
@@ -1041,6 +1044,7 @@ enum monster_type                      // menv[].type
     MONS_FROG,
     MONS_BARACHI,
     MONS_BULTUNGIN,             // remove this someday
+    MONS_TEST_STATUE,
 #endif
 
     NUM_MONSTERS,               // used for polymorph

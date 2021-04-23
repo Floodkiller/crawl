@@ -1,4 +1,9 @@
 %%%%
+Abomination
+
+Product of mad wizard trying to produce the ultimate species. Combines the
+strengths of many others, but weak to magic and fire, and a fractured mind.
+%%%%
 Barachi
 
 Barachim are amphibious humanoids who rebelled against the gods. They're fast
@@ -18,20 +23,29 @@ Deep Elf
 
 Deep Elves have a strong affinity for all kinds of magic, but are very fragile.
 %%%%
-Demigod
+Promethean
 
-Demigods refuse to worship any god, but make up for this with divine attributes
-and high reserves of health and magic.
+Prometheans are unable to worship any god, but make up for this with unnatural
+attributes and high reserves of health and magic.
 %%%%
 Demonspawn
 
 Demonspawn are half human, half demon. They acquire strong demonic mutations as
 they grow.
 %%%%
+Djinni
+
+The Djinn are spirits of fire, for whom magic is the very essence of life.
+%%%%
 Draconian
 
 Draconians are versatile hybrids. They mature when reaching level 7 and develop
 a colour.
+%%%%
+Faerie Dragon
+
+Faerie Dragons are naturally attuned to magic and have shimmering scales that
+repel attacks. They have bright wings and can fly, but are frail.
 %%%%
 Formicid
 
@@ -63,6 +77,11 @@ Halfling
 Small but hardy, Halflings excel with slings. They have an increased resistance
 to mutagenic effects.
 %%%%
+Hermit Crab
+
+Devoted to developing their magical attunement and scavenging for ever better
+shells. Ineffective at wielding weapons and devices due to their large pincers.
+%%%%
 High Elf
 
 High Elves are adept with blades and with many schools of magic, and have high
@@ -85,6 +104,11 @@ quite fragile, but they learn to fly swiftly later on.
 Kobold
 
 Kobolds are small, mischievous and a little fragile, but multi-talented.
+%%%%
+Lava Orc
+
+These masters of earth and fire magic come from deep below the Dungeon. Their
+abilities change with their temperature.
 %%%%
 Merfolk
 
@@ -141,3 +165,12 @@ Vine Stalker
 Frail symbionts, Vine Stalkers cannot regain health from devices or potions.
 Their magical reserves absorb damage, and they pack a magic-restoring bite.
 %%%%
+Skeleton
+
+creatures animated by arcane means, skeletons are adept at combat and offensive 
+magic, and can enter a deep murderous trance at will.
+%%%%
+Grey Elf
+
+The Grey Elves have an affinity for their natural surroundings
+that their more noble brethren lack, practically and magically.

@@ -19,13 +19,13 @@ static void _give_wanderer_weapon(skill_type wpn_skill, int plus)
         // get curare here.
         if (plus)
         {
-            newgame_make_item(OBJ_MISSILES, MI_NEEDLE, 1 + random2(4),
+            newgame_make_item(OBJ_MISSILES, MI_DART, 1 + random2(4),
                               0, SPMSL_CURARE);
         }
-        // Otherwise, we just get some poisoned needles.
+        // Otherwise, we just get some poisoned darts.
         else
         {
-            newgame_make_item(OBJ_MISSILES, MI_NEEDLE, 5 + roll_dice(2, 5),
+            newgame_make_item(OBJ_MISSILES, MI_DART, 5 + roll_dice(2, 5),
                               0, SPMSL_POISONED);
         }
     }
@@ -57,10 +57,6 @@ static void _give_wanderer_weapon(skill_type wpn_skill, int plus)
 
     case SK_STAVES:
         sub_type = WPN_QUARTERSTAFF;
-        break;
-
-    case SK_THROWING:
-        sub_type = WPN_BLOWGUN;
         break;
 
     case SK_BOWS:
@@ -452,7 +448,8 @@ static void _wanderer_random_evokable()
     {
         int selected_evoker =
               random_choose(MISC_BOX_OF_BEASTS, MISC_LAMP_OF_FIRE,
-                            MISC_FAN_OF_GALES, MISC_PHIAL_OF_FLOODS);
+                            MISC_STONE_OF_TREMORS, MISC_FAN_OF_GALES,
+                            MISC_PHIAL_OF_FLOODS);
 
         newgame_make_item(OBJ_MISCELLANY, selected_evoker, 1);
     }

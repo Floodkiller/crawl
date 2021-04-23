@@ -21,6 +21,7 @@
 #define ART_FUNC_H
 
 #include "beam.h"          // For Lajatang of Order's silver damage
+#include "bloodspatter.h"  // For Leech
 #include "cloud.h"         // For storm bow's and robe of clouds' rain
 #include "english.h"       // For apostrophise
 #include "exercise.h"      // For practise_evoking
@@ -30,14 +31,18 @@
 #include "god-conduct.h"    // did_god_conduct
 #include "god-passive.h"    // passive_t::want_curses
 #include "mgen-data.h"     // For Sceptre of Asmodeus evoke
+#include "message.h"
+#include "monster.h"
 #include "mon-death.h"     // For demon axe's SAME_ATTITUDE
 #include "mon-place.h"     // For Sceptre of Asmodeus evoke
+#include "nearby-danger.h" // For Zhor
 #include "player.h"
 #include "player-stats.h"
 #include "spl-cast.h"      // For evokes
 #include "spl-damage.h"    // For the Singing Sword.
 #include "spl-goditem.h"   // For Sceptre of Torment tormenting
 #include "spl-miscast.h"   // For Staff of Wucad Mu and Scythe of Curses miscasts
+#include "spl-monench.h"   // For Zhor's aura
 #include "spl-summoning.h" // For Zonguldrok animating dead
 #include "terrain.h"       // For storm bow
 #include "view.h"          // For arc blade's discharge effect
@@ -214,6 +219,28 @@ static bool _DISPATER_evoke(item_def *item, bool* did_work, bool* unevokable)
 
 ////////////////////////////////////////////////////
 
+static void _FINISHER_melee_effects(item_def* weapon, actor* attacker,
+                                  actor* defender, bool mondied, int dam)
+{
+    // Can't kill a monster that's already dead.
+    // Can't kill a monster if we don't do damage.
+    // Don't insta-kill the player
+    if (mondied || dam == 0 || defender->is_player())
+        return;
+
+    // Chance to insta-kill based on HD. From 1/4 for small HD popcorn down to
+    // 1/10 for an Orb of Fire (compare to the 3/20 chance for banish or
+    // instant teleport on distortion).
+    if (x_chance_in_y(50 - defender->get_hit_dice(), 200))
+    {
+        monster* mons = defender->as_monster();
+        mons->flags |= MF_EXPLODE_KILL;
+        mons->hurt(attacker, INSTANT_DEATH);
+    }
+}
+
+////////////////////////////////////////////////////
+
 // XXX: Staff giving a boost to poison spells is hardcoded in
 // player_spec_poison()
 
@@ -322,14 +349,14 @@ static void _SINGING_SWORD_unequip(item_def *item, bool *show_msgs)
 static void _SINGING_SWORD_world_reacts(item_def *item)
 {
     int tension = get_tension(GOD_NO_GOD);
-    int tier = (tension <= 0) ? 1 : (tension < 40) ? 2 : 3;
+    int tier = max(1, min(4, 1 + tension / 20));
     bool silent = silenced(you.pos());
 
     string old_name = get_artefact_name(*item);
     string new_name;
     if (silent)
         new_name = "Sulking Sword";
-    else if (tier < 2)
+    else if (tier < 4)
         new_name = "Singing Sword";
     else
         new_name = "Screaming Sword";
@@ -338,32 +365,47 @@ static void _SINGING_SWORD_world_reacts(item_def *item)
         set_artefact_name(*item, new_name);
         you.wield_change = true;
     }
+}
 
-    // not as spammy at low tension
-    if (!x_chance_in_y(7, (tier == 1) ? 1000 : (tier == 2) ? 100 : 10))
-        return;
+static void _SINGING_SWORD_melee_effects(item_def* weapon, actor* attacker,
+                                         actor* defender, bool mondied,
+                                         int dam)
+{
+    int tension = get_tension(GOD_NO_GOD);
+    int tier;
 
-    // it will still struggle more with higher tension
-    if (silent)
+    if (attacker->is_player())
+        tier = max(1, min(4, 1 + tension / 20));
+    // Don't base the sword on player state when the player isn't wielding it.
+    else
+        tier = 1;
+
+    dprf(DIAG_COMBAT, "Singing sword tension: %d, tier: %d", tension, tier);
+
+    if (silenced(attacker->pos()))
         tier = 0;
 
-    if (tier == 3 && one_chance_in(10))
-        tier++; // SCREAM -- double damage
+    // Not as spammy at low tension. Max chance reached at tier 3, allowing
+    // tier 0 to have a high chance so that the sword is likely to express its
+    // unhappiness with being silenced.
+    if (!x_chance_in_y(6, (tier == 1) ? 24: (tier == 2) ? 16: 12))
+        return;
 
     const char *tenname[] =  {"silenced", "no_tension", "low_tension",
                               "high_tension", "SCREAM"};
     const string key = tenname[tier];
     string msg = getSpeakString("singing sword " + key);
 
-    const int loudness[] = {0, 0, 15, 25, 35};
-    item_noise(*item, msg, loudness[tier]);
+    const int loudness[] = {0, 0, 20, 30, 40};
 
-    if (tier < 3)
-        return; // no damage on low tiers
+    item_noise(*weapon, msg, loudness[tier]);
 
-    sonic_damage(tier == 4);
+    if (tier < 1)
+        return; // Can't cast when silenced.
+
+    const int spellpower = 100 + 13 * (tier - 1) + (tier == 4 ? 36 : 0);
+    fire_los_attack_spell(SPELL_SONIC_WAVE, spellpower, attacker, defender);
 }
-
 ////////////////////////////////////////////////////
 
 static void _PRUNE_equip(item_def *item, bool *show_msgs, bool unmeld)
@@ -387,7 +429,7 @@ static void _TORMENT_equip(item_def *item, bool *show_msgs, bool unmeld)
 static void _TORMENT_melee_effects(item_def* weapon, actor* attacker,
                                    actor* defender, bool mondied, int dam)
 {
-    if (coinflip())
+    if (one_chance_in(5))
         torment(attacker, TORMENT_SCEPTRE, attacker->pos());
 }
 
@@ -433,7 +475,7 @@ static void _wucad_backfire()
         break;
     case 4:
     case 5:
-        dec_mp(5 + random2(20));
+        drain_mp(5 + random2(20));
         break;
     case 6:
         lose_stat(STAT_INT, 1 + random2avg(5, 2));
@@ -443,6 +485,13 @@ static void _wucad_backfire()
 
 static bool _WUCAD_MU_evoke(item_def *item, bool* did_work, bool* unevokable)
 {
+    if (you.species == SP_DJINNI)
+    {
+        mpr("The staff is unable to affect your essence.");
+        *unevokable = true;
+        return true;
+    }
+    
     if (you.magic_points == you.max_magic_points)
     {
         mpr("Your reserves of magic are full.");
@@ -491,17 +540,17 @@ static void _VAMPIRES_TOOTH_equip(item_def *item, bool *show_msgs, bool unmeld)
 
 ///////////////////////////////////////////////////
 
-// XXX: Pluses at creation time are hardcoded in make_item_unrandart()
-
-static void _VARIABILITY_world_reacts(item_def *item)
+static void _VARIABILITY_melee_effects(item_def* weapon, actor* attacker,
+                                       actor* defender, bool mondied,
+                                       int dam)
 {
-    if (x_chance_in_y(2, 5))
-        item->plus += random_choose(+1, -1);
-
-    if (item->plus < -4)
-        item->plus = -4;
-    else if (item->plus > 16)
-        item->plus = 16;
+    if (!mondied && one_chance_in(5))
+    {
+        const int pow = 75 + random2avg(75, 2);
+        if (you.can_see(*attacker))
+            mpr("The mace of Variability scintillates.");
+        cast_chain_spell(SPELL_CHAIN_OF_CHAOS, pow, attacker);
+    }
 }
 
 ///////////////////////////////////////////////////
@@ -547,26 +596,6 @@ static void _GONG_melee_effects(item_def* item, actor* wearer,
     mprf(MSGCH_SOUND, "%s", msg.c_str());
 
     noisy(40, wearer->pos());
-}
-
-///////////////////////////////////////////////////
-
-static void _RCLOUDS_world_reacts(item_def *item)
-{
-    cloud_type cloud;
-    if (one_chance_in(4))
-        cloud = CLOUD_RAIN;
-    else
-        cloud = CLOUD_MIST;
-
-    for (radius_iterator ri(you.pos(), 2, C_SQUARE, LOS_SOLID); ri; ++ri)
-        if (!cell_is_solid(*ri) && !cloud_at(*ri) && one_chance_in(20))
-            place_cloud(cloud, *ri, random2(10), &you, 1);
-}
-
-static void _RCLOUDS_equip(item_def *item, bool *show_msgs, bool unmeld)
-{
-    _equip_mpr(show_msgs, "A thin mist springs up around you!");
 }
 
 ///////////////////////////////////////////////////
@@ -1008,22 +1037,16 @@ static void _ARC_BLADE_melee_effects(item_def* weapon, actor* attacker,
                                      actor* defender, bool mondied,
                                      int dam)
 {
-    if (!mondied && one_chance_in(3))
+    if (one_chance_in(3))
     {
-        const int pow = 75 + random2avg(75, 2);
-        const int num_targs = 1 + random2(random_range(1, 3) + pow / 20);
-        int dam_dealt = 0;
-        for (int i = 0; defender->alive() && i < num_targs; i++)
-            dam_dealt += discharge_monsters(defender->pos(), pow, attacker);
-        if (dam_dealt > 0)
-            scaled_delay(100);
+        const int pow = 100 + random2avg(100, 2);
+
+        if (you.can_see(*attacker))
+            mpr("The arc blade crackles.");
         else
-        {
-            if (you.can_see(*attacker))
-                mpr("The arc blade crackles.");
-            else
-                mpr("You hear the crackle of electricity.");
-        }
+            mpr("You hear the crackle of electricity.");
+
+        cast_discharge(pow, *attacker, false);
     }
 }
 
@@ -1341,6 +1364,30 @@ static void _LEECH_equip(item_def *item, bool *show_msgs, bool unmeld)
     // else let player-equip.cc handle message
 }
 
+// Big killing blows give a bloodsplosion effect sometimes
+static void _LEECH_melee_effects(item_def* /*item*/, actor* attacker,
+                                 actor* defender, bool mondied, int dam)
+{
+    if (attacker->is_player() && defender->can_bleed()
+        && mondied && x_chance_in_y(dam, 729))
+    {
+        simple_monster_message(*(defender->as_monster()),
+                               " liquefies into a cloud of blood!");
+        blood_spray(defender->pos(), defender->type, 50);
+    }
+}
+
+static void _BLOODBANE_melee_effects(item_def* /*item*/, actor* attacker,
+                                 actor* defender, bool mondied, int dam)
+{
+    if (attacker->is_player() && defender->can_bleed()
+        && mondied && x_chance_in_y(dam, 729))
+    {
+        simple_monster_message(*(defender->as_monster()),
+                               " liquefies into a cloud of blood!");
+        blood_spray(defender->pos(), defender->type, 50);
+    }
+}
 
 ///////////////////////////////////////////////////
 
@@ -1399,5 +1446,36 @@ static void _THERMIC_ENGINE_world_reacts(item_def *item)
             item->plus = 2;
 
         you.wield_change = true;
+    }
+}
+
+///////////////////////////////////////////////////
+
+static void _ZHOR_world_reacts(item_def *item)
+{
+    if (there_are_monsters_nearby(true, false, false)
+        && one_chance_in(7 * div_rand_round(BASELINE_DELAY, you.time_taken)))
+    {
+        cast_englaciation(30, false);
+    }
+}
+
+
+////////////////////////////////////////////////////
+
+// XXX: Staff of Battle giving a boost to conjuration spells is hardcoded in
+// player_spec_conj().
+
+static void _BATTLE_unequip(item_def *item, bool *show_msgs)
+{
+    end_battlesphere(find_battlesphere(&you), false);
+}
+
+static void _BATTLE_world_reacts(item_def *item)
+{
+    if (!find_battlesphere(&you) && there_are_monsters_nearby(true, true, false))
+    {
+        your_spells(SPELL_BATTLESPHERE, 0, false);
+        did_god_conduct(DID_SPELL_CASTING, 1);
     }
 }

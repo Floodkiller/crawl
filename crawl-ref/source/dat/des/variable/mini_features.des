@@ -20,7 +20,7 @@
 # For serial vaults, read dat/des/serial/serial_guide.txt.
 ############################################################################
 
-: require('dlua/vault.lua')
+: crawl_require('dlua/vault.lua')
 
 default-depth: D, Depths, Elf, Crypt
 
@@ -2542,6 +2542,28 @@ MAP
 .xxxx....xxxx.
 ..xx..xx..xx..
 ..............
+ENDMAP
+
+NAME:   skrybe_limestone_x
+TAGS:   decor extra transparent
+DEPTH:  D, Depths
+KMASK:  W = no_monster_gen
+SUBST:  W : Wm
+FTILE:  D = floor_limestone
+COLOUR: D = brown
+MAP
+....    ....
+.DD......DD.
+.DDDD..DDDD.
+..DWD..DWD..
+ .DDDDDDDD.
+ ...DWWD...
+ ...DWWD...
+ .DDDDDDDD.
+..DWD..DWD..
+.DDDD..DDDD.
+.DD......DD.
+....    ....
 ENDMAP
 
 #####################################################################

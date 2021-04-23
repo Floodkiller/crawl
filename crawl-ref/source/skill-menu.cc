@@ -170,7 +170,7 @@ bool SkillMenuEntry::is_set(int flag) const
 bool SkillMenuEntry::mastered() const
 {
     return (is_set(SKMF_EXPERIENCE) ? skm.get_raw_skill_level(m_sk)
-                                    : you.skills[m_sk]) >= MAX_SKILL_LEVEL;
+                                    : you.skills[m_sk]) >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL);
 }
 
 void SkillMenuEntry::refresh(bool keep_hotkey)
@@ -240,7 +240,7 @@ void SkillMenuEntry::set_name(bool keep_hotkey)
     if (is_set(SKMF_SKILL_ICONS))
     {
         m_name->clear_tile();
-        if (you.skills[m_sk] >= MAX_SKILL_LEVEL)
+        if (you.skills[m_sk] >= ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         {
             m_name->add_tile(tile_def(tileidx_skill(m_sk, TRAINING_MASTERED),
                                       TEX_GUI));
@@ -531,8 +531,8 @@ void SkillMenuEntry::set_training()
 void SkillMenuEntry::set_cost()
 {
     m_progress->set_editable(false);
-
-    if (you.skills[m_sk] == MAX_SKILL_LEVEL)
+    
+    if (you.skills[m_sk] == ((you.pledge == PLEDGE_LOREKEEPER) ? 13 : MAX_SKILL_LEVEL))
         return;
     if (skill_has_manual(m_sk))
         m_progress->set_fg_colour(LIGHTRED);
@@ -609,6 +609,9 @@ string SkillMenuSwitch::get_help()
             vector<string> causes;
             if (you.duration[DUR_HEROISM])
                 causes.push_back("Heroism");
+
+            if (you.attribute[ATTR_REAPING])
+                causes.push_back("Reaping");
 
             if (!you.skill_boost.empty()
                 && have_passive(passive_t::bondage_skill_boost))
@@ -873,6 +876,7 @@ void SkillMenu::init(int flag)
     m_ff->set_visible(true);
     m_highlighter->set_visible(true);
     refresh_button_row();
+    do_skill_enabled_check();
 }
 
 static keyfun_action _keyfun_target_input(int &ch)
@@ -983,6 +987,29 @@ void SkillMenu::cancel_help()
     set_default_help();
 }
 
+/**
+ * Does the player need to enable a skill?
+ * Side effect: will set an error message in the help line if so.
+ *
+ * @return true if the check passes: either a skill is enabled or no skills
+ *         can be enabled.
+ */
+bool SkillMenu::do_skill_enabled_check()
+{
+    if (skills_being_trained())
+        return true;
+
+    if (trainable_skills())
+    {
+        // Shouldn't happen, but crash rather than locking the player in the
+        // menu. Training will be fixed up on load.
+        ASSERT(you.species != SP_GNOLL);
+        set_help("<lightred>You need to enable at least one skill.</lightred>");
+        return false;
+    }
+    return true;
+}
+
 // Before we exit, make sure there's at least one skill enabled.
 bool SkillMenu::exit()
 {
@@ -992,25 +1019,8 @@ bool SkillMenu::exit()
         return true;
     }
 
-    bool enabled_skill = false;
-
-    for (int i = 0; i < NUM_SKILLS; ++i)
-    {
-        if (skill_trained(i))
-        {
-            enabled_skill = true;
-            break;
-        }
-    }
-
-    if (!enabled_skill && !all_skills_maxed())
-    {
-        // Shouldn't happen, but crash rather than locking the player in the
-        // menu. Training will be fixed up on load.
-        ASSERT(you.species != SP_GNOLL);
-        set_help("<lightred>You need to enable at least one skill.</lightred>");
+    if (!do_skill_enabled_check())
         return false;
-    }
 
     if (is_set(SKMF_EXPERIENCE))
     {
@@ -1630,10 +1640,6 @@ void SkillMenu::shift_bottom_down()
 void SkillMenu::show_description(skill_type sk)
 {
     describe_skill(sk);
-    clrscr();
-#ifdef USE_TILE_LOCAL
-    tiles.get_crt()->attach_menu(this);
-#endif
 }
 
 TextItem* SkillMenu::find_closest_selectable(int start_ln, int col)
@@ -1698,8 +1704,11 @@ void SkillMenu::set_links()
 
 void skill_menu(int flag, int exp)
 {
-    // experience potion; you may elect to sin against Trog
-    if (flag & SKMF_EXPERIENCE && all_skills_maxed(true))
+    // experience potion; you may elect to put experience in normally
+    // untrainable skills (skills where you aren't carrying the right item,
+    // or skills that your god hates). The only case where we abort is if all
+    // in-principle trainable skills are maxed.
+    if (flag & SKMF_EXPERIENCE && !trainable_skills(true))
     {
         mpr("You feel omnipotent.");
         return;

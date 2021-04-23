@@ -22,7 +22,7 @@
 # best or else delegate to Random or Others. Be picky with Guardians, please.
 ###############################################################################
 
-: require('dlua/vault.lua')
+: crawl_require('dlua/vault.lua')
 
 # Functionality for some Grunt vaults.
 {{
@@ -124,7 +124,7 @@ DEPTH:  D:9-, Spider
 MONS:   killer bee, meliai, queen bee, hornet
 KMONS:  *R = worm
 KITEM:  * = *
-KITEM:  R = ration
+KITEM:  R = ration tile:food_honeycomb
 SUBST:  ? : .w
 SUBST:  * : *:20 R:3
 # Since one has to dig the bees out, early meliai are fine.
@@ -157,7 +157,7 @@ NAME:   minivault_7
 TAGS:   uniq_beehive patrolling
 DEPTH:  D:9-
 MONS:   queen bee, meliai, killer bee
-KITEM:  R = ration / nothing
+KITEM:  R = ration tile:food_honeycomb / nothing
 COLOUR: x = yellow
 TILE:   x = wall_wax
 : if you.absdepth() < 12 then
@@ -292,26 +292,34 @@ ENDMAP
 
 NAME:  worms_lemuel
 TAGS:  no_rotate no_monster_gen no_pool_fixup
-DEPTH: D:8-13, Lair, Spider
-KMONS: 1 = worm
-KMONS: 2| = swamp worm
-KMONS: P = plant
+DEPTH: D:8-13, Lair, Spider, Swamp
 KITEM: | = |, *, %
-KFEAT: 12P| = W
-: if you.absdepth() > 13 then
-SUBST: 1 = 112
+KMONS: 1 = swamp worm
+KMONS: 2 = tyrant leech
+KMONS: P = plant
+KFEAT: 123P| = W
+: if you.absdepth() < 12 then
+KMONS: | = swamp worm
+SUBST: D = 1W, 1 = 1WWW, 2 = 1
+: elseif you.absdepth() < 15 then
+KMONS: | = torpor snail
+SUBST: D = 12W, 1 = 112WWW
 : else
-SUBST: 1 = 1112
+# Not a worm, but torpor is also from Spider, and the two work well together.
+KMONS: |3 = torpor snail
+KMONS: 4 = moth of wrath
+SUBST: 2 = 4, D = 12
+NSUBST: 1 = 3=2234 / 122
 : end
 MAP
    WWWWWWW
- WWWWw1wWWWW
+ WWWWwDwWWWW
 WWwxxxxxxxwWW
 WWxx11111xPWW
-W1x|21111PPWW
+WDx|21111PPWW
 WWxx11111xPWW
 WWwxxxxxxxwWW
- WWWWw1wWWWW
+ WWWWwDwWWWW
    WWWWWWW
 ENDMAP
 
@@ -846,11 +854,8 @@ ITEM:   Young Poisoner's Handbook / book of Changes / \
         spells:beastly_appendage&summon_small_mammal&call_canine_familiar&spider_form / \
         randbook numspells:4 title:Nature \
         spells:beastly_appendage&sting&sticks_to_snakes&spider_form
-: if crawl.coinflip() then
-KITEM:  f = javelin ego:poisoned q:4-6 / tomahawk ego:poisoned
-: else
-KITEM:  f = blowgun / w:5 nothing, needle ego:poisoned / needle ego:curare / needle ego:paralysis
-: end
+KMASK:  'f = opaque
+KITEM:  f = dart ego:poisoned / dart ego:curare / dart ego:atropa
 KITEM:  g = any potion q:2-3
 MONS:   plant, oklob sapling, ball python
 MONS:   adder, oklob plant, water moccasin
@@ -901,11 +906,7 @@ ITEM:   Young Poisoner's Handbook / book of Changes / \
         spells:beastly_appendage&summon_small_mammal&call_canine_familiar&spider_form / \
         randbook numspells:4 title:Nature \
         spells:beastly_appendage&sting&sticks_to_snakes&spider_form
-: if crawl.coinflip() then
-KITEM:  f = javelin ego:poisoned q:4-6 / tomahawk ego:poisoned
-: else
-KITEM:  f = blowgun / w:5 nothing, needle ego:poisoned / needle ego:curare / needle ego:paralysis
-: end
+KITEM:  f = dart ego:poisoned / dart ego:curare / dart ego:atropa
 KITEM:  g = any potion q:2 / any potion q:3
 MONS:   plant, oklob sapling, ball python
 MONS:   adder, oklob plant, water moccasin
@@ -1092,12 +1093,12 @@ xxx.....G.....xxx
        @..
 ENDMAP
 
-NAME:	c7071_tmnt
-TAGS:	no_item_gen no_monster_gen
-DEPTH:	D:13-, Shoals
-MONS:	rat
-MONS:	snapping turtle name:juvenile name_adjective
-ITEM:	quarterstaff / dagger / longsword / dire flail / potion of mutation w:60 / \ 
+NAME:   c7071_tmnt
+TAGS:   no_item_gen no_monster_gen
+DEPTH:  D:13-, Shoals
+MONS:   rat
+MONS:   snapping turtle name:juvenile name_adjective
+ITEM:   quarterstaff / dagger / longsword / dire flail / potion of mutation w:60 / \
         ration tile:food_pizza w:120 / nothing w:450
 MAP
  xxxxxxx
@@ -1251,10 +1252,10 @@ ENDMAP
 # Very unpleasant kobold minivaults
 NAME:   minmay_unpleasant_kobolds
 DEPTH:  D:6-
-MONS:   kobold ; tomahawk ego:dispersal q:2 / w:3 big kobold ; tomahawk ego:dispersal q:4
-MONS:   kobold ; tomahawk ego:exploding q:2 / w:3 big kobold ; tomahawk ego:exploding q:4
-MONS:   kobold ; blowgun . needle ego:curare q:1 / \
-        w:3 big kobold ; blowgun . needle ego:curare q:2
+MONS:   kobold ; boomerang ego:dispersal q:2 / w:3 big kobold ; boomerang ego:dispersal q:4
+MONS:   kobold ; boomerang ego:silver q:2 / w:3 big kobold ; boomerang ego:silver q:4
+MONS:   kobold ; dart ego:curare q:1 / \
+        w:3 big kobold ; dart ego:curare q:2
 : if you.absdepth() > 13 then
 SUBST:  1 = 3
 : elseif you.absdepth() > 11 then
@@ -1402,7 +1403,7 @@ KPROP:  l = no_cloud_gen
 KMONS:  1 = generate_awake merfolk avatar
 KMONS:  2 = generate_awake merfolk impaler ; trident ego:distortion w:5 | \
                                              trident ego:draining . robe
-KITEM:  1 = acquire any
+KITEM:  1 = superb_item no_pickup
 MARKER: ! = lua:fog_machine { \
                 cloud_type = "foul pestilence", \
                 pow_min = 100, pow_max = 100, delay = 10, \
@@ -1715,7 +1716,7 @@ ITEM:    book of callings w:5 / book of summonings / grand grimoire w:5 / \
 ITEM:    staff of summoning
 ITEM:    amulet of magic regeneration w:5 ident:type / \
             amulet of magic regeneration randart
-ITEM:    fan of gales / lamp of fire / phial of floods
+ITEM:    fan of gales / lamp of fire / phial of floods / stone of tremors
 KITEM:   % = any, any / gold / nothing, any / nothing
 KITEM:   _ = scroll of summoning, scroll of summoning / nothing
 KFEAT:   _ = altar_sif_muna
@@ -2210,7 +2211,7 @@ DEPTH:   D:12-, Elf, !Elf:$
 MONS:    red devil ; spear | trident . ring mail | scale mail
 MONS:    red devil ; spear | trident . buckler
 MONS:    red devil ; spear good_item | trident good_item
-MONS:    red devil ; spear | trident . tomahawk
+MONS:    red devil ; spear | trident . boomerang
 SHUFFLE: 1234
 KMASK:   l = no_monster_gen
 MAP
@@ -2939,6 +2940,7 @@ DEPTH:   Depths, !Depths:$
 MONS:    large slime creature, great orb of eyes, eye of draining
 KITEM:   R = ration
 ITEM:    scroll of teleportation q:2 / wand of digging
+ITEM:    stone of tremors
 ITEM:    scroll of teleportation q:2 w:20 / wand of digging w:20 / \
          dagger ego:distortion ident:type
 SUBST:   J = 1111111123
@@ -3496,7 +3498,7 @@ SUBST:   ? = %:10 *:50 |:60
 SUBST:   ! = %:90 *:30 |:10
 KMASK:   x = no_wall_fixup
 ITEM:    wand of digging ident:type
-ITEM:    scroll of teleportation q:2
+ITEM:    scroll of teleportation q:2 / stone of tremors
 MAP
 ...........
 .vvnvvvnvv.
@@ -6054,11 +6056,16 @@ KMONS:   M = Rupert / vampire knight, vampire knight / nothing
 KMONS:   N = Asterion / ancient champion, ancient champion / nothing
 KMONS:   O = Frederick / draconian knight, draconian knight / nothing
 KMONS:   P = Sojobo / tengu reaver, tengu reaver / nothing
+: if crawl.one_chance_in(50) then
+KMONS:   S = dancing weapon ; singing sword
+KITEM:   s = singing sword
+: else
 KMONS:   S = dancing weapon ; long sword good_item | good_item great sword | \
                               demon blade good_item | triple sword good_item | \
                               double sword good_item
 KITEM:   s = long sword good_item / good_item great sword / \
              demon blade good_item / triple sword good_item / double sword good_item
+: end
 KMONS:   o = orc warrior / orc knight w:5
 KMONS:   e = deep elf knight
 NSUBST:  k = 4:k / 2 = k. / *:.

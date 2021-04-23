@@ -16,6 +16,7 @@
 
 #include "ability.h"
 #include "act-iter.h"
+#include "art-enum.h"
 #include "butcher.h"
 #include "cio.h"
 #include "coordit.h"
@@ -274,7 +275,18 @@ static const mutation_type _all_scales[] =
     MUT_RUGGED_BROWN_SCALES,        MUT_SLIMY_GREEN_SCALES,
     MUT_THIN_METALLIC_SCALES,       MUT_THIN_SKELETAL_STRUCTURE,
     MUT_YELLOW_SCALES,              MUT_STURDY_FRAME,
-    MUT_SANGUINE_ARMOUR,
+    MUT_SANGUINE_ARMOUR,            MUT_SHIMMERING_SCALES,
+};
+
+// Permabuffs go here
+static const mutation_type _all_permabuffs[] =
+{
+    MUT_TRANSFORMATION,            MUT_RING_OF_FLAMES,
+    MUT_REGEN_SPELL,               MUT_SPECTRAL_WEAPON,
+    MUT_INFUSION,                  MUT_EXCRUCIATING_WOUNDS,
+    MUT_OZOCUBUS_ARMOUR,           MUT_BATTLESPHERE,
+    MUT_SONG_OF_SLAYING,           MUT_DEFLECT_MISSILES,
+    MUT_REPEL_MISSILES,            MUT_CHILL_THREAD,
 };
 
 static bool _is_covering(mutation_type mut)
@@ -287,6 +299,12 @@ bool is_body_facet(mutation_type mut)
     return any_of(begin(_body_facets), end(_body_facets),
                   [=](const body_facet_def &facet)
                   { return facet.mut == mut; });
+}
+
+bool is_permabuff(mutation_type mut)
+{
+    return any_of(begin(_all_permabuffs), end(_all_permabuffs), 
+                  [=](const mutation_type &i){return i == mut;});
 }
 
 /*
@@ -350,6 +368,7 @@ mutation_activity_type mutation_activity_level(mutation_type mut)
         case MUT_ROUGH_BLACK_SCALES:
 #endif
         case MUT_RUGGED_BROWN_SCALES:
+        case MUT_SHIMMERING_SCALES:
             return mutation_activity_type::PARTIAL;
         case MUT_YELLOW_SCALES:
         case MUT_ICY_BLUE_SCALES:
@@ -372,9 +391,6 @@ mutation_activity_type mutation_activity_level(mutation_type mut)
     {
         return mutation_activity_type::INACTIVE;
     }
-
-    if (you_worship(GOD_DITHMENOS) && mut == MUT_IGNITE_BLOOD)
-        return mutation_activity_type::INACTIVE;
 
     if ((you_worship(GOD_PAKELLAS) || player_under_penance(GOD_PAKELLAS))
          && (mut == MUT_MANA_LINK || mut == MUT_MANA_REGENERATION))
@@ -435,6 +451,14 @@ bool player::has_innate_mutation(mutation_type mut) const
 }
 
 /*
+ * Does the player have mutation `mut` that is a permabuff?
+ */
+bool player::has_permabuffs(mutation_type mut) const
+{
+    return you.permabuffs[mut] > 0;
+}
+
+/*
  * How much of mutation `mut` does the player have? This ignores form changes.
  * If all three bool arguments are false, this should always return 0.
  *
@@ -449,6 +473,7 @@ int player::get_base_mutation_level(mutation_type mut, bool innate, bool temp, b
     ASSERT_RANGE(mut, 0, NUM_MUTATIONS);
     // you.mutation stores the total levels of all mutations
     int level = you.mutation[mut];
+
     if (!temp)
         level -= you.temp_mutation[mut];
     if (!innate)
@@ -537,13 +562,15 @@ void validate_mutations(bool debug_msg)
         mutation_type mut = static_cast<mutation_type>(i);
         if (debug_msg && you.mutation[mut] > 0)
         {
-            dprf("mutation %s: total %d innate %d temp %d",
+            dprf("mutation %s: total %d innate %d temp %d perma %d",
                 mutation_name(mut), you.mutation[mut],
-                you.innate_mutation[mut], you.temp_mutation[mut]);
+                you.innate_mutation[mut], you.temp_mutation[mut],
+                you.permabuffs[mut]);
         }
         ASSERT(you.mutation[mut] >= 0);
         ASSERT(you.innate_mutation[mut] >= 0);
         ASSERT(you.temp_mutation[mut] >= 0);
+        ASSERT(you.permabuffs[mut] >= 0);
         ASSERT(you.get_base_mutation_level(mut) == you.mutation[mut]);
         ASSERT(you.mutation[i] >= you.innate_mutation[mut] + you.temp_mutation[mut]);
         total_temp += you.temp_mutation[mut];
@@ -674,6 +701,19 @@ string describe_mutations(bool center_title)
             !form_keeps_mutations());
     }
 
+    if (you.species == SP_ABOMINATION)
+    {
+        result += _annotate_form_based("You have gills and webbed feet.",
+                                       !form_likes_water());
+
+        const string num_tentacles =
+               number_in_words(you.has_usable_tentacles(false));
+        result += _annotate_form_based(
+            make_stringf("You can wear up to %s rings at the same time.",
+                         num_tentacles.c_str()),
+            !get_form()->slot_available(EQ_RING_EIGHT));
+    }
+
     if (you.species != SP_FELID)
     {
         switch (you.body_size(PSIZE_TORSO, true))
@@ -701,6 +741,16 @@ string describe_mutations(bool center_title)
     if (player_res_poison(false, false, false) == 3)
         result += "You are immune to poison.\n";
 
+    // Permabuffs are magical, so include them with innate abilities color
+    for (int i = 0; i < NUM_MUTATIONS; i++)
+    {
+        mutation_type mut_type = static_cast<mutation_type>(i);
+        if (you.has_permabuffs(mut_type))
+        {
+            result += mutation_desc(mut_type, 1);
+            result += "\n";
+        }
+    }
     result += "</lightblue>";
 
     // First add (non-removable) inborn abilities and demon powers.
@@ -767,6 +817,15 @@ static const string _vampire_Ascreen_footer = (
 #endif
     " to toggle between mutations and properties depending on your blood\n"
     "level.\n");
+
+static const string _lava_orc_Ascreen_footer = (
+#ifndef USE_TILE_LOCAL
+    "Press '<w>!</w>'"
+#else
+    "<w>Right-click</w>"
+#endif
+    " to toggle between mutations and properties depending on your\n"
+    "temperature.\n");
 
 static void _display_vampire_attributes()
 {
@@ -853,6 +912,68 @@ static void _display_vampire_attributes()
     }
 }
 
+static void _display_temperature()
+{
+    ASSERT(you.species == SP_LAVA_ORC);
+    clrscr();
+    cgotoxy(1,1);
+    string result;
+    string title = "Temperature Effects";
+    // center title
+    int offset = 39 - strwidth(title) / 2;
+    if (offset < 0) offset = 0;
+    result += string(offset, ' ');
+    result += "<white>";
+    result += title;
+    result += "</white>\n\n";
+    const int lines = TEMP_MAX + 1; // 15 lines plus one for off-by-one.
+    string column[lines];
+    for (int t = 1; t <= TEMP_MAX; t++)  // lines
+    {
+        string text;
+        ostringstream ostr;
+        string colourname = temperature_string(t);
+#define F(x) stringize_glyph(dchar_glyph(DCHAR_FRAME_##x))
+        if (t == TEMP_MAX)
+            text = "  " + F(TL) + F(HORIZ) + "MAX" + F(HORIZ) + F(HORIZ) + F(TR);
+        else if (t == TEMP_MIN)
+            text = "  " + F(BL) + F(HORIZ) + F(HORIZ) + "MIN" + F(HORIZ) + F(BR);
+        else if (temperature() < t)
+            text = "  " + F(VERT) + "      " + F(VERT);
+        else if (temperature() == t)
+            text = "  " + F(VERT) + "~~~~~~" + F(VERT);
+        else
+            text = "  " + F(VERT) + "######" + F(VERT);
+        text += "    ";
+#undef F
+        ostr << '<' << colourname << '>' << text
+             << "</" << colourname << '>';
+        colourname = (temperature() >= t) ? "lightred" : "darkgrey";
+        text = temperature_text(t);
+        ostr << '<' << colourname << '>' << text
+             << "</" << colourname << '>';
+        column[t] = ostr.str();
+    }
+     for (int y = TEMP_MAX; y >= TEMP_MIN; y--)  // lines
+    {
+        result += column[y];
+        result += "\n";
+    }
+    result += "\n";
+    result += "You get hot in tense situations, when berserking, or when you enter lava. You \ncool down when your rage ends or when you enter water.";
+    result += "\n";
+    result += "\n";
+    result += _lava_orc_Ascreen_footer;
+    formatted_scroller temp_menu;
+    temp_menu.add_text(result);
+    temp_menu.show();
+    if (temp_menu.getkey() == '!'
+        || temp_menu.getkey() == CK_MOUSE_CMD)
+    {
+        display_mutations();
+    }
+}
+
 void display_mutations()
 {
     string mutation_s = describe_mutations(true);
@@ -870,6 +991,13 @@ void display_mutations()
             extra += "\n";
 
         extra += _vampire_Ascreen_footer;
+    }
+
+    if (you.species == SP_LAVA_ORC)
+    {
+        if (!extra.empty())
+            extra += "\n";
+         extra += _lava_orc_Ascreen_footer;
     }
 
     if (!extra.empty())
@@ -891,6 +1019,12 @@ void display_mutations()
     {
         _display_vampire_attributes();
     }
+    if (you.species == SP_LAVA_ORC
+        && (mutation_menu.getkey() == '!'
+            || mutation_menu.getkey() == CK_MOUSE_CMD))
+    {
+        _display_temperature();
+    }
 }
 
 static int _calc_mutation_amusement_value(mutation_type which_mutation)
@@ -908,6 +1042,10 @@ static int _calc_mutation_amusement_value(mutation_type which_mutation)
 
 static bool _accept_mutation(mutation_type mutat, bool ignore_weight = false)
 {
+    // Don't try to pick permabuffs for removal/addition at random for anything
+    if(is_permabuff(mutat))
+        return false;
+
     if (!_is_valid_mutation(mutat))
         return false;
 
@@ -1187,8 +1325,24 @@ bool physiology_mutation_conflict(mutation_type mutat)
         return true;
     }
 
+    // Djinni are made of fire, so their fire resistance cannot be modified
+    if (you.species == SP_DJINNI && (mutat == MUT_HEAT_RESISTANCE ||
+        mutat == MUT_HEAT_VULNERABILITY))
+    {
+        return true;
+    }
+
+    // Hermit Crabs are unable to gain drastic body slot mutations or deformation.
+    if (you.species == SP_HERMIT_CRAB && (mutat == MUT_FANGS || 
+        mutat == MUT_BEAK || mutat == MUT_ANTENNAE || mutat == MUT_HORNS || 
+        mutat == MUT_HOOVES || mutat == MUT_TALONS || mutat == MUT_CLAWS ||
+        mutat == MUT_DEFORMED))
+    {
+        return true;
+    }
+    
     // Need tentacles to grow something on them.
-    if (you.species != SP_OCTOPODE && mutat == MUT_TENTACLE_SPIKE)
+    if ((you.species != SP_OCTOPODE && you.species != SP_ABOMINATION) && mutat == MUT_TENTACLE_SPIKE)
         return true;
 
     // No bones for thin skeletal structure, and too squishy for horns.
@@ -1391,8 +1545,26 @@ bool undead_mutation_rot()
  */
 bool mutate(mutation_type which_mutation, const string &reason, bool failMsg,
             bool force_mutation, bool god_gift, bool beneficial,
-            mutation_permanence_class mutclass)
+            mutation_permanence_class mutclass, bool add_permabuff)
 {
+    // Permabuffs always succeed regardless of any factors, as they aren't really mutations
+    if (is_permabuff(which_mutation))
+    {
+        //TODO: add_permabuff might be superfluous at this point, fixup later?
+        const mutation_def& mdef = _get_mutation_def(which_mutation);
+        if (add_permabuff && !you.permabuffs[which_mutation])
+        {
+            you.permabuffs[which_mutation] = 1;
+            mprf(MSGCH_MUTATION, "%s", mdef.gain[0]);
+        }
+        else if (!add_permabuff && you.permabuffs[which_mutation])
+        {
+            you.permabuffs[which_mutation] = 0;
+            mprf(MSGCH_MUTATION, "%s", mdef.lose[0]);
+        }
+        return true;
+    }
+
     if (which_mutation == RANDOM_BAD_MUTATION
         && mutclass == MUTCLASS_NORMAL
         && crawl_state.disables[DIS_AFFLICTIONS])
@@ -1573,7 +1745,7 @@ bool mutate(mutation_type which_mutation, const string &reason, bool failMsg,
                 const char *arms;
                 if (you.species == SP_FELID)
                     arms = "legs";
-                else if (you.species == SP_OCTOPODE)
+                else if (you.species == SP_OCTOPODE || you.species == SP_ABOMINATION)
                     arms = "tentacles";
                 else
                     break;
@@ -1589,8 +1761,10 @@ bool mutate(mutation_type which_mutation, const string &reason, bool failMsg,
                 const char *hands;
                 if (you.species == SP_FELID)
                     hands = "front paws";
-                else if (you.species == SP_OCTOPODE)
+                else if (you.species == SP_OCTOPODE || you.species == SP_ABOMINATION)
                     hands = "tentacles";
+                else if (you.species == SP_HERMIT_CRAB)
+                    hands = "pincers";
                 else
                     break;
                 mprf(MSGCH_MUTATION, "%s",
@@ -1658,9 +1832,12 @@ bool mutate(mutation_type which_mutation, const string &reason, bool failMsg,
         case MUT_HORNS:
         case MUT_ANTENNAE:
             // Horns & Antennae 3 removes all headgear. Same algorithm as with
-            // glove removal.
+            // glove removal except allow masks and crowns
+            if (cur_base_level >= 3 && !you.melded[EQ_HELMET]
+                && !player_equip_unrand(UNRAND_ETERNAL_TORMENT)
+                && !player_equip_unrand(UNRAND_DYROVEPREVA)
+                && !player_equip_unrand(UNRAND_DRAGONMASK))
 
-            if (cur_base_level >= 3 && !you.melded[EQ_HELMET])
                 remove_one_equip(EQ_HELMET, false, true);
             // Intentional fall-through
         case MUT_BEAK:
@@ -2605,7 +2782,8 @@ int player::how_mutated(bool innate, bool levels, bool temp) const
 
     for (int i = 0; i < NUM_MUTATIONS; ++i)
     {
-        if (you.mutation[i])
+        // Never count permabuffs as mutation levels
+        if (you.mutation[i] && !is_permabuff(static_cast<mutation_type>(i)))
         {
             const int mut_level = get_base_mutation_level(static_cast<mutation_type>(i), innate, temp);
 

@@ -25,6 +25,7 @@
 #include "level-state-type.h"
 #include "libutil.h"
 #include "message.h"
+#include "mutation.h"
 #include "notes.h"
 #include "options.h"
 #include "orb.h"
@@ -344,22 +345,7 @@ bool add_spell_to_memory(spell_type spell)
 
 static void _remove_spell_attributes(spell_type spell)
 {
-    switch (spell)
-    {
-    case SPELL_DEFLECT_MISSILES:
-        if (you.attribute[ATTR_DEFLECT_MISSILES])
-        {
-            const int orig_defl = you.missile_deflection();
-            you.attribute[ATTR_DEFLECT_MISSILES] = 0;
-            mprf(MSGCH_DURATION, "You feel %s from missiles.",
-                                 you.missile_deflection() < orig_defl
-                                 ? "less protected"
-                                 : "your spell is no longer protecting you");
-        }
-        break;
-    default:
-        break;
-    }
+    // No current spell attributes, just return
     return;
 }
 
@@ -402,7 +388,7 @@ bool del_spell_from_memory(spell_type spell)
 
 int spell_hunger(spell_type which_spell)
 {
-    if (player_energy())
+    if (player_energy() || you.get_mutation_level(MUT_MAGIC_ATTUNEMENT))
         return 0;
 
     const int level = spell_difficulty(which_spell);
@@ -462,7 +448,7 @@ bool spell_harms_area(spell_type spell)
 // for Xom acting (more power = more likely to grab his attention) {dlb}
 int spell_mana(spell_type which_spell)
 {
-    return _seekspell(which_spell)->level;
+    return _seekspell(which_spell)->level - you.get_mutation_level(MUT_MAGIC_ATTUNEMENT);
 }
 
 // applied in naughties (more difficult = higher level knowledge = worse)
@@ -1105,6 +1091,32 @@ string spell_uselessness_reason(spell_type spell, bool temp, bool prevent,
     if (!fake_spell && cannot_use_schools(get_spell_disciplines(spell)))
         return "you cannot use spells of this school.";
 
+    //TODO: Move Djinni and Lava Orc uselessness reasons into the switch/case
+    if (you.species == SP_DJINNI)
+    {
+        if (spell == SPELL_ICE_FORM  || spell == SPELL_OZOCUBUS_ARMOUR)
+            return "you're too hot.";
+         if (spell == SPELL_LEDAS_LIQUEFACTION)
+            return "you can't cast this while perpetually flying.";
+    }
+
+    if (you.species == SP_LAVA_ORC)
+    {
+        if (spell == SPELL_OZOCUBUS_ARMOUR)
+            return "your stony body would shatter the ice.";
+         if (temp && !temperature_effect(LORC_STONESKIN))
+        {
+            switch (spell)
+            {
+                case SPELL_STATUE_FORM:
+                case SPELL_ICE_FORM:
+                    return "you're too hot.";
+                default:
+                    break;
+            }
+        }
+     }
+
     switch (spell)
     {
     case SPELL_BLINK:
@@ -1139,11 +1151,6 @@ string spell_uselessness_reason(spell_type spell, bool temp, bool prevent,
         // mere corona is not enough, but divine light blocks it completely
         if (temp && (you.haloed() || !prevent && have_passive(passive_t::halo)))
             return "darkness is useless against divine light.";
-        break;
-
-    case SPELL_DEFLECT_MISSILES:
-        if (temp && you.attribute[ATTR_DEFLECT_MISSILES])
-            return "you're already deflecting missiles.";
         break;
 
     case SPELL_STATUE_FORM:
@@ -1226,14 +1233,14 @@ string spell_uselessness_reason(spell_type spell, bool temp, bool prevent,
             return "your body armour is too heavy.";
         if (temp && you.form == transformation::statue)
             return "the film of ice won't work on stone.";
-        if (temp && you.duration[DUR_FIRE_SHIELD])
+        if (temp && you.permabuffs[MUT_RING_OF_FLAMES])
             return "your ring of flames would instantly melt the ice.";
         break;
 
     case SPELL_CIGOTUVIS_EMBRACE:
         if (temp && you.form == transformation::statue)
             return "the corpses won't embrace your stony flesh.";
-        if (temp && you.duration[DUR_ICY_ARMOUR])
+        if (temp && you.permabuffs[MUT_OZOCUBUS_ARMOUR])
             return "the corpses won't embrace your icy flesh.";
         break;
 
@@ -1242,6 +1249,7 @@ string spell_uselessness_reason(spell_type spell, bool temp, bool prevent,
         if (you.species == SP_GARGOYLE
             || you.species == SP_GHOUL
             || you.species == SP_MUMMY
+            || you.species == SP_DJINNI
             || (temp && !form_can_bleed(you.form)))
         {
             return "you have no blood to sublime.";
@@ -1292,12 +1300,12 @@ string spell_uselessness_reason(spell_type spell, bool temp, bool prevent,
     case SPELL_POISONOUS_CLOUD:
     case SPELL_FREEZING_CLOUD:
     case SPELL_MEPHITIC_CLOUD:
-        if (env.level_state & LSTATE_STILL_WINDS)
+        if (temp && env.level_state & LSTATE_STILL_WINDS)
             return "the air is too still for clouds to form.";
         break;
 
     case SPELL_GOLUBRIAS_PASSAGE:
-        if (orb_limits_translocation())
+        if (orb_limits_translocation(temp))
             return "the Orb prevents this spell from working.";
 
     case SPELL_BLADE_OF_DISASTER:
@@ -1305,6 +1313,14 @@ string spell_uselessness_reason(spell_type spell, bool temp, bool prevent,
         return "you couldn't be more disastrous!";
     if (temp && you.duration[DUR_NO_MORE_DISASTER])
         return "your disaster has temporarily ended!";
+    case SPELL_TIME_STOP:
+    if (temp && you.attribute[ATTR_SERPENTS_LASH])
+        return "Your muscles are too tense to stop time.";
+    if (temp && you.attribute[ATTR_TIME_STOP])
+        return "stopping time while time is already stopped sounds like "
+               "a great way to be frozen in stasis forever. You relent.";
+    if (temp && you.duration[DUR_EXHAUSTED])
+        return "you're too exhausted to mess around with time right now.";
 
     default:
         break;
@@ -1366,6 +1382,7 @@ bool spell_no_hostile_in_range(spell_type spell)
     case SPELL_LRD:
     case SPELL_FULMINANT_PRISM:
     case SPELL_SUMMON_LIGHTNING_SPIRE:
+    case SPELL_SINGULARITY:
     // This can always potentially hit out-of-LOS, although this is conditional
     // on spell-power.
     case SPELL_FIRE_STORM:

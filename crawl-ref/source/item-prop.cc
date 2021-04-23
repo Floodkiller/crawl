@@ -25,6 +25,7 @@
 #include "libutil.h" // map_find
 #include "message.h"
 #include "misc.h"
+#include "mutation.h"
 #include "notes.h"
 #include "options.h"
 #include "orb-type.h"
@@ -124,10 +125,8 @@ static const armour_def Armour_prop[] =
     { ARM_HELMET,               "helmet",                 1,   0,   45,
         EQ_HELMET,      SIZE_SMALL,  SIZE_MEDIUM, true },
 
-#if TAG_MAJOR_VERSION == 34
     { ARM_CAP,                  "cap",                    0,   0,   45,
         EQ_HELMET,      SIZE_LITTLE, SIZE_LARGE, true },
-#endif
 
     { ARM_HAT,                  "hat",                    0,   0,   40,
         EQ_HELMET,      SIZE_TINY, SIZE_LARGE, true },
@@ -415,7 +414,7 @@ static const weapon_def Weapon_prop[] =
         SK_MACES_FLAILS, SIZE_LITTLE, SIZE_LITTLE, MI_NONE,
         DAMV_SLASHING, 0, 0, 200, HOLY_BRANDS },
     { WPN_DIRE_FLAIL,        "dire flail",         13, -3, 13,
-        SK_MACES_FLAILS, SIZE_MEDIUM, NUM_SIZE_LEVELS, MI_NONE,
+        SK_MACES_FLAILS, SIZE_MEDIUM, SIZE_LARGE, MI_NONE,
         DAMV_CRUSHING | DAM_PIERCE, 2, 10, 40, M_AND_F_BRANDS },
     { WPN_EVENINGSTAR,       "eveningstar",        15, -1, 15,
         SK_MACES_FLAILS, SIZE_LITTLE, SIZE_LITTLE, MI_NONE,
@@ -497,7 +496,7 @@ static const weapon_def Weapon_prop[] =
         SK_LONG_BLADES,  SIZE_LITTLE, SIZE_MEDIUM, MI_NONE,
         DAMV_SLICING, 0, 2, 150, LBL_BRANDS },
     { WPN_GREAT_SWORD,           "great sword",           15, -3, 17,
-        SK_LONG_BLADES,  SIZE_MEDIUM, NUM_SIZE_LEVELS, MI_NONE,
+        SK_LONG_BLADES,  SIZE_MEDIUM, SIZE_LARGE, MI_NONE,
         DAMV_SLICING, 6, 10, 65, LBL_BRANDS },
     { WPN_TRIPLE_SWORD,          "triple sword",          17, -4, 19,
         SK_LONG_BLADES,  SIZE_MEDIUM, NUM_SIZE_LEVELS, MI_NONE,
@@ -534,7 +533,7 @@ static const weapon_def Weapon_prop[] =
         SK_AXES,       SIZE_LITTLE, SIZE_MEDIUM, MI_NONE,
         DAMV_CHOPPING, 4, 10, 40, AXE_BRANDS },
     { WPN_BATTLEAXE,         "battleaxe",          15, -4, 17,
-        SK_AXES,       SIZE_MEDIUM, NUM_SIZE_LEVELS, MI_NONE,
+        SK_AXES,       SIZE_MEDIUM, SIZE_LARGE, MI_NONE,
         DAMV_CHOPPING, 6, 10, 65, AXE_BRANDS },
     { WPN_EXECUTIONERS_AXE,  "executioner's axe",  18, -6, 20,
         SK_AXES,       SIZE_MEDIUM, NUM_SIZE_LEVELS, MI_NONE,
@@ -558,10 +557,10 @@ static const weapon_def Weapon_prop[] =
         SK_POLEARMS,     SIZE_LITTLE, SIZE_MEDIUM, MI_NONE,
         DAMV_PIERCING, 6, 10, 35, POLEARM_BRANDS },
     { WPN_HALBERD,           "halberd",            13, -3, 15,
-        SK_POLEARMS,     SIZE_MEDIUM, NUM_SIZE_LEVELS,  MI_NONE,
+        SK_POLEARMS,     SIZE_MEDIUM, SIZE_LARGE,  MI_NONE,
         DAMV_CHOPPING | DAM_PIERCE, 5, 10, 40, POLEARM_BRANDS },
     { WPN_SCYTHE,            "scythe",             14, -4, 20,
-        SK_POLEARMS,     SIZE_MEDIUM, NUM_SIZE_LEVELS, MI_NONE,
+        SK_POLEARMS,     SIZE_MEDIUM, SIZE_LARGE, MI_NONE,
         DAMV_SLICING, 2, 0, 30, POLEARM_BRANDS },
     { WPN_DEMON_TRIDENT,     "demon trident",      12,  1, 13,
         SK_POLEARMS,     SIZE_LITTLE, SIZE_MEDIUM, MI_NONE,
@@ -582,7 +581,7 @@ static const weapon_def Weapon_prop[] =
         SK_STAVES,       SIZE_LITTLE, SIZE_MEDIUM, MI_NONE,
         DAMV_CRUSHING, 0, 0, 15, {} },
     { WPN_QUARTERSTAFF,      "quarterstaff",        10, 3, 13,
-        SK_STAVES,       SIZE_LITTLE, NUM_SIZE_LEVELS,  MI_NONE,
+        SK_STAVES,       SIZE_LITTLE, SIZE_LARGE,  MI_NONE,
         DAMV_CRUSHING, 8, 10, 40, {
             { SPWPN_NORMAL,     50 },
             { SPWPN_PROTECTION, 18 },
@@ -609,9 +608,11 @@ static const weapon_def Weapon_prop[] =
         }},
 
     // Range weapons
+#if TAG_MAJOR_VERSION == 34
     { WPN_BLOWGUN,           "blowgun",             0,  2, 10,
         SK_THROWING,     SIZE_LITTLE, SIZE_LITTLE, MI_NEEDLE,
-        DAMV_NON_MELEE, 5, 0, 25, {}, },
+        DAMV_NON_MELEE, 0, 0, 0, {}, },
+#endif
 
     { WPN_HUNTING_SLING,     "hunting sling",       5,  2, 12,
         SK_SLINGS,       SIZE_LITTLE, SIZE_LITTLE, MI_STONE,
@@ -624,7 +625,7 @@ static const weapon_def Weapon_prop[] =
         SK_CROSSBOWS,    SIZE_LITTLE, SIZE_LITTLE, MI_BOLT,
         DAMV_NON_MELEE, 7, 10, 35, RANGED_BRANDS },
     { WPN_ARBALEST,          "arbalest",           18,  2, 19,
-        SK_CROSSBOWS,    SIZE_LITTLE, NUM_SIZE_LEVELS, MI_BOLT,
+        SK_CROSSBOWS,    SIZE_LITTLE, SIZE_LARGE, MI_BOLT,
         DAMV_NON_MELEE, 5, 10, 45, RANGED_BRANDS },
     { WPN_TRIPLE_CROSSBOW,   "triple crossbow",    22,  0, 23,
         SK_CROSSBOWS,    SIZE_LITTLE, NUM_SIZE_LEVELS, MI_BOLT,
@@ -651,10 +652,10 @@ struct missile_def
 static int Missile_index[NUM_MISSILES];
 static const missile_def Missile_prop[] =
 {
+    { MI_DART,          "dart",          0, 12, 2,  true  },
 #if TAG_MAJOR_VERSION == 34
-    { MI_DART,          "dart",          2, 1,  1,  true  },
-#endif
     { MI_NEEDLE,        "needle",        0, 12, 2,  false },
+#endif
     { MI_STONE,         "stone",         2, 8,  1,  true  },
     { MI_ARROW,         "arrow",         0, 8,  2,  false },
     { MI_BOLT,          "bolt",          0, 8,  2,  false },
@@ -662,7 +663,8 @@ static const missile_def Missile_prop[] =
     { MI_SLING_BULLET,  "sling bullet",  4, 8,  5,  false },
     { MI_JAVELIN,       "javelin",      10, 20, 8,  true  },
     { MI_THROWING_NET,  "throwing net",  0, 0,  30, true  },
-    { MI_TOMAHAWK,      "tomahawk",      6, 20, 5,  true  },
+    { MI_PIE,           "pie",           0, 20, 6,  true  },
+    { MI_BOOMERANG,     "boomerang",     6, 20, 5,  true  },
 };
 
 struct food_def
@@ -736,7 +738,6 @@ const set<pair<object_class_type, int> > removed_items =
 #if TAG_MAJOR_VERSION == 34
     { OBJ_JEWELLERY, AMU_CONTROLLED_FLIGHT },
     { OBJ_JEWELLERY, AMU_CONSERVATION },
-    { OBJ_JEWELLERY, AMU_DISMISSAL },
     { OBJ_JEWELLERY, RING_REGENERATION },
     { OBJ_JEWELLERY, RING_SUSTAIN_ATTRIBUTES },
     { OBJ_JEWELLERY, RING_TELEPORT_CONTROL },
@@ -752,9 +753,6 @@ const set<pair<object_class_type, int> > removed_items =
     { OBJ_POTIONS,   POT_SLOWING },
     { OBJ_POTIONS,   POT_DECAY },
     { OBJ_POTIONS,   POT_POISON },
-    { OBJ_POTIONS,   POT_RESTORE_ABILITIES },
-    { OBJ_POTIONS,   POT_CURE_MUTATION },
-    { OBJ_POTIONS,   POT_BENEFICIAL_MUTATION },
     { OBJ_BOOKS,     BOOK_WIZARDRY },
     { OBJ_BOOKS,     BOOK_CONTROL },
     { OBJ_BOOKS,     BOOK_BUGGY_DESTRUCTION },
@@ -844,7 +842,7 @@ bool item_is_cursable(const item_def &item, bool ignore_holy_wrath)
     if (!ignore_holy_wrath
         && item.base_type == OBJ_WEAPONS
         && (get_weapon_brand(item) == SPWPN_HOLY_WRATH
-            || you.duration[DUR_EXCRUCIATING_WOUNDS]
+            || you.permabuffs[MUT_EXCRUCIATING_WOUNDS]
                && item_is_equipped(item)
                && you.props[ORIGINAL_BRAND_KEY].get_int() == SPWPN_HOLY_WRATH))
     {
@@ -912,7 +910,7 @@ void do_curse_item(item_def &item, bool quiet)
     // Holy wrath weapons cannot be cursed.
     if (item.base_type == OBJ_WEAPONS
         && (get_weapon_brand(item) == SPWPN_HOLY_WRATH
-            || you.duration[DUR_EXCRUCIATING_WOUNDS]
+            || you.permabuffs[MUT_EXCRUCIATING_WOUNDS]
                && item_is_equipped(item)
                && you.props[ORIGINAL_BRAND_KEY].get_int() == SPWPN_HOLY_WRATH))
     {
@@ -1640,21 +1638,23 @@ bool is_offensive_wand(const item_def& item)
     switch (item.sub_type)
     {
     // Monsters don't use those, so no need to warn the player about them.
-    case WAND_ENSLAVEMENT:
+    case WAND_CLOUDS:
+    case WAND_ICEBLAST:
     case WAND_RANDOM_EFFECTS:
+    case WAND_SCATTERSHOT:
+    // Monsters use it, but it's not an offensive wand
     case WAND_DIGGING:
 
     // Monsters will use them on themselves.
     case WAND_HASTING:
         return false;
 
+    case WAND_ENSLAVEMENT:
     case WAND_FLAME:
     case WAND_PARALYSIS:
-    case WAND_ICEBLAST:
     case WAND_POLYMORPH:
     case WAND_ACID:
     case WAND_DISINTEGRATION:
-    case WAND_CLOUDS:
         return true;
     }
     return false;
@@ -1912,8 +1912,14 @@ bool is_brandable_weapon(const item_def &wpn, bool allow_ranged, bool divine)
     if (is_artefact(wpn))
         return false;
 
-    if (!allow_ranged && is_range_weapon(wpn) || wpn.sub_type == WPN_BLOWGUN)
+    if (!allow_ranged && is_range_weapon(wpn)
+#if TAG_MAJOR_VERSION == 34
+        || wpn.sub_type == WPN_BLOWGUN
+#endif
+       )
+    {
         return false;
+    }
 
     // Only gods can rebrand blessed weapons, and they revert back to their
     // old base type in the process.
@@ -2095,7 +2101,7 @@ bool has_launcher(const item_def &ammo)
            && ammo.sub_type != MI_DART
 #endif
            && ammo.sub_type != MI_JAVELIN
-           && ammo.sub_type != MI_TOMAHAWK
+           && ammo.sub_type != MI_BOOMERANG
            && ammo.sub_type != MI_THROWING_NET;
 }
 
@@ -2190,6 +2196,8 @@ int ammo_type_damage(int missile_type)
 //
 reach_type weapon_reach(const item_def &item)
 {
+    if (is_unrandom_artefact(item, UNRAND_RIFT))
+        return REACH_THREE;
     if (item_attack_skill(item) == SK_POLEARMS)
         return REACH_TWO;
     return REACH_NONE;
@@ -2740,10 +2748,13 @@ bool gives_ability(const item_def &item)
         if (artefact_property(item, static_cast<artefact_prop_type>(rap)))
             return true;
 
-#if TAG_MAJOR_VERSION == 34
-    if (artefact_property(item, ARTP_FOG))
+    // Unrands that grant an evokable ability.
+    if (is_unrandom_artefact(item, UNRAND_THIEF)
+        || is_unrandom_artefact(item, UNRAND_RATSKIN_CLOAK)
+        || is_unrandom_artefact(item, UNRAND_RCLOUDS))
+    {
         return true;
-#endif
+    }
 
     return false;
 }
@@ -3011,6 +3022,7 @@ void seen_item(const item_def &item)
 static const map<int, const char*> debt_map = {
     { MISC_FAN_OF_GALES,        "fan_debt" },
     { MISC_LAMP_OF_FIRE,        "lamp_debt" },
+    { MISC_STONE_OF_TREMORS,    "stone_debt" },
     { MISC_PHIAL_OF_FLOODS,     "phial_debt" },
     { MISC_HORN_OF_GERYON,      "horn_debt" },
     { MISC_LIGHTNING_ROD,       "rod_debt" },

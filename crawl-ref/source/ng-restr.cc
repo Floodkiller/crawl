@@ -24,18 +24,23 @@ static bool _banned_combination(job_type job, species_type species)
         if (job == JOB_GLADIATOR
             || job == JOB_ASSASSIN
             || job == JOB_HUNTER
-            || job == JOB_ARCANE_MARKSMAN)
+            || job == JOB_ARCANE_MARKSMAN
+            || job == JOB_ARCHAEOLOGIST
+            || job == JOB_JESTER)
         {
             return true;
         }
         break;
-    case SP_DEMIGOD:
+    case SP_PROMETHEAN:
         if (job == JOB_BERSERKER
             || job == JOB_CHAOS_KNIGHT
             || job == JOB_ABYSSAL_KNIGHT
             || job == JOB_DEATH_KNIGHT
             || job == JOB_MONK
-            || job == JOB_PRIEST)
+            || job == JOB_PRIEST
+            || job == JOB_SLIME_APOSTLE
+            || job == JOB_HEALER
+            || job == JOB_JESTER)
         {
             return true;
         }
@@ -46,11 +51,9 @@ static bool _banned_combination(job_type job, species_type species)
             return true;
         }
         break;
-    case SP_MUMMY:
-    case SP_GHOUL:
-    case SP_VAMPIRE:
     case SP_DEMONSPAWN:
-        if (job == JOB_PRIEST)
+        if (job == JOB_PRIEST
+            || job == JOB_HEALER)
         {
             return true;
         }
@@ -59,7 +62,10 @@ static bool _banned_combination(job_type job, species_type species)
         break;
     }
 
-    if (job == JOB_TRANSMUTER
+    if ((job == JOB_TRANSMUTER
+        || job == JOB_SLIME_APOSTLE
+        || job == JOB_PRIEST
+        || job == JOB_HEALER) // Ban undead from both Jiyva/transmutations and good gods
         && (species_undead_type(species) == US_UNDEAD
            || species_undead_type(species) == US_HUNGRY_DEAD))
     {
@@ -133,10 +139,15 @@ char_choice_restriction weapon_restriction(weapon_type wpn,
     }
 
     if (wpn == WPN_QUARTERSTAFF && ng.job != JOB_GLADIATOR
-        && !(ng.job == JOB_FIGHTER && ng.species == SP_FORMICID))
+        && !(ng.job == JOB_FIGHTER && (ng.species == SP_FORMICID || ng.species == SP_ABOMINATION)))
     {
         return CC_BANNED;
     }
+
+    // Skeletons are much better at Xbows and Bows than they are at throwing,
+    // so they shouldn't be recommended javelins.
+    if (wpn == WPN_THROWN && ng.species == SP_SKELETON)
+       return CC_RESTRICTED;
 
     // Javelins are always good, tomahawks not so much.
     if (wpn == WPN_THROWN)

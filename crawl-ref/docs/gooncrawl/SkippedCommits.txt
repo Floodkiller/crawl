@@ -1,0 +1,148 @@
+Change labyrinth risk-reward: buff minotaurs - 1a64493
+-Revert monster minotaur speed and adjust other stats - 6ffc940 (based on 1a64493)
+
+Change labyrinth risk-reward: reduce loot - fdd7f25
+
+Create new amulet: amulet of the acrobat - 870e420 (there's a pull request up, look at that instead?)
+-Fully disable acrobat while using Wu Jian attacks. - 4ef6cfa
+-Let regeneration amulets work again for players that can heal. - ba4b0f4 (current code already does this, just make sure it still does after merging above or below)
+-Let amulet of the acrobat work while waiting (Hellmonk) - bc573f3
+ -Make waiting work again. - 548d406
+-Don't pick up duplicate amulets of the acrobat - de484de
+-Have display of the acrobat ev boost in tiles match console - 8519d86
+-Remove some parenthesis to satisfy unbrace - a933591
+-Movemnt key actions and Wu Jian - b306ea2
+
+
+Remove dream sheep fires - 1d1b100 (lol no)
+-Update dream sheep description - faf10ee1
+
+Fix dream sheep genus using a removed monster - c748515 (sheep are in, also lol no)
+
+Give monster minotaurs armor and javelins - 464ede7
+
+Make Ozocubu's Armour expire immediately on movement - f559e6e
+
+Unbrace / checkwhite - 539252a (causing conflicts so no need, can unbrace and checkwhite later if necessary)
+
+Adjust some weapon randart names - a231a93 (nah)
+
+Mark some Pakellas code for removal when the major version changes  - 6ec6d78(not removing Pakellas)
+
+Encrypt the channel name in .travis.yml so forks can't use it - 24998ea (all relevant lines are already commented out, no point)
+
+Remove references to obsolete mutation sources (dds1) - 27b4f7b (mutation sources are not obsolete in gooncrawl)
+
+Make Lee's Rapid Deconstruction never break walls - 37d83ea (controversial posts spotted, needs a vote)
+
+Remove veto_fragmentation, replace veto_fragmentation with veto_dig - e9e9f76 (Disint exists even if the LRD change goes through)
+
+Remove some obsolete reference to rods - 14ec769 (adding rods back in)
+
+Trigger barbs and break Ozo's Armour when taking stairs/walljumping - 2b3c548 (can't merge immediately due to no Ozo' change, will have to implement barb half separately)
+-Dont break ozo's or cause barb damage on forced level transitions - 334a0db (same thing)
+
+Draw higher XL players deeper into the abyss - ae4dde8 (check compatability with megabyss before merging)
+-Revise the chance for pulling players deeper into the Abyss - c01a7f0
+
+
+PLAYER GHOST VAULT COMMITS
+(safe range starts here)
+ce72dfe
+a3c4442
+a8b80c1
+9478639
+0f524d8
+30d8ac5
+46a0957
+d5aaa04
+397a453
+7b7af9e
+72bd907
+0683b26
+45f54b8
+f886858
+3ff1096
+e1a807f
+b611b69
+9e38d4b
+30c74a2
+99b25f0
+a2df02c
+c69a6cf
+6d380fd
+8f30707
+28d1087
+c41e3e3
+84fad1d
+1d9e83a
+7f357de
+0943f25
+b939540
+96ba041
+75794bf
+6ea8e7e
+95e1b32
+2547c9b
+0da5cb0
+01493d7
+52696f8
+c87f014
+f69a080
+cd2a3d9
+4d20840
+bbc7872
+(safe range ends here)
+(safe range starts here)
+76cc104
+d3eb0d8
+617fbbe
+6fc7002
+9374e73
+577b210
+30f0393
+7bfabb5
+b51906a
+3b2bdd4
+28ad1da
+9358b0b
+(safe range ends here)
+(safe range starts here)
+6e350e3
+921cf92
+06062c5
+d813392
+1b94d8d
+3e71e8a
+fc6459a
+b275bf3
+ff9aefc
+270d1ae
+2af43bd
+bb431e2
+0289154
+a6a7277
+a172949
+5148d60
+afc7989
+b62a27e
+(safe range ends here)
+9148847
+
+
+
+THREAD MENTIONS (merging, will revert if controversial):
+Illsuiw now works like other branch-specific uniques instead of always appearing on Shoals:4
+Remove Engulf's movement penalty and make it block all god abilities - 8baa81b
+Revise the mace of Variability - 8c3e449
+-Adjust effect damage and enchantment of the mace of variability - 0c8d57c
+-Adjust the effects of chaos beams - f487629
+-Remove unused monster casting for chain of chaos - e3ae32f
+-Update description - 7d32d7c
+Rework Dithmenos Shadow Step restrictions and costs - 6d45252
+Make Dithmenos an evil god - fc1114d
+
+
+
+
+

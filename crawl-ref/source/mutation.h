@@ -32,6 +32,7 @@ enum mutation_permanence_class
 void init_mut_index();
 
 bool is_body_facet(mutation_type mut);
+bool is_permabuff(mutation_type mut);
 bool is_slime_mutation(mutation_type mut);
 bool undead_mutation_rot();
 
@@ -39,7 +40,8 @@ bool mutate(mutation_type which_mutation, const string &reason,
             bool failMsg = true,
             bool force_mutation = false, bool god_gift = false,
             bool beneficial = false,
-            mutation_permanence_class mutclass = MUTCLASS_NORMAL);
+            mutation_permanence_class mutclass = MUTCLASS_NORMAL,
+            bool add_permabuff = false);
 
 void display_mutations();
 int mut_check_conflict(mutation_type mut, bool innate_only = false);

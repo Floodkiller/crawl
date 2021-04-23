@@ -53,6 +53,7 @@
 #include "religion.h"
 #include "rot.h"
 #include "shout.h"
+#include "spl-selfench.h"
 #include "spl-util.h"
 #include "spl-wpnench.h"
 #include "spl-zap.h"
@@ -802,7 +803,7 @@ static void _animate_weapon(int pow, actor* target)
     if (target_is_player)
     {
         // Clear temp branding so we don't change the brand permanently.
-        if (you.duration[DUR_EXCRUCIATING_WOUNDS])
+        if (you.permabuffs[MUT_EXCRUCIATING_WOUNDS])
             end_weapon_brand(*wpn);
 
         // Mark weapon as "thrown", so we'll autopickup it later.
@@ -978,7 +979,7 @@ spret_type cast_summon_guardian_golem(int pow, god_type god, bool fail)
     mgen_data golem = _pal_data(MONS_GUARDIAN_GOLEM, 3, god,
                                 SPELL_SUMMON_GUARDIAN_GOLEM);
     golem.flags &= ~MG_AUTOFOE; // !!!
-    golem.hd = 4 + div_rand_round(pow, 16);
+    golem.hd = 4 + div_rand_round(pow, 14);
 
     monster* mons = (create_monster(golem));
 
@@ -2516,6 +2517,32 @@ monster* find_battlesphere(const actor* agent)
         return nullptr;
 }
 
+spret_type player_battlesphere(actor *agent, int pow, god_type god, bool fail)
+{
+    ASSERT(agent);
+
+    if (!agent->is_player())
+        return SPRET_ABORT;
+
+    fail_check();
+    if (!you.permabuffs[MUT_BATTLESPHERE])
+    {
+        if (spell_add_permabuff(SPELL_BATTLESPHERE, 5))
+        {
+            return SPRET_SUCCESS;
+        }
+        else
+        {
+            return SPRET_ABORT;
+        }
+    }
+    else
+    {
+        spell_remove_permabuff(SPELL_BATTLESPHERE, 5);
+        return SPRET_ABORT;
+    }
+}
+
 spret_type cast_battlesphere(actor* agent, int pow, god_type god, bool fail)
 {
     fail_check();
@@ -2536,19 +2563,8 @@ spret_type cast_battlesphere(actor* agent, int pow, god_type god, bool fail)
 
         if (recalled)
         {
-            mpr("You recall your battlesphere and imbue it with additional"
-                " charge.");
+            mpr("You recall your battlesphere.");
         }
-        else
-            mpr("You imbue your battlesphere with additional charge.");
-
-        battlesphere->battlecharge = min(20, (int) battlesphere->battlecharge
-                                              + 4 + random2(pow + 10) / 10);
-
-        // Increase duration
-        mon_enchant abj = battlesphere->get_ench(ENCH_FAKE_ABJURATION);
-        abj.duration = min(abj.duration + (7 + roll_dice(2, pow)) * 10, 500);
-        battlesphere->update_ench(abj);
     }
     else
     {
@@ -2569,7 +2585,7 @@ spret_type cast_battlesphere(actor* agent, int pow, god_type god, bool fail)
             agent->props["battlesphere"].get_int() = battlesphere->mid;
 
             if (agent->is_player())
-                mpr("You conjure a globe of magical energy.");
+                noisy(spell_effect_noise(SPELL_BATTLESPHERE), you.pos());
             else
             {
                 if (you.can_see(*agent) && you.can_see(*battlesphere))
@@ -3031,6 +3047,11 @@ void Disaster_Prism(actor* agent, coord_def where, int pow, god_type god)
 {
     ASSERT(agent);
     int boompower;
+    int range=3;
+    targeter_cone hitfunc(agent, range);
+    hitfunc.set_aim(where);
+
+    
     item_def* wpn = agent->weapon();
 
     if (!weapon_is_disastrous(wpn))
@@ -3047,23 +3068,42 @@ gets no benefit from an equipped weapon, but gets extra spellpower.*/
     }
     else
         boompower = property(*you.weapon(), PWPN_DAMAGE) + pow/8;
+    
+    vector<coord_def> spots;
+    
+    for (int i = 1; i <= range; i++)
+    {
+        for (const auto &entry : hitfunc.sweep[i])
+        {
+            if (entry.second <= 0)
+                continue;
 
+            if (!actor_at(entry.first))
+            {
+                spots.push_back(entry.first);
+            }
+        }
+    }
+    if (spots.size() > 0)
+    {
+    const coord_def pos = spots[random2(spots.size())];
     int hd = boompower;
 
+    
     mgen_data disaster(MONS_DISASTER_PRISM,
                  agent->is_player() ? BEH_FRIENDLY
                                     : SAME_ATTITUDE(agent->as_monster()),
-                 where);
-                 //target->mindex();
+                 pos, MHITNOT, MG_FORCE_PLACE);
     disaster.set_summoned(agent, 0, SPELL_BLADE_OF_DISASTER);
     disaster.hd = hd;
     monster* BoD = create_monster(disaster);
-
+    
+    
     if (!BoD)
     {
         return;
     }
-
+    }
     return;
 }
 
@@ -3084,36 +3124,50 @@ bool weapon_can_be_spectral(const item_def *wpn)
 spret_type cast_spectral_weapon(actor *agent, int pow, god_type god, bool fail)
 {
     ASSERT(agent);
-
-    const int dur = min(2 + random2(1 + div_rand_round(pow, 25)), 4);
-    item_def* wpn = agent->weapon();
-
-    // If the wielded weapon should not be cloned, abort
-    if (!weapon_can_be_spectral(wpn))
+    if(!agent->is_player())
     {
-        if (agent->is_player())
-        {
-            if (wpn)
-            {
-                mprf("%s vibrate%s crazily for a second.",
-                     wpn->name(DESC_YOUR).c_str(),
-                     wpn->quantity > 1 ? "" : "s");
-            }
-            else
-                mpr(you.hands_act("twitch", "."));
-        }
-
         return SPRET_ABORT;
     }
 
     fail_check();
+    
+    if(!you.permabuffs[MUT_SPECTRAL_WEAPON])
+    {
+        if(spell_add_permabuff(SPELL_SPECTRAL_WEAPON, 3))
+        {
+            return SPRET_SUCCESS;
+        }
+        else
+        {
+            return SPRET_ABORT;
+        }
+    }
+    else
+    {
+        spell_remove_permabuff(SPELL_SPECTRAL_WEAPON, 3);
+        monster* old_spectral = find_spectral_weapon(&you);
+        if(old_spectral)
+            end_spectral_weapon(old_spectral, false);
+        return SPRET_ABORT;
+    }
+}
 
-    // Remove any existing spectral weapons. Only one should be alive at any
-    // given time.
+void summon_spectral_weapon(actor *agent, int pow, god_type god)
+{
+    ASSERT(agent);
+
+    // Don't summon anything if a spectral weapon is already alive
     monster *old_mons = find_spectral_weapon(agent);
     if (old_mons)
-        end_spectral_weapon(old_mons, false);
+        return;
 
+    const int dur = min(2 + random2(1 + div_rand_round(pow, 25)), 4);
+    item_def* wpn = agent->weapon();
+    
+    //don't do anything if the weapon can't be spectral
+    if (!weapon_can_be_spectral(wpn))
+        return;
+    
     mgen_data mg(MONS_SPECTRAL_WEAPON,
                  agent->is_player() ? BEH_FRIENDLY
                                     : SAME_ATTITUDE(agent->as_monster()),
@@ -3123,13 +3177,11 @@ spret_type cast_spectral_weapon(actor *agent, int pow, god_type god, bool fail)
     mg.props[TUKIMA_WEAPON] = *wpn;
     mg.props[TUKIMA_POWER] = pow;
 
+    // Return if the weapon wasn't created for some reason
     monster *mons = create_monster(mg);
     if (!mons)
     {
-        //if (agent->is_player())
-            canned_msg(MSG_NOTHING_HAPPENS);
-
-        return SPRET_SUCCESS;
+        return;
     }
 
     if (agent->is_player())
@@ -3154,7 +3206,7 @@ spret_type cast_spectral_weapon(actor *agent, int pow, god_type god, bool fail)
     mons->summoner = agent->mid;
     agent->props["spectral_weapon"].get_int() = mons->mid;
 
-    return SPRET_SUCCESS;
+    return;
 }
 
 void end_spectral_weapon(monster* mons, bool killed, bool quiet)

@@ -70,7 +70,7 @@ static int crawl_mpr(lua_State *ls)
 
     int ch = MSGCH_PLAIN;
     if (lua_isnumber(ls, 2))
-        ch = luaL_checkint(ls, 2);
+        ch = luaL_safe_checkint(ls, 2);
     else
     {
         const char *channel = lua_tostring(ls, 2);
@@ -99,7 +99,7 @@ static int crawl_formatted_mpr(lua_State *ls)
 
     int ch = MSGCH_PLAIN;
     if (lua_isnumber(ls, 2))
-        ch = luaL_checkint(ls, 2);
+        ch = luaL_safe_checkint(ls, 2);
     else
     {
         const char *channel = lua_tostring(ls, 2);
@@ -138,13 +138,14 @@ LUAFN(crawl_dpr)
     return 0;
 }
 
-/*
----
-function delay(ms) */
-LUAWRAP(crawl_delay, delay(luaL_checkint(ls, 1)))
-/*
----
-function more() */
+/*** Delay the display.
+ * @tparam int ms delay in milliseconds
+ * @function delay
+ */
+LUAWRAP(crawl_delay, delay(luaL_safe_checkint(ls, 1)))
+/*** Display a `--- more ---` prompt
+ * @function more
+ */
 LUAWRAP(crawl_more, more())
 /*
 ---
@@ -309,7 +310,7 @@ static void crawl_sendkeys_proc(lua_State *ls, int argi)
         }
     }
     else if (lua_isnumber(ls, argi))
-        macro_sendkeys_end_add_expanded(luaL_checkint(ls, argi));
+        macro_sendkeys_end_add_expanded(luaL_safe_checkint(ls, argi));
 }
 
 /*
@@ -373,6 +374,18 @@ static int crawl_process_keys(lua_State *ls)
     if (!_check_can_do_command(ls))
         return 0;
 
+    // if there's pending input, pushing to the end of the buffer may separate
+    // the first element of the sequence from the rest. TODO: should this be
+    // changed to push the key sequence to the beginning of the buffer? See
+    // crawl_do_commands below.
+    if (has_pending_input())
+    {
+        luaL_error(ls,
+                "Cannot currently process new keys (there is pending input)");
+        return 0;
+    }
+
+
     const char* keys = luaL_checkstring(ls, 1);
 
     if (strlen(keys) == 0)
@@ -398,6 +411,16 @@ static int crawl_process_keys(lua_State *ls)
 
     process_command(cmd);
 
+    return 0;
+}
+
+static int crawl_set_sendkeys_errors(lua_State *ls)
+{
+    // enable or disable crashing on flushing an incomplete sendkeys buffer.
+    // used for tests, not generally useful in real life. Crashing only happens
+    // in wizmode.
+    const bool errors = lua_toboolean(ls, 1);
+    crawl_state.nonempty_buffer_flush_errors = errors;
     return 0;
 }
 
@@ -429,10 +452,10 @@ static int crawl_do_commands(lua_State *ls)
         lua_pop(ls, 1);
     }
 
-    flush_input_buffer(FLUSH_BEFORE_COMMAND);
-
     bool first = true;
     command_type firstcmd = CMD_NO_CMD;
+    deque<command_type> cmd_seq;
+
     for (const auto& command : commands)
     {
         command_type cmd = name_to_command(command);
@@ -448,8 +471,15 @@ static int crawl_do_commands(lua_State *ls)
             first = false;
         }
         else
-            macro_sendkeys_end_add_expanded(command_to_key(cmd));
+            cmd_seq.push_front(cmd); // reverse order for adding below
     }
+
+    flush_input_buffer(FLUSH_BEFORE_COMMAND);
+
+    // insert commands to the front of the macro buffer so that they are
+    // guaranteed to be processed adjacent to firstcmd
+    for (auto c : cmd_seq)
+        macro_buf_add_cmd(c, true);
 
     process_command(firstcmd);
 
@@ -552,7 +582,7 @@ static int crawl_msgch_num(lua_State *ls)
 
 static int crawl_msgch_name(lua_State *ls)
 {
-    int num = luaL_checkint(ls, 1);
+    int num = luaL_safe_checkint(ls, 1);
     string name = channel_to_str(num);
     lua_pushstring(ls, name.c_str());
     return 1;
@@ -567,7 +597,7 @@ static int crawl_take_note(lua_State *ls)
 
 static int crawl_messages(lua_State *ls)
 {
-    const int count = luaL_checkint(ls, 1);
+    const int count = luaL_safe_checkint(ls, 1);
     lua_pushstring(ls, get_last_messages(count).c_str());
     return 1;
 }
@@ -595,8 +625,11 @@ static int crawl_regex_find(lua_State *ls)
 {
     text_pattern **pattern =
             clua_get_userdata< text_pattern* >(ls, REGEX_METATABLE);
-    if (!pattern)
+    if (!pattern || !*pattern)
+    {
+        luaL_argerror(ls, 1, "Invalid regex object");
         return 0;
+    }
 
     const char *text = luaL_checkstring(ls, -1);
     if (!text)
@@ -612,7 +645,15 @@ static int crawl_regex_equals(lua_State *ls)
             clua_get_userdata< text_pattern* >(ls, REGEX_METATABLE);
     text_pattern **arg =
             clua_get_userdata< text_pattern* >(ls, REGEX_METATABLE, 2);
-    lua_pushboolean(ls, pattern && arg && **pattern == **arg);
+
+    if (!pattern || !*pattern || !arg || !*arg)
+    {
+        // TODO: explain which one
+        luaL_error(ls, "Invalid regex object");
+        return 0;
+    }
+
+    lua_pushboolean(ls, **pattern == **arg);
     return 1;
 }
 
@@ -629,7 +670,7 @@ static int crawl_message_filter(lua_State *ls)
     if (!pattern)
         return 0;
 
-    int num = lua_isnumber(ls, 2)? luaL_checkint(ls, 2) : -1;
+    int num = lua_isnumber(ls, 2)? luaL_safe_checkint(ls, 2) : -1;
     message_filter **mf =
             clua_new_userdata< message_filter* >(ls, MESSF_METATABLE);
     if (mf)
@@ -644,11 +685,14 @@ static int crawl_messf_matches(lua_State *ls)
 {
     message_filter **mf =
             clua_get_userdata< message_filter* >(ls, MESSF_METATABLE);
-    if (!mf)
+    if (!mf || !*mf)
+    {
+        luaL_argerror(ls, 1, "Invalid message filter object");
         return 0;
+    }
 
     const char *pattern = luaL_checkstring(ls, 2);
-    int ch = luaL_checkint(ls, 3);
+    int ch = luaL_safe_checkint(ls, 3);
     if (pattern)
     {
         bool filt = (*mf)->is_filtered(ch, pattern);
@@ -664,7 +708,13 @@ static int crawl_messf_equals(lua_State *ls)
             clua_get_userdata< message_filter* >(ls, MESSF_METATABLE);
     message_filter **arg =
             clua_get_userdata< message_filter* >(ls, MESSF_METATABLE, 2);
-    lua_pushboolean(ls, mf && arg && **mf == **arg);
+    if (!mf || !*mf || !arg || !*arg)
+    {
+        // TODO: explain which one
+        luaL_error(ls, "Invalid message filter object");
+        return 0;
+    }
+    lua_pushboolean(ls, **mf == **arg);
     return 1;
 }
 
@@ -733,22 +783,64 @@ LUARET1(crawl_game_started, boolean, crawl_state.need_save
                                      || crawl_state.obj_stat_gen
                                      || crawl_state.test)
 LUARET1(crawl_stat_gain_prompt, boolean, crawl_state.stat_gain_prompt)
-LUARET1(crawl_random2, number, random2(luaL_checkint(ls, 1)))
-LUARET1(crawl_one_chance_in, boolean, one_chance_in(luaL_checkint(ls, 1)))
+/*** Return a random number from [0, max).
+ * @tparam int max
+ * @treturn int
+ * @function random2
+ * */
+LUARET1(crawl_random2, number, random2(luaL_safe_checkint(ls, 1)))
+/*** Perform a weighted coinflip.
+ * @tparam int in
+ * @treturn boolean
+ * @function one_chance_in
+ */
+LUARET1(crawl_one_chance_in, boolean, one_chance_in(luaL_safe_checkint(ls, 1)))
+/*** Average num random rolls from [0, max).
+ * @tparam int max
+ * @tparam int num
+ * @treturn int
+ * @function random2avg
+ */
 LUARET1(crawl_random2avg, number,
-        random2avg(luaL_checkint(ls, 1), luaL_checkint(ls, 2)))
+        random2avg(luaL_safe_checkint(ls, 1), luaL_safe_checkint(ls, 2)))
+/*** Random number in a range.
+ * @tparam int min
+ * @tparam int max
+ * @tparam[opt=1] int rolls Average over multiple rolls
+ * @function random_range
+ */
 LUARET1(crawl_random_range, number,
-        random_range(luaL_checkint(ls, 1), luaL_checkint(ls, 2),
-                      lua_isnumber(ls, 3)? luaL_checkint(ls, 3) : 1))
+        random_range(luaL_safe_checkint(ls, 1), luaL_safe_checkint(ls, 2),
+                      lua_isnumber(ls, 3)? luaL_safe_checkint(ls, 3) : 1))
+/*** Flip a coin.
+ * @treturn boolean
+ * @function coinflip
+ */
 LUARET1(crawl_coinflip, boolean, coinflip())
 LUARET1(crawl_roll_dice, number,
         lua_gettop(ls) == 1
-        ? roll_dice(1, luaL_checkint(ls, 1))
-        : roll_dice(luaL_checkint(ls, 1), luaL_checkint(ls, 2)))
-LUARET1(crawl_x_chance_in_y, boolean, x_chance_in_y(luaL_checkint(ls, 1),
-                                                    luaL_checkint(ls, 2)))
-LUARET1(crawl_div_rand_round, number, div_rand_round(luaL_checkint(ls, 1),
-                                                     luaL_checkint(ls, 2)))
+        ? roll_dice(1, luaL_safe_checkint(ls, 1))
+        : roll_dice(luaL_safe_checkint(ls, 1), luaL_safe_checkint(ls, 2)))
+/*** Do a random draw.
+ * @tparam int x
+ * @tparam int y
+ * @treturn boolean
+ * @function x_chance_in_y
+ */
+LUARET1(crawl_x_chance_in_y, boolean, x_chance_in_y(luaL_safe_checkint(ls, 1),
+                                                    luaL_safe_checkint(ls, 2)))
+/*** Random-round integer division.
+ * @tparam int numerator
+ * @tparam int denominator
+ * @treturn int
+ * @function div_rand_round
+ */
+LUARET1(crawl_div_rand_round, number, div_rand_round(luaL_safe_checkint(ls, 1),
+                                                     luaL_safe_checkint(ls, 2)))
+/*** A random floating point number in [0,1.0)
+ * @treturn number
+ * @function random_real
+ */
 LUARET1(crawl_random_real, number, random_real())
 LUARET1(crawl_weapon_check, boolean, wielded_weapon_check(you.weapon()))
 
@@ -906,8 +998,8 @@ static int crawl_get_command(lua_State *ls)
 }
 
 LUAWRAP(crawl_endgame, screen_end_game(luaL_checkstring(ls, 1)))
-LUAWRAP(crawl_tutorial_hunger, set_tutorial_hunger(luaL_checkint(ls, 1)))
-LUAWRAP(crawl_tutorial_skill, set_tutorial_skill(luaL_checkstring(ls, 1), luaL_checkint(ls, 2)))
+LUAWRAP(crawl_tutorial_hunger, set_tutorial_hunger(luaL_safe_checkint(ls, 1)))
+LUAWRAP(crawl_tutorial_skill, set_tutorial_skill(luaL_checkstring(ls, 1), luaL_safe_checkint(ls, 2)))
 LUAWRAP(crawl_tutorial_hint, tutorial_init_hint(luaL_checkstring(ls, 1)))
 LUAWRAP(crawl_print_hint, print_hint(luaL_checkstring(ls, 1)))
 
@@ -1137,6 +1229,7 @@ static const struct luaL_reg crawl_clib[] =
     { "sendkeys",           crawl_sendkeys },
     { "process_command",    crawl_process_command },
     { "process_keys",       crawl_process_keys },
+    { "set_sendkeys_errors", crawl_set_sendkeys_errors },
     { "do_commands",        crawl_do_commands },
 #ifdef USE_SOUND
     { "playsound",          crawl_playsound },
@@ -1307,7 +1400,7 @@ LUAFN(_crawl_god_speaks)
 
 LUAFN(_crawl_set_max_runes)
 {
-    int max_runes = luaL_checkinteger(ls, 1);
+    int max_runes = luaL_safe_checkint(ls, 1);
     if (max_runes < 0 || max_runes > NUM_RUNE_TYPES)
         luaL_error(ls, make_stringf("Bad number of max runes: %d", max_runes).c_str());
     else

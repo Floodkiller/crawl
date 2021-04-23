@@ -96,12 +96,13 @@ Beastly Appendage spell
     if you.race() == "Octopode" then
         return "Causes a vicious spike to grow from one of the caster's " ..
                "tentacles, increasing the damage of their extra tentacle " ..
-               "attacks."
+               "attacks. Casting the spell again will cancel the form."
     else
         return "Causes monstrous horns or talons to grow from the caster's " ..
                "body, granting them a chance of making an extra attack in " ..
                "melee. It is not powerful enough to meld armour or enhance " ..
-               "appendages that are already nonhuman."
+               "appendages that are already nonhuman. Casting the spell again " .. 
+               "will cancel the form."
     end
 }}
 %%%%
@@ -132,13 +133,15 @@ melee damage significantly.
 
 While transformed, any equipped weapons are melded. The caster also becomes
 unable to evoke wands, and casting spells becomes somewhat more difficult.
+Casting the spell again will cancel the form.
 %%%%
 Blade of Disaster spell
 
-Manifests the fury of battle into crystallized sparks with each swing of the
-caster's weapon. The sparks explode in a large radius shortly after the spell
-expires. The damage of the explosion is based on both spellpower and the
-caster's weapon.
+A reckless and dangerous spell capable of great destruction. Channels emanations
+of disastrous arcane power through the caster's weapon that explode in a large
+radius shortly after the spell expires, damaging all creatures, including the
+caster, caught within the blast. The damage of the explosion is based on both
+spellpower and the caster's weapon.
 
 Unarmed fighters find it easier to channel the full power of the spell into their
 attacks, but lose the benefit of their weapon.
@@ -266,7 +269,7 @@ caster's line of sight will end the effect.
 Chain of Chaos spell
 
 Creates an arc of pure chaos, striking nearby creatures with unpredictable
-effects.
+effects. The arc can touch upon the caster without harming them.
 %%%%
 Chain Lightning spell
 
@@ -277,6 +280,12 @@ sufficiently close to the caster. Its damage partially bypasses armour.
 Chaos Breath spell
 
 Exhales a large cloud of fumes filled with the very essence of chaos.
+%%%%
+Chill Thread spell
+
+The caster damps down their rage and focuses on their weapon's spirit,
+creating a chill thread they weave through their garments that will
+freeze anyone who attacks them.
 %%%%
 Chilling Breath spell
 
@@ -334,6 +343,13 @@ exploding.
 Conjure Flame spell
 
 Creates a blazing column of flame in a targeted empty location.
+%%%%
+Conjure Distortion spell
+
+Creates a cloud of distortion in a random adjacent empty (no monster AND no
+cloud of distortion) location.
+Clouds of distortion produce all distortion effects except for banishment -
+damaging, blinking and teleporting any being standing in them.
 %%%%
 Control Undead spell
 
@@ -411,7 +427,16 @@ Deflect Missiles spell
 Protects the caster from all kinds of projectile attacks, making them
 significantly easier to dodge. It is highly effective against both
 single-target and penetrating attacks. Each time a missile is deflected the
-spell has a chance of expiring, with a lower chance of expiry at high power.
+spell has a chance of draining the caster's power, with a lower chance of
+expiry at high power. Casting the spell again will cancel the spell's
+effects.
+%%%%
+Differential Expansion spell
+
+A thick icy shell forms over the caster's weapon as the caster manifests their
+rage into a single white-hot point on their weapon. A degree of thermal shock
+ensues, the result of which is directed to a target within melee range, 
+causing ice damage and potential knockback.
 %%%%
 Dig spell
 
@@ -492,7 +517,8 @@ Dragon Form spell
 }} The caster becomes able to deal incredible damage in melee combat, and
 they become much more robust, although their evasiveness is reduced.
 
-While transformed, any equipped weapons and armour are melded.
+While transformed, any equipped weapons and armour are melded. Casting the spell
+again will cancel the form.
 %%%%
 Dragon's Call spell
 
@@ -532,7 +558,7 @@ Throws a bolt of electricity at the target, with high accuracy.
 %%%%
 Energy Bolt spell
 
-Fires a bolt of highly destructive energy.
+Fires a beam of highly destructive energy. It can blow rock into pieces.
 %%%%
 Enslavement spell
 
@@ -553,8 +579,9 @@ Corrodes the target, with no direct line of fire required.
 %%%%
 Excruciating Wounds spell
 
-Temporarily infuses the weapon held by the caster with the essence of pain
-itself. It will not affect artefact weapons.
+Infuses the weapon held by the caster with the essence of pain itself. It will
+not affect artefact weapons. Casting the spell again will cancel the spell's
+effects.
 %%%%
 Flay spell
 
@@ -657,6 +684,11 @@ Haste Other spell
 
 Speeds the actions of a nearby ally.
 %%%%
+Harpoon Shot spell
+
+Fires a long and flexible barbed mass. The ensnared victim will either be
+pulled adjacent to the caster or collide with anything blocking the way.
+%%%%
 Haste spell
 
 Speeds the actions of a targeted creature.
@@ -701,7 +733,7 @@ Transforms the caster into an amphibious, many-headed hydra for a brief
 duration. Its multiple heads strike in all directions. Edible foes slain by the
 gnashing teeth are instantly devoured, reinvigorating the caster in their
 reptilian rampage. The caster gains innate armour and increased health, and
-becomes resistant to poison.
+becomes resistant to poison. Casting the spell again will cancel the form.
 
 While transformed, any equipped weapons and armour are melded, and wands cannot
 be evoked. The form's number of heads is fixed upon casting the spell, and
@@ -719,7 +751,7 @@ water. The caster gains a freezing melee attack, and becomes incredibly
 resistant to cold and resistant to poison, but vulnerable to fire.
 
 While transformed, any equipped weapons and armour are melded, and wands cannot
-be evoked.
+be evoked. Casting the spell again will cancel the form.
 %%%%
 Ignite Poison spell
 
@@ -744,12 +776,13 @@ Infusion spell
 
 Infuses the caster's melee attacks with magic, drawing from their reserves of
 magical energy to deal additional damage whenever an enemy is hit. It has no
-effect when the caster's magic is depleted.
+effect when the caster's magic is depleted. Casting the spell again will cancel
+the spell's effects.
 %%%%
 Injury Bond spell
 
-Binds the caster to a nearby ally, redirecting half of any damage the target
-suffers to the caster.
+Binds the caster to nearby allies, redirecting half of any damage they suffer
+to the caster.
 %%%%
 Injury Mirror spell
 
@@ -764,6 +797,7 @@ Inner Flame spell
 
 Fills an enemy with an intense fire, to be explosively released upon death. The
 size of the explosion caused is dependent on the size of the target.
+Inner Flame is smite targeted.
 %%%%
 Invisibility spell
 
@@ -788,11 +822,13 @@ lingers, enough to leave them dangerously contaminated after a few castings.
 %%%%
 Iskenderun's Battlesphere spell
 
-Conjures a small globe of magical energy linked to the caster's own magical
-reserves. While the battlesphere cannot take independent action, it will fire
+Prepares a small globe of magical energy linked to the caster's own magical
+reserves. Casting any spell that the battlesphere can mirror while enemies are
+in range will summon it for a brief time. The battlesphere will fire
 volleys of energy at the caster's enemies in sync with its creator's own
 destructive conjurations. With increasing power, the battlesphere lasts longer
-and deals more damage per volley.
+and deals more damage per volley. Casting the spell again will cancel the spell's
+effects.
 %%%%
 Iskenderun's Mystic Blast spell
 
@@ -870,8 +906,8 @@ Drains life from an enemy, healing nearby allies in the process.
 %%%%
 Malmutate spell
 
-Bestows a mutation on a target. The mutation is almost always harmful. It
-cannot affect artificial beings, and the undead will decompose if affected.
+Drains all of the target's physical attributes at an incredible rate. This loss is
+temporary, and can be recovered by gaining experience.
 %%%%
 Mara Summon spell
 
@@ -888,8 +924,9 @@ Conjures up a short-lived cloud of noxious fumes, which may cause confusion.
 %%%%
 Mesmerise spell
 
-Makes a targeted creature unwilling to move away from the caster. Leaving the
-caster's line of sight will end the effect.
+Makes a targeted creature unwilling to move away from the caster. Extremely
+loud noises, such as those produced by lightning or scrolls of noise, will
+disrupt the effect, as will leaving the caster's line of sight.
 %%%%
 Metabolic Englaciation spell
 
@@ -935,7 +972,8 @@ to poison, rotting, negative energy and torment, and requires no food at all
 for the duration of the spell. The caster's necromancy spells are increased in
 power, and they gain a draining melee attack. The caster also gains some of the
 more dubious benefits of having an undead body, such as a vulnerability to holy
-damage and Dispel Undead, and an inability to consume potions.
+damage and Dispel Undead, and an inability to consume potions. Casting the spell
+again will cancel the form.
 %%%%
 Noxious Cloud spell
 
@@ -963,12 +1001,19 @@ Orb of Electricity spell
 Hurls a crackling orb of electrical energy, creating a huge explosion on
 impact. Its damage partially bypasses armour.
 %%%%
+Iskenderun's Undoing spell
+
+Fires Orbs of Destruction in all 8 directions. In addition to homing in on
+their target, they will explode (as per Iskenderun's Mystic Blast) when they
+hit something. The Orbs can hit and damage you, but the explosions will not.
+%%%%
 Ozocubu's Armour spell
 
 Envelops the caster's body in a protective layer of thick ice. This will slow
 the caster's movement slightly, and provides no special protection against cold.
 The spell will not function for casters already wearing heavy armour (any body
-armour with an encumbrance rating of 5 or more).
+armour with an encumbrance rating of 5 or more). Casting the spell again will
+cancel the spell's effects.
 %%%%
 Ozocubu's Refrigeration spell
 
@@ -1083,16 +1128,17 @@ caster, over a short duration.
 %%%%
 Regeneration spell
 
-Reanimates parts of the caster's wounds. This unnatural act dramatically but
-temporarily increases the caster's health regeneration, while also speeding
-their metabolism.
+Reanimates parts of the caster's wounds. This unnatural act dramatically
+increases the caster's health regeneration, while also speeding their
+metabolism. Casting the spell again will cancel the spell's effects.
 %%%%
 Repel Missiles spell
 
 Reduces the chance of projectile attacks striking the caster, making them
 easier to dodge. Single-target attacks are much easier to repel than
-penetrating attacks. Each time a missile is repelled the spell has a chance of
-expiring, with a lower chance of expiry at high power.
+penetrating attacks. Each time a missile is repelled the spell has a chance
+of draining power, with a lower chance of drain at high power. Casting the 
+spell again will cancel the spell's effects.
 %%%%
 Resonance Strike spell
 
@@ -1102,10 +1148,11 @@ each one standing near the target.
 %%%%
 Ring of Flames spell
 
-Surrounds the caster with a mobile ring of searing flame, and keeps other fire
+Surrounds the caster with a mobile ring of searing flame, and keeps other 
 clouds away from the caster. This spell attunes the caster to the forces of
 fire, increasing the power of their fire magic and giving protection from fire.
-However, it also makes them much more susceptible to cold.
+However, it also makes them more susceptible to cold. Casting the spell again
+will cancel the spell's effects.
 %%%%
 Ring of Thunder spell
 
@@ -1204,10 +1251,17 @@ Creates an icy replica from the corpse of the original being. This magic is
 unstable, so eventually the replica will sublimate into a freezing cloud.
 Simulacra cannot leave the level they were created on.
 %%%%
+Singularity spell
+
+Compresses space into a gravitational singularity, pulling nearby enemies of
+the caster towards it and warping them violently in the process. The caster
+can only maintain one singularity at a time.
+%%%%
 Siren Song spell
 
 Sings a haunting song, making nearby victims unwilling to move away from the
-singer. Leaving the caster's line of sight will end the effect.
+singer. Extremely loud noises, such as those produced by lightning or scrolls
+of noise, will disrupt the effect, as will leaving the caster's line of sight.
 %%%%
 Sleep spell
 
@@ -1230,8 +1284,8 @@ Song of Slaying spell
 
 Recites ancient verses of battle. Each non-summoned enemy the caster slays in
 combat during this recitation temporarily enhances their melee and ranged
-skills. The bonus only lasts for the duration of the song; casting this spell
-while already singing will start a new song, not extend an existing one.
+skills. The bonus decreases over time based on spellpower. Casting the spell
+again will cancel the spell's effects.
 %%%%
 Spawn Tentacles spell
 
@@ -1249,7 +1303,8 @@ Draws out the spirit within a wielded weapon to fight for the caster, with its
 strength increasing with power. It only attacks when the caster does, and its
 kills count as the caster's own. If the weapon is damaged, part of the injury
 will be echoed on the caster's body. Only one spectral weapon can be maintained
-at a time, and only while the original weapon remains wielded.
+at a time, and will reform whenever the caster attacks when it is not present.
+Casting the spell again will cancel the spell's effects.
 
 Certain powerful named artefacts cannot be affected, and any abilities that
 require evocation skill to trigger will not be active.
@@ -1268,7 +1323,7 @@ highly evasive and gains a poisonous bite, but gains vulnerability to poison.
 
 While transformed, any equipped weapons and armour are melded. The caster also
 becomes unable to evoke wands, and casting spells becomes slightly more
-difficult.
+difficult. Casting the spell again will cancel the form.
 %%%%
 Spit Acid spell
 
@@ -1298,7 +1353,8 @@ Statue Form spell
 Transforms the caster into a slow but extremely robust stone statue. The
 caster's melee damage, both unarmed and with weapons, is substantially
 increased. The caster's stone body is insulated from electricity and gains
-resistance to poison, rotting and negative energy.
+resistance to poison, rotting and negative energy. Casting the spell again
+will cancel the form.
 
 While transformed, any equipped body armour, gloves and boots are melded.
 %%%%
@@ -1498,6 +1554,15 @@ Calls on the powers of darkness to cause agonising injury to any living thing
 in the caster's vicinity, cutting their resilience in half. This damage is
 never directly lethal.
 %%%%
+Time Stop spell
+
+Freezes time for everything but the caster for a spellpower-dependent amount
+of time. This spell is exhausting to cast, and blinking or teleporting
+will immediately end the effect. Time stopped enemies are helpless.
+Momentum is stored up during Time Stop. When Time Stop ends, enemies will be
+sent flying back based on the direction of their last hit, and the total
+damage they took.
+%%%%
 Teleport Other spell
 
 Randomly translocates a targeted creature.
@@ -1578,6 +1643,7 @@ Fires a penetrating bolt of poison.
 Virulence spell
 
 Makes a targeted creature more vulnerable to poison.
+Completely immune creatures are not affected.
 %%%%
 Volley of Thorns spell
 

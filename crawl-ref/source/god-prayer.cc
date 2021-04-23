@@ -60,7 +60,7 @@ string god_prayer_reaction()
  * Determine the god this game's ecumenical altar is for.
  * Replaces the ecumenical altar with the God's real altar.
  * Assumes you can worship at least one god (ie are not a
- * demigod), and that you're standing on the altar.
+ * promethean), and that you're standing on the altar.
  *
  * @return The god this altar is for.
  */
@@ -78,6 +78,12 @@ static god_type _altar_identify_ecumenical_altar()
 
 static bool _pray_ecumenical_altar()
 {
+    if (you.pledge == PLEDGE_SPITEFUL && !you.attribute[ATTR_SPITEFUL])
+    {
+        mpr("You cannot worship a new god until you have abandoned Ru once before!");
+        return false;
+    }
+
     if (yesno("You cannot tell which god this altar belongs to. Convert to "
               "them anyway?", false, 'n'))
     {
@@ -119,9 +125,14 @@ void try_god_conversion(god_type god)
 {
     ASSERT(god != GOD_NO_GOD);
 
-    if (you.species == SP_DEMIGOD)
+    if (you.species == SP_PROMETHEAN)
     {
-        mpr("A being of your status worships no god.");
+        mpr("The gods refuse to answer you.");
+        return;
+    }
+    if (you.pledge == PLEDGE_BRUTE_FORCE)
+    {
+        mpr("You refuse to break your pledge.");
         return;
     }
 

@@ -199,6 +199,8 @@ int player::damage_type(int)
         return DVORP_SLICING;
     else if (has_usable_claws())
         return DVORP_CLAWING;
+    else if (has_usable_pincers())
+        return DVORP_CLAWING;
     else if (has_usable_tentacles())
         return DVORP_TENTACLE;
 
@@ -222,6 +224,9 @@ brand_type player::damage_brand(int)
 
     if (duration[DUR_CONFUSING_TOUCH])
         return SPWPN_CONFUSE;
+
+    if (player_equip_unrand(UNRAND_FISTS_OF_THUNDER))
+        return SPWPN_ELECTROCUTION;
 
     return get_form()->get_uc_brand();
 }
@@ -336,7 +341,8 @@ item_def *player::weapon(int /* which_attack */) const
 // Give hands required to wield weapon.
 hands_reqd_type player::hands_reqd(const item_def &item, bool base) const
 {
-    if (species == SP_FORMICID)
+    if (species == SP_FORMICID
+        || species == SP_ABOMINATION)
         return HANDS_ONE;
     else
         return actor::hands_reqd(item, base);
@@ -487,6 +493,9 @@ static string _hand_name_singular()
     if (you.has_usable_claws())
         return "claw";
 
+    if (you.has_usable_pincers())
+        return "pincer";
+
     if (you.has_usable_tentacles())
         return "tentacle";
 
@@ -552,6 +561,12 @@ static string _foot_name_singular(bool *can_plural)
         return "tail";
     }
 
+    if (you.species == SP_DJINNI)
+    {
+        *can_plural = false;
+        return "underside";
+    }
+
     return "foot";
 }
 
@@ -595,6 +610,8 @@ string player::arm_name(bool plural, bool *can_plural) const
         adj = "bandage-wrapped";
     else if (species == SP_OCTOPODE)
         str = "tentacle";
+    else if (species == SP_HERMIT_CRAB)
+        str = "pincer";
 
     if (form == transformation::lich)
         adj = "bony";
@@ -625,11 +642,17 @@ string player::unarmed_attack_name() const
     {
         if (species == SP_FELID)
             default_name = "Teeth and claws";
+        else if (player_equip_unrand(UNRAND_FISTS_OF_THUNDER) && has_claws(true))
+            default_name = "Electrified claws";
+        else if (player_equip_unrand(UNRAND_FISTS_OF_THUNDER) && !has_claws(true))
+            default_name = "Electrified fists";
         else
             default_name = "Claws";
     }
     else if (has_usable_tentacles(true))
         default_name = "Tentacles";
+    else if (has_usable_pincers(true))
+        default_name = "Pincers";
 
     return get_form()->get_uc_attack_name(default_name);
 }
@@ -639,15 +662,22 @@ bool player::fumbles_attack()
     bool did_fumble = false;
 
     // Fumbling in shallow water.
-    if (floundering() || liquefied_ground())
+    if (floundering())
     {
         if (x_chance_in_y(3, 8))
         {
             mpr("Your unstable footing causes you to fumble your attack.");
             did_fumble = true;
         }
-        if (floundering())
-            learned_something_new(HINT_FUMBLING_SHALLOW_WATER);
+        learned_something_new(HINT_FUMBLING_SHALLOW_WATER);
+    }
+    else if (liquefied_ground())
+    {
+        if (x_chance_in_y(2, 8))
+        {
+            mpr("Your unstable footing causes you to fumble your attack.");
+            did_fumble = true;
+        }
     }
     return did_fumble;
 }
@@ -754,6 +784,13 @@ bool player::go_berserk(bool intentional, bool potion)
     you.berserk_penalty = 0;
 
     you.redraw_quiver = true; // Account for no firing.
+
+    if (you.species == SP_LAVA_ORC)
+    {
+        mpr("You burn with rage!");
+        // This will get sqrt'd later, so.
+        you.temperature = TEMP_MAX;
+    }
 
     if (player_equip_unrand(UNRAND_ZEALOT_SWORD))
         for (monster_near_iterator mi(you.pos(), LOS_NO_TRANS); mi; ++mi)

@@ -1,37 +1,24 @@
-Features leftover from v1.0 list
-
-Re-implement wands of heal wounds 
-- Was buggy, implemented harp of healing
-Re-implement wands of teleportation 
-- Was buggy, implemented shard of zot
-Re-implement Singularity - Was super broken, needs lots of work to fix and bring back
-Implement hat wearing for felids 
-- Still need to fix Ashenzari interaction with new equip slots
-Re-implement spellpower boost for Dragon Call in Dragon Form 
-- Need to highlight when spell is boosted
-Re-implement Pakellas (will still require adjusting abilities to stacked wands system)
--What will Quick Charge do with wand stacking?
--Stick with No MP regen+MP on kill?  If so, stick with gifted potion of magic for 
-  overflow MP?
--What will Supercharge do with wand stacking?
--Should Pakellas still give gifts?  If so, follow current piety breakpoint gift 
-  system (like Kiku’s) or swap to gifts from piety system (like Oka/Sif/Trog)?
-Re-implement rods
--What should be done about wand of clouds/wand of scattershot?
--What should be done about ‘lightning rod’ evocable?
--Should rods work as they did before (wield to use) or use a different system?
-Rework or remove Malmutate from monster spell lists
--Cacodemons and neqoxecs are changed, will wait and see about orbs of fire and shining eyes
-Implement ‘permanent buff’ system from Hellcrawl
--Which spells receive the perma buff system, and which will use the current system?
--How complex is it to pull over from Hellcrawl? (something I need to investigate)
--Any adjustments from how Hellcrawl’s system works?
-Rework Hell effects
--Couldn't find branch with Hell effects rework, might have to work from scratch
-Implement Virulence spell
--Spell level, schools, spellpower cap, any special features (like a spellpower boost)?
--How does the spell work with the different tiers of rPois 
-  (-rPois/no resist/+rPois/immune to poison)?
--Need to make sure monsters can be affected by the Virulence effect 
-  (it may only be a player-based effect at the moment)
+List of implementables from v2.0 list remaining:
+  -Felid mummy monster type for Tomb
+  -Let Ignite Poison cause damage to poison-based monsters (instead of just those who are poisoned)
+  -Goldify Food (convert food into a stat tracked outside of inventory, like gold)
+  -Give Phantoms an “Open all doors loudly” spell
+  -Helmet Shell ability for Octopodes (Add as an AC bonus while stationary)
+  -Nemelex Reform
+    --Give worshippers a hand of cards, rework powers around it
+  -Okawaru Reform
+    --Offer 3 gifts at a time instead of 1
+    --Spawn them as animated weapons(/armor?)
+  -Hell Effects
+    --Rework effects to be more specific and unique to each hell
+  -Reimplement Pakellas
+    --Replace Quick Charge with frequent low charge wand gifts
+    --Simplify Device Surge by just maxing wand spellpower when active
+    --Keep Supercharge similar to original (max out a rod’s capacity and recharge rate; give a wand lots of charges...could always change the wand part if there are complaints about always sinking it into wands of hasting or something)
+  -Reimplement rods
+    --Change them to contain spells (using randart spellbook generation code) instead of preset types
+    --Can use from inventory without needing to wield
+  -‘Damage numbers’ rcfile option (off by default)
+  -Change “incredibly out of depth monster” in vault code to be less out of depth (modify to flat +10-+15 instead of multiplying depth based on floor
+  -Merge bugfixes/other non-gameplay affecting changes from trunk to bring back to codebase parity (left off at 3322dfd 'Fix bug 11478: Movement-key actions and Wu Jian); will add skipped commits to gooncrawl docs folder for definitions on why any commits before this point were missing
 

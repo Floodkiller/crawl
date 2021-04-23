@@ -1,3 +1,187 @@
+Gooncrawl Version 2.0 (in perpetual development hell):
+
+Species
+----------
+-Added Hermit Crabs, a species that can cast easily in most body armors and has big meaty
+ claws for punching, but sucks at melee combat and dislikes transmuting and mutating away
+ from their perfect form
+-Added Faerie Dragons, a small draconian-esque species that can cast spells for reduced MP costs
+-Added Skeleton species, a fragile undead species with the power to mesmerize themselves
+ against enemies to shave large amounts of damage
+-Added Grey Elves, elves who are grey
+-Reimplemented Djinni
+-Reimplemented Lava Orcs
+-Deep Dwarves have the Recharging ability again (keeping their Heal ability as well)
+-Banned undead from being Priests
+-Renamed Demigods to Prometheans, reduced their XP aptitude penalty to -1, changed stat
+ growth from +2 choice every three levels to +1 random every level/+1 choice every three levels
+-Large species can now wield dire flails, great swords, battleaxes, halberds, quarterstaves,
+ and arbalests one handed
+
+Backgrounds
+----------
+-Added Archaeologists, a background that starts with a manual and a locked box containing
+ an unrandart related to the manual. The box is unlocked when the manual is finished
+-Added Slime Apostles, a background that worships Jiyva
+-Re-added Reavers (with some spellbook changes)
+-Re-added Healer background
+-Re-added Jester class, an ex-worshipper of Xom who now follows Nemelex Xobeh and starts
+ with multiple pies
+
+Gods
+----------
+-XP sharing with orcish followers under Beogh has changed: instead of taking half the player's
+ kill XP and splitting it among all orcs in LoS (with bigger shares going to orcs with more HD),
+ every orc in LoS will now receive the full half.
+-Okawaru no longer gives out ammo gifts. Instead, at 3* piety, Okawaru will now make all of the
+ player's ammunition have the returning brand in addition to whatever brand it normally has.
+ Additionally, at 3* of piety and higher Okawaru has a chance to prevent ammunition from being
+ mulched (up to 100% chance to be preserved at 160 piety/6*)
+
+Spells
+----------
+-New spell: Virulence, a level 4 Hex/Pois spell. When successful, reduces the enemy's
+ poison resistance
+-New spell: Conjure Distortion, a level 3 Transloc spell that generates a cloud of
+ distortion at random around the caster
+-New spell: Time Stop, a level 9 Hexes spell that stops time for a few turns and launches
+ enemies damaged during the spell with momentum after expiration
+-New spell: Iskenderun's Undoing, a level 9 Conjurations spell that summons 8 Orbs of
+ Destruction around you on cast
+-New spell: Blades of Disaster, a level 5 Charms spell that summons prisms when hitting
+ enemies during the spell's duration. When the duration runs out, the prisms will explode
+ in a few turns and damage everything in their radius (including the player).
+-New spell: Differential Expansion, a level 3 Conjurations/Ice spell that will knock back
+ the next enemy attacked in melee range with an ice-based attack.
+-New spell: Chill Thread, a level 1 Charms/Ice permabuff spell that adds a chance to freeze
+ monsters who attack the player.
+-Re-added the Haste spell, increased spell level to 9, re-added Haste contamination
+-Re-added the Singularity spell
+-Ring of Flames is now radius 2, the flaming clouds overwrite all other clouds, the player's
+ tile is cleared of all clouds, and it only gives rC- instead of rC--
+-Gell's Gravitas is 10% more effective
+-Alistair's Intoxication is 10% more effective spellpower, confuses enemies more often,
+ vertigos yourself less often
+-Leda's Liquefaction player penalties are 33% less than monster penalties
+-Inner Flame is smite targeted, can cast it on ally summons/undead without restriction
+-Silence's minimum duration increased to improve worst case cast
+-Force Lance to-hit improved
+-Guardian Golem's HD improved slightly
+-Battlesphere is back in the Cj starting book, replacing Force Lance
+-Made the following spells permabuffs (spells reserve their spell level in MP, modified by
+ Intelligence and reduced by Dexterity; full description in the manual under spells)
+---Ring of Flames
+---Infusion
+---Re-added Repel Missiles for Repel/Deflect Missiles (slight change: you lose the spell level
+ in MP whenever you would fail the spellpower check)
+---All transmutation form spells
+---Excruciating Wounds
+---Spectral Weapon
+---Song of Slaying
+---Battlesphere
+---Ozo's Armor
+-Players are protected from taking damage from the last tile of a bounced spell that they have cast
+
+Items
+----------
+-Added Fists of Thunder unrandart: gloves that give your unarmed combat an electrice brand.
+-Reimplemented stone of tremors
+-The amulet of the acrobat remains active while performing Wu Jian attacks
+-Reimplemented disc of storms
+-Tweaked the harp of healing from 10+(1*Evocations) to 5+(0.75*Evocations)
+-Antennae and horns no longer block the wearing of masks and crowns (might be buggy?)
+-The ratskin cloak now has *Rats
+-Long blades now have a chance to riposte on all attacks, not just dodged attacks
+
+
+Monsters
+----------
+-Entropy weavers can no longer SInv
+-Crazy Yiuf now becomes friendly and follows you when you have the Orb of Zot
+-Joseph now is guaranteed to spawn with a magical sling (50% vorpal/25% flaming/25% freezing)
+-Death Yaks now look death-ier!
+-Shining Eyes have had Malmutate replaced with Polymorph
+-Cacodemons have Malmutate again (see below)
+-Malmutate has been changed to drain 1d3 of each stat instead of mutate the player
+
+Dungeon
+----------
+-You can now quaff from blood and sparkling fountains again
+-Disintegrating effects can now blow up walls again
+-The Abyss now goes down to 27 floors (with scaling items and monsters on the way down),
+ one-way stairs to Zot (which can be used even if you don't have enough runes) now appear
+ from Abyss:5 onward, and reaching Abyss:27 will permanently corrupt every dungeon level
+ (similar to Lugonu's Corruption ability)
+-The Vaults rune lock has been removed
+-Shops and bazaars can now spawn in Pan, and Pan has the potential to place an infinite
+ amount of bazaars
+-Charms and Hexes have been removed as potential miscast effects used by Hell effects
+-Non-summoning Hell effects will no longer trigger if there is not an enemy in sight
+-Hell effects end with the death of each Hell branch's respective Hell lord
+-Added wizard keys as a reward in Crypt:3, which open a portal to a random wizlab
+
+Misc
+----------
+-Loud noises can now break mesmerization again
+-You no longer receive a penalty to experience gain for kills involving allies or summons
+-Tengus can now receive a special Invocations title at max piety rank when worshipping TSO
+-Spellbooks have a chance to drop scrolls of amnesia when adding them to your spell library
+-New icon and logo
+-Added paging to the species menu (because I haven't ported over the good menu code yet)
+-Increased weapon crosstraining bonus from 40% to 60%
+-Added pledges, an optional gameplay modifier selected at game start (see Pledges section)
+-Better tiles by Metoron for a bunch of stuff!
+-Updated crablang with more stuff
+-Fixed claws not adding their bonus damage since 2018 (oops!)
+
+Mainline Crawl Stuff (that I remember I ported over, assume it isn't ported if it isn't here)
+----------
+-Spell library
+-Harpoon Shot
+-Unrandart changes (made numerous numerical tweaks to other unrandarts aside from Mainline
+ changes)
+-Removed hunger cost from vampiric weapons
+-Elemental staff changes
+-Throwing overhaul
+-Monster equipment identification
+-Security/vulnerability fixes
+
+Pledges
+----------
+-Added Brute Force pledge, which prevents the worship of gods
+-Added Explorer pledge, requiring all 15 runes to pick up the orb of Zot
+-Added Conqueror pledge, which kills the player after 50,000 turns
+-Added Nature's Ally pledge, requiring the orb of Zot to enter Tomb and requiring the golden
+ rune of Zot (from Tomb) to leave the Dungeon
+-Added Avarice pledge, preventing the player from entering branches other than Temple, Lair,
+ Orc, Elf, Depths, Abyss, Hell, and Dis until they obtain the iron rune of Zot (from Dis)
+-Added Darkness pledge, preventing the player from entering Lair, Orc, or Vaults
+-Added Spiteful pledge, which starts the player worshipping Ru but prevents them from entering
+ branches other than Lair, Temple, or Abyss until they reach full piety with and abandon Ru.
+-Added Ascetic pledge, which prevents the use of scrolls or potions.
+-Added Lorekeeper pledge, which prevents skills from being raised higher than 13.
+-Added Courage pledge, which prevents the player from entering Depths or Zot until they obtain
+ 6 runes.
+-Added Efficiency pledge, which kills the player when they reach experience level 20.
+-Added Madness pledge, which prevents picking up the orb of Zot until the player leaves floor
+ 27 of a ziggurat.
+-Added Harvest pledge, which prevents the player from (voluntarily) leaving a floor until all
+ unique monsters on the same floor have been killed
+-Added Justice pledge, which prevents picking up the orb of Zot until all unique Pandemonium
+ and Hell lords have been killed. Attempting to pick up the orb after killing all Hell lords
+ will summon a unique Pan Lord (with their band) if they have not already been killed or summoned.
+-Added Chaos pledge, which starts the player worshipping Xom and prevents them from abandoing Xom.
+-Added Peer Pressure pledge, which mutates the player as if they ate a mutagenic chunk whenever
+ they eat any type of food or chunks.
+-Added Heretic pledge, which inflicts divine retribution of a god (other than the player's god
+ or allied gods) upon the player whenever they pick up a rune.
+-Added rcfile option "pledge", allowing automatic selection of a pledge (or no pledge) at game
+ start instead of showing the menu
+-Added logfile support for pledges to allow scoring websites/bots to know what pledge a player
+ is using
+
+
+--------------------------------------------------
 Gooncrawl Version 1.0:
 
 Species

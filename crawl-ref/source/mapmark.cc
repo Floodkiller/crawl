@@ -236,7 +236,7 @@ void map_lua_marker::check_register_table()
 
 bool map_lua_marker::get_table() const
 {
-    if (marker_table.get())
+    if (marker_table)
     {
         marker_table->push();
         return lua_istable(dlua, -1);
@@ -447,8 +447,8 @@ map_marker *map_lua_marker::parse(const string &s, const string &ctx)
 // map_corruption_marker
 
 map_corruption_marker::map_corruption_marker(const coord_def &p,
-                                             int dur)
-    : map_marker(MAT_CORRUPTION_NEXUS, p), duration(dur)
+                                             int dur, bool mb)
+    : map_marker(MAT_CORRUPTION_NEXUS, p), duration(dur), megabyss(mb)
 {
 }
 
@@ -456,12 +456,14 @@ void map_corruption_marker::write(writer &out) const
 {
     map_marker::write(out);
     marshallShort(out, duration);
+    marshallBoolean(out, megabyss);
 }
 
 void map_corruption_marker::read(reader &in)
 {
     map_marker::read(in);
     duration = unmarshallShort(in);
+    megabyss = unmarshallBoolean(in);
 }
 
 map_marker *map_corruption_marker::read(reader &in, map_marker_type)
@@ -473,13 +475,13 @@ map_marker *map_corruption_marker::read(reader &in, map_marker_type)
 
 map_marker *map_corruption_marker::clone() const
 {
-    map_corruption_marker *mark = new map_corruption_marker(pos, duration);
+    map_corruption_marker *mark = new map_corruption_marker(pos, duration, megabyss);
     return mark;
 }
 
 string map_corruption_marker::debug_describe() const
 {
-    return make_stringf("Lugonu corrupt (%d)", duration);
+    return make_stringf("Lugonu corrupt (%d) Megabyss: (%d)", duration, megabyss);
 }
 
 ////////////////////////////////////////////////////////////////////////////

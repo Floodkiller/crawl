@@ -39,6 +39,7 @@ my %field_type = (
     FOG      => "bool",
     FIRE     => "num",
     FRAGILE  => "bool",
+    HARM     => "bool",
     HOLY     => "bool",
     INSCRIP  => "str",
     INT      => "num",
@@ -53,6 +54,7 @@ my %field_type = (
     NOGEN    => "bool",
     NOISES   => "bool",
     NOSPELL  => "bool",
+    NOTAC    => "bool",
     NOTELEP  => "bool",
     NO_UPGRADE => "bool",
     POISON   => "bool",
@@ -64,6 +66,7 @@ my %field_type = (
     RND_TELE => "bool",
     SEEINV   => "bool",
     SKIP_EGO => "bool",
+    SH       => "num",
     SLAY     => "num",
     SPECIAL  => "bool",
     SLOW     => "bool",
@@ -240,8 +243,8 @@ sub finish_art
 
     my $flags = "";
     my $flag;
-    foreach $flag ("SPECIAL", "HOLY", "EVIL", "CHAOTIC",
-                   "CORPSE_VIOLATING", "NOGEN", "RANDAPP", "UNIDED", "SKIP_EGO")
+    foreach $flag ("SPECIAL", "HOLY", "EVIL", "CHAOTIC", "CORPSE_VIOLATING",
+                   "NOGEN", "NOTAC", "RANDAPP", "UNIDED", "SKIP_EGO")
     {
         if ($artefact->{$flag})
         {
@@ -491,6 +494,7 @@ my @art_order = (
     "BASE_DELAY", "HP", "CLARITY", "BASE_ACC", "BASE_DAM", "\n",
     "RMSL", "FOG", "REGEN", "unused", "NO_UPGRADE", "RCORR", "\n",
     "RMUT", "unused", "CORRODE", "DRAIN", "SLOW", "FRAGILE", "\n",
+    "SH", "HARM", "\n",
     "}",
 
     "equip_func", "unequip_func", "world_reacts_func", "melee_effects_func",

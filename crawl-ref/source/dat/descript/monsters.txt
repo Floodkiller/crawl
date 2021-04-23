@@ -914,9 +914,10 @@ deep troll shaman
 
 A deep troll blessed with divine power to strengthen and hasten its kin.
 %%%%
-demigod
+promethean
 
-A human-like figure with an aura of power betraying its divine ancestry.
+A human-like figure that appears to be pieced together from multiple different
+creatures.
 %%%%
 demonic crawler
 
@@ -937,11 +938,11 @@ dire elephant
 A huge pachyderm, wilder and fiercer than normal elephants, with a very thick
 hide, powerful legs, and a memory to die for.
 %%%%
-disaster prism
+disaster emanation
 
 A spark created by the meeting of adversaries, bound and shaped by powerful magic.
-It will explode with dreadful force not long after the magic that enabled its creation
-expires.
+It will explode with dreadful force not long after the magic that enabled its
+creation expires.
 %%%%
 doom hound
 
@@ -1557,6 +1558,12 @@ A hideous conglomeration of mangled body parts, possessed and altered in ways
 that challenge sanity. Each varies in speed and durability by the nature of
 whatever unfortunates were used to make it.
 %%%%
+lava orc
+
+A tall, muscular humanoid strongly in tune with the elemental forces of fire
+and earth. These distant relatives of cave orcs are possessed of passionate
+hearts, and their inner temperature is closely linked to their emotions.
+%%%%
 lava snake
 
 A burning red snake which dwells in pools of lava. It spits gobs of molten rock
@@ -1795,8 +1802,8 @@ orb of destruction
 
 A conjured globe of pure magic that homes onto a designated target, albeit with
 massive inertia. A smart and agile person may move out of its path, causing it
-to miss its target or damage its surroundings. It cannot be avoided by Dodging
-skill, and is able to make sharp turns to hit adjacent targets.
+to miss its target. It cannot be avoided by Dodging skill, and is able to make
+sharp turns to hit adjacent targets.
 %%%%
 orb of fire
 
@@ -2125,6 +2132,12 @@ spells or reading scrolls.
 simulacrum
 
 An ice replica of a monster, animated by the powers of necromancy.
+%%%%
+singularity
+
+A gravitational singularity, which pulls in enemies of its creator and
+violently warps them in the process.
+
 %%%%
 sixfirhy
 

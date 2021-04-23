@@ -6,6 +6,7 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_MAGIC_DART,
     SPELL_BLINK,
     SPELL_CALL_IMP,
+    SPELL_REPEL_MISSILES,
     SPELL_SLOW,
     SPELL_CONJURE_FLAME,
     SPELL_MEPHITIC_CLOUD,
@@ -17,7 +18,7 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_DAZZLING_SPRAY,
     SPELL_FULMINANT_PRISM,
     SPELL_FORCE_LANCE,
-    SPELL_ISKENDERUNS_MYSTIC_BLAST,
+    SPELL_BATTLESPHERE,
 },
 
 {   // Book of Flames
@@ -69,16 +70,19 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_BECKONING,
     SPELL_GRAVITAS,
     SPELL_TELEPORT_OTHER,
+    SPELL_CONJURE_DISTORTION,
     SPELL_GOLUBRIAS_PASSAGE,
 },
 
 {   // Book of Enchantments
     SPELL_CAUSE_FEAR,
+    SPELL_BLADE_OF_DISASTER,
     SPELL_VIOLENT_UNRAVELLING,
     SPELL_PHASE_SHIFT,
     SPELL_SILENCE,
     SPELL_DEFLECT_MISSILES,
     SPELL_DISCORD,
+    SPELL_HASTE,
 },
 
 {   // Young Poisoner's Handbook
@@ -188,6 +192,7 @@ static const vector<spell_type> spellbook_templates[] =
 {   // Book of Air
     SPELL_SHOCK,
     SPELL_SWIFTNESS,
+    SPELL_REPEL_MISSILES,
     SPELL_DISCHARGE,
     SPELL_AIRSTRIKE,
     SPELL_LIGHTNING_BOLT,
@@ -208,11 +213,13 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_DISPERSAL,
     SPELL_CONTROLLED_BLINK,
     SPELL_DISJUNCTION,
+    SPELL_SINGULARITY,
 },
 
 {   // Book of Envenomations
     SPELL_SPIDER_FORM,
     SPELL_OLGREBS_TOXIC_RADIANCE,
+	SPELL_VIRULENCE,
     SPELL_INTOXICATE,
     SPELL_POISONOUS_CLOUD,
 },
@@ -264,11 +271,13 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_AGONY,
     SPELL_INVISIBILITY,
     SPELL_SPELLFORGED_SERVITOR,
+    SPELL_HASTE,
 },
 #endif
 
 {   // Book of Power
-    SPELL_BATTLESPHERE,
+    SPELL_FORCE_LANCE,
+    SPELL_BLADE_OF_DISASTER,
     SPELL_VENOM_BOLT,
     SPELL_BOLT_OF_MAGMA,
     SPELL_IRON_SHOT,
@@ -334,12 +343,14 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_SILENCE,
     SPELL_DARKNESS,
     SPELL_SHADOW_CREATURES,
+    SPELL_TIME_STOP,
 },
 
 {   // Book of Alchemy
     SPELL_SUBLIMATION_OF_BLOOD,
     SPELL_IGNITE_POISON,
     SPELL_PETRIFY,
+	SPELL_VIRULENCE,
     SPELL_INTOXICATE,
     SPELL_IRRADIATE,
 },
@@ -352,12 +363,14 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_SUMMON_HYDRA,
 },
 
+    
 {   // Book of Annihilations
     SPELL_POISON_ARROW,
     SPELL_CHAIN_LIGHTNING,
     SPELL_LEHUDIBS_CRYSTAL_SPEAR,
     SPELL_GLACIATE,
     SPELL_FIRE_STORM,
+    SPELL_ISKENDERUNS_UNDOING,
 },
 
 {   // Grand Grimoire
@@ -374,6 +387,16 @@ static const vector<spell_type> spellbook_templates[] =
     SPELL_INFESTATION,
     SPELL_NECROMUTATION,
 },
+{   // Book of Reaving
+    SPELL_CHILL_THREAD,
+    SPELL_BLINK,
+    SPELL_OZOCUBUS_ARMOUR,
+    SPELL_DAZZLING_SPRAY,
+    SPELL_DIFFERENTIAL_EXPANSION,
+    SPELL_BLADE_OF_DISASTER,
+    
+},
+
 
 };
 

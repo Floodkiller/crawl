@@ -174,7 +174,7 @@ static int _abyssal_rune_roll()
 
     const double depth = you.depth + god_favoured;
 
-    return (int) pow(100.0, depth/(1 + brdepth[BRANCH_ABYSS]));
+    return (int) pow(100.0, min(1.0, depth / 6));
 }
 
 static void _abyss_fixup_vault(const vault_placement *vp)
@@ -307,7 +307,10 @@ static int _abyss_create_items(const map_bitmask &abyss_genlevel_mask,
 {
     // During game start, number and level of items mustn't be higher than
     // that on level 1.
-    int num_items = 150, items_level = 52;
+    int num_items = 1000;
+    int items_level = 51+you.depth;
+    // 1/200 in Abyss:1, 1/115 in Abyss:5, 1/57 in Abyss:10, 1/14 in Abyss:20, 1/5 in Abyss:27
+    int item_chance = (int) (230.0/pow(2.0, you.depth/5.0));
     int items_placed = 0;
 
     if (player_in_starting_abyss())
@@ -323,7 +326,7 @@ static int _abyss_create_items(const map_bitmask &abyss_genlevel_mask,
     {
         if (_abyss_square_accepts_items(abyss_genlevel_mask, *ri))
         {
-            if (items_placed < num_items && one_chance_in(200))
+            if (items_placed < num_items && one_chance_in(item_chance))
             {
                 // [ds] Don't place abyssal rune in this loop to avoid
                 // biasing rune placement toward the north-west of the
@@ -383,15 +386,15 @@ static int _banished_depth(const int power)
     // always
     // Ancient Liches are sending you to A:5 and there's nothing
     // you can do about that.
+    // Now with banishment up to A:27, if you can get that much spellpower somehow.
     const int maxdepth = div_rand_round((power + 5), 6);
     const int mindepth = (4 * power + 7) / 23;
-    return min(5, max(1, random_range(mindepth, maxdepth)));
+    return min(brdepth[BRANCH_ABYSS], max(1, random_range(mindepth, maxdepth)));
 }
 
 void banished(const string &who, const int power)
 {
     ASSERT(!crawl_state.game_is_arena());
-    push_features_to_abyss();
     if (brdepth[BRANCH_ABYSS] == -1)
         return;
 
@@ -401,7 +404,7 @@ void banished(const string &who, const int power)
             down_stairs(DNGN_ABYSSAL_STAIR);
         else
         {
-            // On Abyss:5 we can't go deeper; cause a shift to a new area
+            // On Abyss:27 we can't go deeper; cause a shift to a new area
             mprf(MSGCH_BANISHMENT, "You are banished to a different region of the Abyss.");
             abyss_teleport();
         }
@@ -730,9 +733,12 @@ static void _abyss_wipe_square_at(coord_def p, bool saveMonsters=false)
     remove_markers_and_listeners_at(p);
 
     env.map_knowledge(p).clear();
-    if (env.map_forgotten.get())
-        (*env.map_forgotten.get())(p).clear();
+    if (env.map_forgotten)
+        (*env.map_forgotten)(p).clear();
     env.map_seen.set(p, false);
+#ifdef USE_TILE
+    tile_forget_map(p);
+#endif
     StashTrack.update_stash(p);
 }
 
@@ -1194,6 +1200,7 @@ static void _update_abyss_terrain(const coord_def &p,
     {
         case DNGN_EXIT_ABYSS:
         case DNGN_ABYSSAL_STAIR:
+        case DNGN_ABYSS_TO_ZOT:
             return;
         default:
             break;
@@ -1278,8 +1285,16 @@ static void _abyss_apply_terrain(const map_bitmask &abyss_genlevel_mask,
                                  bool morph = false, bool now = false)
 {
     // The chance is reciprocal to these numbers.
-    const int exit_chance = you.runes[RUNE_ABYSSAL] ? 1250
+    int exit_chance = 7500;
+    if (you.depth <= 5)
+    {
+        exit_chance = you.runes[RUNE_ABYSSAL] ? 1250
                             : 7500 - 1250 * (you.depth - 1);
+    }
+    else
+    {
+        exit_chance = 1250 - 25 * (you.depth - 5);
+    }
 
     int exits_wanted  = 0;
     int altars_wanted = 0;
@@ -1304,7 +1319,7 @@ static void _abyss_apply_terrain(const map_bitmask &abyss_genlevel_mask,
     }
 
     int ii = 0;
-    int delta = you.time_taken * (you.abyss_speed + 40) / 200;
+    int delta = you.time_taken * (you.abyss_speed + 35 + you.depth*5) / 200;
     for (rectangle_iterator ri(MAPGEN_BORDER); ri; ++ri)
     {
         const coord_def p(*ri);
@@ -1323,6 +1338,8 @@ static void _abyss_apply_terrain(const map_bitmask &abyss_genlevel_mask,
         if (morph)
             continue;
 
+        // If we're at Abyss:5 or deeper, a small chance to place an exit into Zot:5.
+
         // Place abyss exits, stone arches, and altars to liven up the scene
         // (only on area creation, not on morphing).
         _abyss_check_place_feat(p, exit_chance,
@@ -1337,8 +1354,14 @@ static void _abyss_apply_terrain(const map_bitmask &abyss_genlevel_mask,
                                 _abyss_pick_altar(),
                                 abyss_genlevel_mask)
         ||
+        (you.depth >= 5 && _abyss_check_place_feat(p, 2500-(25*(you.depth-5)),
+                                nullptr,
+                                nullptr,
+                                DNGN_ABYSS_TO_ZOT,
+                                abyss_genlevel_mask))
+        ||
         level_id::current().depth < brdepth[BRANCH_ABYSS]
-        && _abyss_check_place_feat(p, 1900, nullptr, nullptr,
+        && _abyss_check_place_feat(p, you.depth <= 5 ? 1900 : 1900-(25*(you.depth-5)), nullptr, nullptr,
                                    DNGN_ABYSSAL_STAIR,
                                    abyss_genlevel_mask);
     }
@@ -1472,6 +1495,7 @@ static void abyss_area_shift()
     }
 
     // Place some monsters to keep the abyss party going.
+    //16-17 at Abyss:1, 42-69 at Abyss:27
     int num_monsters = 15 + you.depth * (1 + coinflip());
     _abyss_generate_monsters(num_monsters);
 
@@ -1629,7 +1653,7 @@ retry:
 
 static void _increase_depth()
 {
-    int delta = you.time_taken * (you.abyss_speed + 40) / 200;
+    int delta = you.time_taken * (you.abyss_speed + 35 + you.depth*5) / 200;
     if (!have_passive(passive_t::slow_abyss))
         delta *= 2;
     if (you.duration[DUR_TELEPORT])
@@ -1683,25 +1707,32 @@ struct corrupt_env
     corrupt_env(): rock_colour(BLACK), floor_colour(BLACK) { }
 };
 
-static void _place_corruption_seed(const coord_def &pos, int duration)
+static void _place_corruption_seed(bool megabyss, const coord_def &pos, int duration)
 {
-    env.markers.add(new map_corruption_marker(pos, duration));
+    env.markers.add(new map_corruption_marker(pos, duration, megabyss));
     // Corruption markers don't need activation, though we might
     // occasionally miss other unactivated markers by clearing.
     env.markers.clear_need_activate();
 }
 
-static void _initialise_level_corrupt_seeds(int power)
+static void _initialise_level_corrupt_seeds(int power, bool megabyss)
 {
     const int low = power * 40 / 100, high = power * 140 / 100;
-    const int nseeds = random_range(-1, min(2 + power / 110, 4), 2);
+    int nseeds = random_range(-1, min(2 + power / 110, 4), 2);
+    if (megabyss)
+    {
+        nseeds = random_range(1, 3);
+    }
 
     const int aux_seed_radius = 4;
 
     dprf("Placing %d corruption seeds (power: %d)", nseeds, power);
 
-    // The corruption centreed on the player is free.
-    _place_corruption_seed(you.pos(), high + 300);
+    // The corruption centred on the player is free.
+    if (!megabyss)
+    {
+        _place_corruption_seed(megabyss, you.pos(), high + 300);
+    }
 
     for (int i = 0; i < nseeds; ++i)
     {
@@ -1709,14 +1740,21 @@ static void _initialise_level_corrupt_seeds(int power)
         int tries = 100;
         while (tries-- > 0)
         {
-            where = dgn_random_point_from(you.pos(), aux_seed_radius, 2);
+            if (megabyss)
+            {
+                where = random_in_bounds();
+            }
+            else
+            {
+                where = dgn_random_point_from(you.pos(), aux_seed_radius, 2);
+            }
             if (grd(where) == DNGN_FLOOR && !env.markers.find(where, MAT_ANY))
                 break;
             where.reset();
         }
 
         if (!where.origin())
-            _place_corruption_seed(where, random_range(low, high, 2) + 300);
+            _place_corruption_seed(megabyss, where, random_range(low, high, 2) + 300);
     }
 }
 
@@ -1779,14 +1817,19 @@ static void _apply_corruption_effect(map_marker *marker, int duration)
     cmark->duration -= duration;
 }
 
-void run_corruption_effects(int duration)
+void run_corruption_effects(int duration, bool megabyss)
 {
     for (map_marker *mark : env.markers.get_all(MAT_CORRUPTION_NEXUS))
     {
         if (mark->get_type() != MAT_CORRUPTION_NEXUS)
+        {
             continue;
-
-        _apply_corruption_effect(mark, duration);
+        }
+        map_corruption_marker *cmark = dynamic_cast<map_corruption_marker*>(mark);
+        if (cmark->megabyss == megabyss)
+        {
+            _apply_corruption_effect(mark, duration);
+        }
     }
 }
 
@@ -1934,12 +1977,18 @@ static void _corrupt_square(const corrupt_env &cenv, const coord_def &c)
     }
 }
 
-static void _corrupt_level_features(const corrupt_env &cenv)
+static void _corrupt_level_features(const corrupt_env &cenv, bool megabyss)
 {
     vector<coord_def> corrupt_seeds;
 
-    for (const map_marker *mark : env.markers.get_all(MAT_CORRUPTION_NEXUS))
-        corrupt_seeds.push_back(mark->pos);
+    for (map_marker *mark : env.markers.get_all(MAT_CORRUPTION_NEXUS))
+    {
+        map_corruption_marker *cmark = dynamic_cast<map_corruption_marker*>(mark);
+        if (cmark->megabyss == megabyss)
+        {
+            corrupt_seeds.push_back(mark->pos);
+        }
+    }
 
     for (rectangle_iterator ri(MAPGEN_BORDER); ri; ++ri)
     {
@@ -1961,17 +2010,27 @@ static void _corrupt_level_features(const corrupt_env &cenv)
     }
 }
 
-static bool _is_level_corrupted()
+static bool _is_level_corrupted(bool megabyss)
 {
     if (player_in_branch(BRANCH_ABYSS))
+    {
         return true;
+    }
 
-    return !!env.markers.find(MAT_CORRUPTION_NEXUS);
+    for (map_marker *mark : env.markers.get_all(MAT_CORRUPTION_NEXUS))
+    {
+        map_corruption_marker *cmark = dynamic_cast<map_corruption_marker*>(mark);
+        if (cmark->megabyss == megabyss)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
-bool is_level_incorruptible(bool quiet)
+bool is_level_incorruptible(bool quiet, bool megabyss)
 {
-    if (_is_level_corrupted())
+    if (_is_level_corrupted(megabyss))
     {
         if (!quiet)
             mpr("This place is already infused with evil and corruption.");
@@ -2000,28 +2059,39 @@ static void _corrupt_choose_colours(corrupt_env *cenv)
     cenv->floor_colour = colour;
 }
 
-bool lugonu_corrupt_level(int power)
+bool lugonu_corrupt_level(int power, bool megabyss)
 {
-    if (is_level_incorruptible())
+    if (is_level_incorruptible(megabyss, megabyss))
+    {
         return false;
+    }
 
-    simple_god_message("'s Hand of Corruption reaches out!");
-    take_note(Note(NOTE_MESSAGE, 0, 0, make_stringf("Corrupted %s",
+    if (megabyss)
+    {
+        mprf("<magenta>This place has been corrupted by the Abyss.</magenta>");
+    }
+    else
+    {
+        simple_god_message("'s Hand of Corruption reaches out!");
+        take_note(Note(NOTE_MESSAGE, 0, 0, make_stringf("Corrupted %s",
               level_id::current().describe().c_str()).c_str()));
-    mark_corrupted_level(level_id::current());
+        mark_corrupted_level(level_id::current());
+        flash_view(UA_PLAYER, MAGENTA);
+    }
 
-    flash_view(UA_PLAYER, MAGENTA);
-
-    _initialise_level_corrupt_seeds(power);
+    _initialise_level_corrupt_seeds(power, megabyss);
 
     corrupt_env cenv;
     _corrupt_choose_colours(&cenv);
-    _corrupt_level_features(cenv);
-    run_corruption_effects(300);
+    _corrupt_level_features(cenv, megabyss);
+    run_corruption_effects(megabyss ? 5 : 300, megabyss);
 
 #ifndef USE_TILE_LOCAL
     // Allow extra time for the flash to linger.
-    scaled_delay(1000);
+    if (!megabyss)
+    {
+        scaled_delay(1000);
+    }
 #endif
 
     return true;
